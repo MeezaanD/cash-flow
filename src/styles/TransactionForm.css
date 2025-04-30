@@ -1,0 +1,44 @@
+.transaction-form {
+    background: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .transaction-form h2 {
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  .transaction-form input,
+  .transaction-form select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .transaction-form button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+  }
+  
+  .transaction-form button[type="submit"] {
+    background: #2563eb;
+    color: white;
+  }
+  
+  .transaction-form button[type="button"] {
+    background: #6b7280;
+    color: white;
+  }
+  
+  .transaction-form .button-group {
+    display: flex;
+    gap: 8px;
+  }
+  
