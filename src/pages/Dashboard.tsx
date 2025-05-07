@@ -15,7 +15,7 @@ const Dashboard: React.FC = () => {
   const [selectedTx, setSelectedTx] = useState<any | null>(null);
   const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const handleCreate = () => {
     setSelectedTx(null);
@@ -24,9 +24,9 @@ const Dashboard: React.FC = () => {
   };
 
   const handleSelect = (tx: any) => {
-    setSelectedTx(tx); // Set selected transaction to state
-    setSelectedTransactionId(tx.id); // Set selected transaction id
-    setIsCreating(false); // If we're editing, it's no longer "creating"
+    setSelectedTx(tx);
+    setSelectedTransactionId(tx.id);
+    setIsCreating(false);
   };
 
   const handleDeleteTransaction = (id: string) => {
@@ -45,38 +45,42 @@ const Dashboard: React.FC = () => {
     setIsCreating(false);
   };
 
-  const toggleSidebar = () => setSidebarVisible((prev) => !prev);
+  const toggleSidebar = () => setSidebarCollapsed((prev) => !prev);
 
   return (
     <div className="dashboard-wrapper">
-      {sidebarVisible && (
-        <Sidebar
-          collapsed={!sidebarVisible}
-          toggleSidebar={toggleSidebar}
-          transactions={transactions}
-          onCreate={handleCreate}
-          onSelect={handleSelect}
-          onDelete={handleDeleteTransaction}
-          selectedId={selectedTransactionId}
-        />
-      )}
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        toggleSidebar={toggleSidebar}
+        transactions={transactions}
+        onCreate={handleCreate}
+        onSelect={handleSelect}
+        onDelete={handleDeleteTransaction}
+        selectedId={selectedTransactionId}
+      />
 
-      <div className={`dashboard-content ${sidebarVisible ? "" : "full-screen"}`}>
-        {!sidebarVisible && (
-          <button className="local-toggle-button" onClick={toggleSidebar}>☰ Open Sidebar</button>
+      <div className={`dashboard-content ${sidebarCollapsed ? "collapsed" : ""}`}>
+        {sidebarCollapsed && (
+          <button className="sidebar-toggle-button" onClick={toggleSidebar}>
+            ☰
+          </button>
         )}
 
-        {isCreating ? (
-          <TransactionForm onClose={handleCloseForm} onSubmit={addTransaction} />
-        ) : selectedTx ? (
-          <TransactionForm
-            transaction={selectedTx} // Pass the selected transaction to the form
-            onClose={handleCloseForm}
-            onSubmit={(data) => updateTransaction(selectedTx.id, data)}
-          />
-        ) : (
-          <p style={{ color: "#4b5563" }}>Select or create a transaction to get started.</p>
-        )}
+        <div className="form-container">
+          {isCreating ? (
+            <TransactionForm onClose={handleCloseForm} onSubmit={addTransaction} />
+          ) : selectedTx ? (
+            <TransactionForm
+              transaction={selectedTx}
+              onClose={handleCloseForm}
+              onSubmit={(data) => updateTransaction(selectedTx.id, data)}
+            />
+          ) : (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+              <p style={{ color: "#4b5563" }}>Select or create a transaction to get started.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

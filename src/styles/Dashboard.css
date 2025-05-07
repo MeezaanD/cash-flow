@@ -1,19 +1,79 @@
 .dashboard-wrapper {
-    display: flex;
-    height: 100vh;
-  }
-  
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.dashboard-content {
+  flex: 1;
+  padding: 20px;
+  transition: all 0.3s ease;
+  margin-left: 250px; /* Desktop sidebar width */
+}
+
+.dashboard-content.collapsed {
+  margin-left: 0;
+}
+
+.sidebar-toggle-button {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  background-color: #f4f4f4;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.sidebar-toggle-button:hover {
+  background-color: #e0e0e0;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
   .dashboard-content {
-    flex-grow: 1;
-    padding: 20px;
+    margin-left: 0;
+    padding-top: 60px; /* Make space for toggle button */
   }
-  
-  .local-toggle-button {
-    background-color: transparent;
-    border: none;
-    color: #2563eb;
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-    cursor: pointer;
+
+  .sidebar {
+    width: 80%; /* Take most of screen on mobile */
+    transform: translateX(-100%);
   }
-  
+
+  .sidebar:not(.collapsed) {
+    transform: translateX(0);
+    width: 80%;
+  }
+
+  .sidebar-toggle-button {
+    display: block;
+  }
+
+  /* Overlay effect when sidebar is open */
+  .sidebar:not(.collapsed) + .dashboard-content::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .dashboard-content {
+    margin-left: 200px;
+  }
+}
