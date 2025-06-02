@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { auth } from "../services/firebase";
 import { signOut } from "firebase/auth";
 import "../styles/Sidebar.css";
-import logo from "../assets/images/logo.png";
+import logo from "../assets/images/dark-transparent-image.png";
 
 interface SidebarProps {
   toggleSidebar: () => void;
@@ -15,6 +15,28 @@ interface SidebarProps {
   collapsed: boolean;
 }
 
+/**
+ * Sidebar component for displaying and managing transactions and user authentication state.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {() => void} props.onCreate - Callback invoked when the "Create Transaction" button is clicked.
+ * @param {(transaction: Transaction) => void} props.onSelect - Callback invoked when a transaction is selected.
+ * @param {(id: string) => void} props.onDelete - Callback invoked when a transaction is deleted.
+ * @param {Transaction[]} props.transactions - Array of transaction objects to display in the sidebar.
+ * @param {string | null} props.selectedId - ID of the currently selected transaction.
+ * @param {boolean} props.collapsed - Whether the sidebar is collapsed.
+ * @param {() => void} props.toggleSidebar - Callback to toggle the sidebar's collapsed state.
+ *
+ * @returns {JSX.Element} The rendered sidebar component.
+ *
+ * @remarks
+ * - Displays a list of transactions with options to select or delete each.
+ * - Allows creation of new transactions.
+ * - Shows user authentication state, avatar, and logout/login options.
+ * - Uses Firebase authentication to track user state.
+ * - Navigates to login page on logout or when user is not authenticated.
+ */
 const Sidebar = ({
   onCreate,
   onSelect,
@@ -42,7 +64,6 @@ const Sidebar = ({
 
   return (
     <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
-      {/* Top section: Logo and Collapse Button */}
       <div className="sidebar-top">
         <img className="logo" src={logo} alt="" />
         {!collapsed && (
@@ -52,44 +73,32 @@ const Sidebar = ({
         )}
       </div>
 
-      {/* List of Transactions */}
-      {/* List of Transactions */}
       <div className="transaction-list">
-        {transactions.map((tx) => {
-          const createdAt = tx.createdAt
-            ? new Date(tx.createdAt.seconds * 1000).toLocaleDateString()
-            : "Unknown Date";
-
-          return (
-            <div
-              key={tx.id}
-              className={`transaction-item ${
-                selectedId === tx.id ? "selected" : ""
-              }`}
+        {transactions.map((tx) => (
+          <div
+            key={tx.id}
+            className={`transaction-item ${
+              selectedId === tx.id ? "selected" : ""
+            }`}
+          >
+            <span onClick={() => onSelect(tx)} className="transaction-title">
+              {tx.title}
+            </span>
+            <button
+              onClick={() => {
+                if (
+                  confirm("Are you sure you want to delete this transaction?")
+                ) {
+                  onDelete(tx.id);
+                }
+              }}
+              className="delete-button"
+              title="Delete"
             >
-              <div className="transaction-content" onClick={() => onSelect(tx)}>
-                <div className="transaction-title">{tx.title}</div>
-                <div className="transaction-meta">
-                  <span>{createdAt}</span> -{" "}
-                  <span>R{parseFloat(tx.amount).toFixed(2)}</span>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  if (
-                    confirm("Are you sure you want to delete this transaction?")
-                  ) {
-                    onDelete(tx.id);
-                  }
-                }}
-                className="delete-button"
-                title="Delete"
-              >
-                ✕
-              </button>
-            </div>
-          );
-        })}
+              ✕
+            </button>
+          </div>
+        ))}
       </div>
 
       <div className="create-transaction">
@@ -100,18 +109,16 @@ const Sidebar = ({
 
       <hr className="divider" />
 
-      {/* Bottom section: User Info */}
       <div className="sidebar-bottom">
         {user ? (
           <>
             <div className="user-avatar">
-  {user.photoURL ? (
-    <img src={user.photoURL} alt="User Avatar" className="user-image" />
-  ) : (
-    user.email?.[0]?.toUpperCase()
-  )}
-</div>
-
+              {user.photoURL ? (
+                <img src={user.photoURL} alt="User Avatar" className="user-image" />
+              ) : (
+                user.email?.[0]?.toUpperCase()
+              )}
+            </div>
             <p className="user-email">{user.email}</p>
             <button className="logout-button" onClick={handleLogout}>
               Logout
