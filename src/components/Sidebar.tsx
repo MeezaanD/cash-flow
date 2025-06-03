@@ -57,9 +57,11 @@ const Sidebar = ({
   }, []);
 
   const handleLogout = async () => {
-    await signOut(auth);
-    localStorage.removeItem("token");
-    navigate("/login");
+    if (confirm("Are you sure you want to logout?")) {
+      await signOut(auth);
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
   };
 
   return (
