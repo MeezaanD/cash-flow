@@ -1,42 +1,31 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../services/firebase";
 import { signOut } from "firebase/auth";
+import { FiSearch, FiPlus, FiX, FiArrowUp, FiArrowDown } from "react-icons/fi";
+import { useAuth } from "../hooks/useAuth";
 import "../styles/Sidebar.css";
 import logo from "../assets/images/dark-transparent-image.png";
 
+interface Transaction {
+  id: string;
+  title: string;
+  amount: number;
+  type: "income" | "expense";
+  date?: Date | { toDate: () => Date };
+  createdAt?: Date | { toDate: () => Date };
+}
+
 interface SidebarProps {
   toggleSidebar: () => void;
-  transactions: any[];
+  transactions: Transaction[];
   onCreate: () => void;
-  onSelect: (tx: any) => void;
+  onSelect: (tx: Transaction) => void;
   onDelete: (id: string) => void;
   selectedId: string | null;
   collapsed: boolean;
 }
 
-/**
- * Sidebar component for displaying and managing transactions and user authentication state.
- *
- * @component
- * @param {Object} props - Component props.
- * @param {() => void} props.onCreate - Callback invoked when the "Create Transaction" button is clicked.
- * @param {(transaction: Transaction) => void} props.onSelect - Callback invoked when a transaction is selected.
- * @param {(id: string) => void} props.onDelete - Callback invoked when a transaction is deleted.
- * @param {Transaction[]} props.transactions - Array of transaction objects to display in the sidebar.
- * @param {string | null} props.selectedId - ID of the currently selected transaction.
- * @param {boolean} props.collapsed - Whether the sidebar is collapsed.
- * @param {() => void} props.toggleSidebar - Callback to toggle the sidebar's collapsed state.
- *
- * @returns {JSX.Element} The rendered sidebar component.
- *
- * @remarks
- * - Displays a list of transactions with options to select or delete each.
- * - Allows creation of new transactions.
- * - Shows user authentication state, avatar, and logout/login options.
- * - Uses Firebase authentication to track user state.
- * - Navigates to login page on logout or when user is not authenticated.
- */
 const Sidebar = ({
   onCreate,
   onSelect,
@@ -46,15 +35,9 @@ const Sidebar = ({
   collapsed,
   toggleSidebar,
 }: SidebarProps) => {
-  const [user, setUser] = useState<any>(null);
+  const currentUser = useAuth();
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
-    });
-    return () => unsubscribe();
-  }, []);
 
   const handleLogout = async () => {
     if (confirm("Are you sure you want to logout?")) {
@@ -64,10 +47,48 @@ const Sidebar = ({
     }
   };
 
+  const parseDbDate = (dateInput: unknown): Date => {
+    if (typeof dateInput === "object" && dateInput !== null && "toDate" in dateInput) {
+      return (dateInput as { toDate: () => Date }).toDate();
+    }
+    if (dateInput instanceof Date) {
+      return dateInput;
+    }
+    if (typeof dateInput === "string") {
+      const dateOnly = dateInput.split(" at ")[0];
+      return new Date(dateOnly);
+    }
+    return new Date();
+  };
+
+  const formatDisplayDate = (dateInput: unknown) => {
+    try {
+      const date = parseDbDate(dateInput);
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch (e) {
+      console.error("Error formatting date:", dateInput, e);
+      return "N/A";
+    }
+  };
+
+  const sortedTransactions = [...transactions].sort((a, b) => {
+    const dateA = parseDbDate(a.date ?? a.createdAt);
+    const dateB = parseDbDate(b.date ?? b.createdAt);
+    return dateB.getTime() - dateA.getTime();
+  });
+
+  const filteredTransactions = sortedTransactions.filter((tx) =>
+    tx.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
       <div className="sidebar-top">
-        <img className="logo" src={logo} alt="" />
+        <img className="logo" src={logo} alt="CashFlow Logo" />
         {!collapsed && (
           <button className="toggle-button" onClick={toggleSidebar}>
             ☰
@@ -75,59 +96,114 @@ const Sidebar = ({
         )}
       </div>
 
-      <div className="transaction-list">
-        {transactions.map((tx) => (
-          <div
-            key={tx.id}
-            className={`transaction-item ${
-              selectedId === tx.id ? "selected" : ""
-            }`}
-          >
-            <span onClick={() => onSelect(tx)} className="transaction-title">
-              {tx.title}
-            </span>
+      {!collapsed && (
+        <div className="search-container">
+          <FiSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search transactions..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="search-input"
+          />
+          {searchTerm && (
             <button
-              onClick={() => {
-                if (
-                  confirm("Are you sure you want to delete this transaction?")
-                ) {
-                  onDelete(tx.id);
-                }
-              }}
-              className="delete-button"
-              title="Delete"
+              className="clear-search"
+              onClick={() => setSearchTerm("")}
+              aria-label="Clear search"
             >
-              ✕
+              <FiX size={14} />
             </button>
+          )}
+        </div>
+      )}
+
+      <div className="transaction-list">
+        {filteredTransactions.length > 0 ? (
+          filteredTransactions.map((tx) => (
+            <div
+              key={tx.id}
+              className={`transaction-item ${selectedId === tx.id ? "selected" : ""}`}
+              onClick={() => onSelect(tx)}
+            >
+              <div className="transaction-content">
+                <span className="transaction-title">{tx.title}</span>
+                <div className="transaction-meta">
+                  <span className={`transaction-amount ${tx.type}`}>
+                    {tx.type === "income" ? (
+                      <FiArrowUp className="amount-icon income" />
+                    ) : (
+                      <FiArrowDown className="amount-icon expense" />
+                    )}
+                    R {tx.amount.toFixed(2)}
+                  </span>
+                  <span className="transaction-date">
+                    {formatDisplayDate(tx.date ?? tx.createdAt)}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm("Are you sure you want to delete this transaction?")) {
+                    onDelete(tx.id);
+                  }
+                }}
+                className="delete-button"
+                title="Delete transaction"
+                aria-label="Delete transaction"
+              >
+                ✕
+              </button>
+            </div>
+          ))
+        ) : (
+          <div className="no-transactions">
+            {searchTerm ? "No matching transactions" : "No transactions yet"}
           </div>
-        ))}
+        )}
       </div>
 
       <div className="create-transaction">
         <button className="create-button" onClick={onCreate}>
-          + Create Transaction
+          <FiPlus className="button-icon" />
+          Create Transaction
         </button>
       </div>
 
       <hr className="divider" />
 
       <div className="sidebar-bottom">
-        {user ? (
+        {currentUser ? (
           <>
             <div className="user-avatar">
-              {user.photoURL ? (
-                <img src={user.photoURL} alt="User Avatar" className="user-image" />
+              {currentUser.photoURL ? (
+                <img
+                  src={currentUser.photoURL}
+                  alt="User Avatar"
+                  className="user-image"
+                />
               ) : (
-                user.email?.[0]?.toUpperCase()
+                <span className="user-initial">
+                  {currentUser.email?.[0]?.toUpperCase() ?? '?'}
+                </span>
               )}
             </div>
-            <p className="user-email">{user.email}</p>
-            <button className="logout-button" onClick={handleLogout}>
+            <p className="user-email">{currentUser.email ?? 'No email'}</p>
+            <button
+              className="logout-button"
+              onClick={handleLogout}
+              aria-label="Logout"
+            >
               Logout
             </button>
           </>
         ) : (
-          <button className="login-button" onClick={() => navigate("/login")}>
+          <button
+            className="login-button"
+            onClick={() => navigate("/login")}
+            aria-label="Login"
+          >
             Login
           </button>
         )}

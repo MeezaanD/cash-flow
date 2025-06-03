@@ -1,34 +1,91 @@
-import React, { useState } from "react";
-import { FiDollarSign, FiTag, FiType, FiInfo, FiSave, FiX } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
+import { FiDollarSign, FiTag, FiType, FiInfo, FiSave, FiX, FiChevronDown } from "react-icons/fi";
 import '../styles/TransactionForm.css';
 
-// Props type for the TransactionForm component
-type TransactionFormProps = {
-  onSubmit: (data: any) => void; // Callback when form is submitted
-  onClose: () => void;           // Callback to close the form/modal
-  transaction?: any;             // Optional transaction to edit
-};
+type TransactionType = "income" | "expense";
 
-// TransactionForm component for adding/editing a transaction
+interface Transaction {
+  id?: string;
+  title: string;
+  amount: number;
+  type: TransactionType;
+  category: string;
+  description: string;
+  date?: Date;
+  createdAt?: Date;
+}
+
+interface TransactionFormProps {
+  onSubmit: (data: Omit<Transaction, 'id' | 'date' | 'createdAt'>) => Promise<void> | void;
+  onClose: () => void;
+  transaction?: Transaction;
+}
+
+interface Category {
+  value: string;
+  label: string;
+}
+
+const CATEGORIES: Category[] = [
+  { value: "personal", label: "Personal" },
+  { value: "food", label: "Food" },
+  { value: "travel", label: "Travel" },
+  { value: "entertainment", label: "Entertainment" },
+  { value: "debit_order", label: "Debit Order" },
+  { value: "other", label: "Other" }
+];
+
 const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onClose, transaction }) => {
-  // State hooks for form fields, pre-filled if editing
-  const [title, setTitle] = useState(transaction?.title || "");
-  const [amount, setAmount] = useState(transaction?.amount || 0);
-  const [type, setType] = useState(transaction?.type || "income");
-  const [category, setCategory] = useState(transaction?.category || "");
-  const [description, setDescription] = useState(transaction?.description || "");
+  const [title, setTitle] = useState("");
+  const [amount, setAmount] = useState(0);
+  const [type, setType] = useState<TransactionType>("expense");
+  const [category, setCategory] = useState("");
+  const [description, setDescription] = useState("");
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Handles form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (transaction) {
+      setTitle(transaction.title);
+      setAmount(transaction.amount);
+      setType(transaction.type);
+      setCategory(transaction.category);
+      setDescription(transaction.description);
+    } else {
+      // Reset form for new transaction
+      setTitle("");
+      setAmount(0);
+      setType("expense");
+      setCategory("");
+      setDescription("");
+    }
+  }, [transaction]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ title, amount, type, category, description }); // Pass form data to parent
-    onClose(); // Close the form/modal
+    setIsSubmitting(true);
+    try {
+      await onSubmit({ 
+        title, 
+        amount: Number(amount), 
+        type, 
+        category, 
+        description 
+      });
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCategorySelect = (selectedCategory: string) => {
+    setCategory(selectedCategory);
+    setIsCategoryOpen(false);
   };
 
   return (
     <div className="form-container">
       <form onSubmit={handleSubmit} className="transaction-form">
-        {/* Header with title and close button */}
         <div className="form-header">
           <h2>{transaction ? "Edit Transaction" : "Add New Transaction"}</h2>
           <button type="button" onClick={onClose} className="close-button">
@@ -36,7 +93,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onClose, tr
           </button>
         </div>
 
-        {/* Title input */}
         <div className="input-group">
           <label>
             <FiType className="input-icon" />
@@ -50,7 +106,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onClose, tr
           />
         </div>
 
-        {/* Amount input */}
         <div className="input-group">
           <label>
             <FiDollarSign className="input-icon" />
@@ -59,28 +114,45 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onClose, tr
           <input
             type="number"
             value={amount}
-            onChange={(e) => setAmount(+e.target.value)}
+            onChange={(e) => setAmount(Number(e.target.value))}
             placeholder="0.00"
             required
             step="0.01"
+            min="0"
           />
         </div>
 
-        {/* Category input */}
         <div className="input-group">
           <label>
             <FiTag className="input-icon" />
             <span>Category</span>
           </label>
-          <input
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="e.g. Food, Utilities"
-            required
-          />
+          <div className="category-dropdown">
+            <button
+              type="button"
+              className={`dropdown-toggle ${isCategoryOpen ? 'open' : ''}`}
+              onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+            >
+              {category ? CATEGORIES.find(c => c.value === category)?.label || category : "Select a category"}
+              <FiChevronDown className="dropdown-arrow" />
+            </button>
+            {isCategoryOpen && (
+              <div className="dropdown-menu">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.value}
+                    type="button"
+                    className={`dropdown-item ${category === cat.value ? 'selected' : ''}`}
+                    onClick={() => handleCategorySelect(cat.value)}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Description textarea (optional) */}
         <div className="input-group">
           <label>
             <FiInfo className="input-icon" />
@@ -94,7 +166,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onClose, tr
           />
         </div>
 
-        {/* Type toggle (income/expense) */}
         <div className="input-group">
           <label>
             <span>Type</span>
@@ -117,13 +188,22 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onClose, tr
           </div>
         </div>
 
-        {/* Submit and Cancel buttons */}
         <div className="button-group">
-          <button type="submit" className="submit-button">
+          <button 
+            type="submit" 
+            className="submit-button"
+            disabled={isSubmitting}
+          >
             <FiSave className="button-icon" />
-            {transaction ? "Update Transaction" : "Add Transaction"}
+            {isSubmitting ? "Processing..." : 
+             (transaction ? "Update Transaction" : "Add Transaction")}
           </button>
-          <button type="button" onClick={onClose} className="cancel-button">
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="cancel-button"
+            disabled={isSubmitting}
+          >
             Cancel
           </button>
         </div>

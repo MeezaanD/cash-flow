@@ -2,13 +2,11 @@
 .dashboard-wrapper {
   display: flex;
   min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .dashboard-content {
   flex: 1;
   padding: 1.5rem;
-  margin-left: 280px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -207,15 +205,12 @@
 }
 
 .sidebar-toggle {
-  position: fixed;
-  top: 1.5rem;
-  left: 1.5rem;
+  position: relative;
   padding: 0.75rem 1.25rem;
   font-size: 0.9375rem;
   z-index: 100;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
 }
 
 .cta-button {
@@ -258,7 +253,7 @@
 @media (max-width: 768px) {
   .dashboard-content {
     margin-left: 0;
-    padding: 1rem;
+    padding: 3rem 0.5rem;
   }
 
   .welcome-card {
@@ -273,13 +268,13 @@
     width: 100%;
   }
 
-  .sidebar-toggle,
+  /* .sidebar-toggle,
   .theme-toggle {
     top: 1rem;
-  }
-  .sidebar-toggle {
+  } */
+  /* .sidebar-toggle {
     left: 1rem;
-  }
+  } */
   .theme-toggle {
     right: 1rem;
   }
