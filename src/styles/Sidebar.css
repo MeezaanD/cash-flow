@@ -160,14 +160,8 @@
 
 .create-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3),
+  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3), 
               0 4px 6px -2px rgba(37, 99, 235, 0.2);
-}
-
-.divider {
-  margin: 1.5rem 0;
-  border: none;
-  border-top: 1px solid #dbeafe;
 }
 
 /* Sidebar Bottom Section */

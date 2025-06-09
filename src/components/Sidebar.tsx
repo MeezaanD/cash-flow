@@ -171,8 +171,6 @@ const Sidebar = ({
         </button>
       </div>
 
-      <hr className="divider" />
-
       <div className="sidebar-bottom">
         {currentUser ? (
           <>
