@@ -22,39 +22,6 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-/* Blue Theme (Default - Matches Your Original) */
-.theme-blue {
-  --bg-primary: #f0f7ff;
-  --bg-secondary: white;
-  --bg-tertiary: #f8fafc;
-  --text-primary: #1e40af;
-  --text-secondary: #4b5563;
-  --text-tertiary: #6b7280;
-  --accent-primary: #2563eb;
-  --accent-secondary: #1d4ed8;
-  --accent-tertiary: #93c5fd;
-  --border-primary: #dbeafe;
-  --border-secondary: #e5e7eb;
-  --shadow-primary: rgba(0, 0, 0, 0.05);
-  --shadow-accent: rgba(37, 99, 235, 0.2);
-}
-
-.theme-blue .dashboard-content {
-  background-color: var(--bg-primary);
-}
-
-.theme-blue .content-container,
-.theme-blue .welcome-message,
-.theme-blue .welcome-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-}
-
-.theme-blue .feature-card {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border-primary);
-}
-
 /* Light Theme */
 .theme-light {
   --bg-primary: #f8fafc;
@@ -137,6 +104,92 @@
     var(--accent-primary) 0%,
     var(--accent-secondary) 100%
   );
+}
+
+/* Theme Dropdown Styles */
+.theme-dropdown {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
+}
+
+.theme-dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.5rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.theme-dropdown-toggle:hover {
+  background: var(--border-primary);
+}
+
+.theme-label {
+  font-weight: 500;
+}
+
+.theme-icon {
+  font-size: 1rem;
+}
+
+.dropdown-arrow {
+  font-size: 0.6rem;
+  transition: transform 0.2s ease;
+  margin-left: 0.25rem;
+}
+
+.dropdown-arrow.open {
+  transform: rotate(180deg);
+}
+
+.theme-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 0.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px var(--shadow-primary);
+  min-width: 120px;
+  overflow: hidden;
+  z-index: 100;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.theme-option:hover {
+  background: var(--bg-tertiary);
+}
+
+.theme-option.active {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.theme-option.active svg {
+  color: white;
 }
 
 /* Shared Component Styles (Matches Your Original Layout) */
@@ -331,14 +384,7 @@
   .cta-button {
     width: 100%;
   }
-
-  /* .sidebar-toggle,
-  .theme-toggle {
-    top: 1rem;
-  } */
-  /* .sidebar-toggle {
-    left: 1rem;
-  } */
+  
   .theme-toggle {
     right: 1rem;
   }
