@@ -1,10 +1,17 @@
 import React, { useState } from "react";
 import { useTransactions } from "../hooks/useTransactions";
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from "../context/ThemeContext";
 import Sidebar from "../components/Sidebar";
 import TransactionForm from "../components/TransactionForm";
 import "../styles/Dashboard.css";
-import { FiDollarSign, FiTrendingUp, FiPieChart, FiPlusCircle, FiSun, FiMoon } from "react-icons/fi";
+import {
+  FiDollarSign,
+  FiTrendingUp,
+  FiPieChart,
+  FiPlusCircle,
+  FiSun,
+  FiMoon,
+} from "react-icons/fi";
 
 // Dashboard component: main page for managing transactions
 const Dashboard: React.FC = () => {
@@ -66,7 +73,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard-wrapper">
       <button className="theme-toggle" onClick={toggleTheme}>
-        {theme === 'light' ? <FiMoon size={20} /> : <FiSun size={20} />}
+        {theme === "light" ? <FiMoon size={20} /> : <FiSun size={20} />}
       </button>
       {/* Sidebar for navigation and transaction list */}
       {sidebarVisible && (
