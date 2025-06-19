@@ -1,56 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { FiDollarSign, FiPieChart, FiPlusCircle } from "react-icons/fi";
 import { useTransactions } from "../hooks/useTransactions";
-import Sidebar from "../components/Sidebar";
 import ThemeDropdown from "../components/ThemeDropdown";
+import Sidebar from "../components/Sidebar";
 import TransactionForm from "../components/TransactionForm";
+import PieChart from "../components/PieChart";
 import "../styles/Dashboard.css";
-import {
-  FiDollarSign,
-  FiTrendingUp,
-  FiPieChart,
-  FiPlusCircle,
-} from "react-icons/fi";
 
-// Dashboard component: main page for managing transactions
 const Dashboard: React.FC = () => {
-
-  // Custom hook for transaction CRUD operations
   const { transactions, addTransaction, updateTransaction, deleteTransaction } =
     useTransactions();
 
-  // State for currently selected transaction (for editing)
   const [selectedTx, setSelectedTx] = useState<any | null>(null);
-  // State for selected transaction ID (for highlighting in sidebar)
   const [selectedTransactionId, setSelectedTransactionId] = useState<
     string | null
   >(null);
-  // State to control if the transaction form is in "create" mode
   const [isCreating, setIsCreating] = useState(false);
-  // State to control sidebar visibility
   const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [showPieChart, setShowPieChart] = useState(false);
+  const [activeView, setActiveView] = useState<
+    "dashboard" | "reports" | "transaction"
+  >("dashboard");
 
-  // Handler to start creating a new transaction
   const handleCreate = () => {
     setSelectedTx(null);
     setSelectedTransactionId(null);
     setIsCreating(true);
+    setActiveView("transaction");
   };
 
-  // Handler to select a transaction for editing
-  const handleSelect = (tx: any) => {
-    setSelectedTx(tx);
-    setSelectedTransactionId(tx.id);
-    setIsCreating(false);
+  const handleSelect = (tx: any | null) => {
+    if (tx) {
+      setSelectedTx(tx);
+      setSelectedTransactionId(tx.id);
+      setIsCreating(false);
+      setActiveView("transaction");
+    } else {
+      setSelectedTx(null);
+      setSelectedTransactionId(null);
+      setIsCreating(false);
+      setActiveView("dashboard");
+    }
   };
 
-  // Handler to delete a transaction (with confirmation)
   const handleDeleteTransaction = (id: string) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this transaction?"
     );
     if (confirmed) {
       deleteTransaction(id);
-      // Clear selection if the deleted transaction was selected
       if (selectedTransactionId === id) {
         setSelectedTx(null);
         setSelectedTransactionId(null);
@@ -58,85 +56,144 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Handler to close the transaction form
   const handleCloseForm = () => {
     setSelectedTx(null);
     setIsCreating(false);
+    setActiveView("dashboard");
   };
 
-  // Toggle sidebar visibility
   const toggleSidebar = () => setSidebarVisible((prev) => !prev);
+
+  const handleShowPieChart = (show: boolean) => {
+    setShowPieChart(show);
+    setActiveView(show ? "reports" : "dashboard");
+    if (show) {
+      setSelectedTx(null);
+      setSelectedTransactionId(null);
+      setIsCreating(false);
+    }
+  };
+
+  const pieChartData = useMemo(() => {
+    const categoryMap: Record<string, number> = {};
+
+    transactions.forEach((tx) => {
+      if (tx.type === "expense") {
+        categoryMap[tx.category] = (categoryMap[tx.category] || 0) + tx.amount;
+      }
+    });
+
+    const colors = [
+      "#0088FE",
+      "#00C49F",
+      "#FFBB28",
+      "#FF8042",
+      "#A28DFF",
+      "#FF6B6B",
+      "#4ECDC4",
+      "#45B7D1",
+      "#FFA07A",
+      "#98D8C8",
+    ];
+
+    return Object.entries(categoryMap).map(([name, value], index) => ({
+      name,
+      value,
+      color: colors[index % colors.length],
+    }));
+  }, [transactions]);
 
   return (
     <div className="dashboard-wrapper">
       <ThemeDropdown />
-      {/* <button className="theme-toggle" onClick={toggleTheme}>
-        {theme === "light" ? <FiMoon size={20} /> : <FiSun size={20} />}
-      </button> */}
-      {/* Sidebar for navigation and transaction list */}
-      {sidebarVisible && (
-        <Sidebar
-          collapsed={!sidebarVisible}
-          toggleSidebar={toggleSidebar}
-          transactions={transactions}
-          onCreate={handleCreate}
-          onSelect={handleSelect}
-          onDelete={handleDeleteTransaction}
-          selectedId={selectedTransactionId}
-        />
-      )}
+      <Sidebar
+        collapsed={!sidebarVisible}
+        toggleSidebar={toggleSidebar}
+        transactions={transactions}
+        onCreate={handleCreate}
+        onSelect={handleSelect}
+        onDelete={handleDeleteTransaction}
+        selectedId={selectedTransactionId}
+        onShowPieChart={handleShowPieChart}
+        showPieChart={showPieChart}
+        isCreating={isCreating}
+      />
 
       <div
         className={`dashboard-content ${sidebarVisible ? "" : "full-width"}`}
       >
-        {/* Button to open sidebar when hidden */}
         {!sidebarVisible && (
           <button className="sidebar-toggle" onClick={toggleSidebar}>
             ☰ Open Sidebar
           </button>
         )}
 
-        {/* Show transaction form for create or edit, otherwise show welcome/empty state */}
-        {isCreating ? (
-          <TransactionForm
-            onClose={handleCloseForm}
-            onSubmit={addTransaction}
-          />
-        ) : selectedTx ? (
-          <TransactionForm
-            transaction={selectedTx}
-            onClose={handleCloseForm}
-            onSubmit={(data) => updateTransaction(selectedTx.id, data)}
+        {activeView === "transaction" ? (
+          isCreating ? (
+            <TransactionForm
+              onClose={handleCloseForm}
+              onSubmit={addTransaction}
+            />
+          ) : selectedTx ? (
+            <TransactionForm
+              transaction={selectedTx}
+              onClose={handleCloseForm}
+              onSubmit={(data) => updateTransaction(selectedTx.id, data)}
+            />
+          ) : null
+        ) : activeView === "reports" ? (
+          <PieChart
+            data={pieChartData}
+            onClose={() => handleShowPieChart(false)}
           />
         ) : (
-          // Empty state: welcome message and feature highlights
           <div className="empty-state">
             <div className="welcome-card">
-              <h2>Welcome to CashFlow</h2>
-              <p className="subtitle">Your personal finance companion</p>
+              <div className="welcome-header">
+                <h2>Welcome to CashFlow</h2>
+                <p className="subtitle">Your personal finance companion</p>
+              </div>
 
               <div className="feature-grid">
                 <div className="feature-card">
-                  <FiDollarSign className="feature-icon" />
-                  <h4>Track Expenses</h4>
-                  <p>Log and categorize your spending</p>
+                  <div className="feature-icon-container">
+                    <FiDollarSign className="feature-icon" />
+                  </div>
+                  <div className="feature-content">
+                    <h4>Track Expenses</h4>
+                    <p>Log and categorize your spending</p>
+                  </div>
                 </div>
-                <div className="feature-card">
-                  <FiTrendingUp className="feature-icon" />
-                  <h4>View Trends</h4>
-                  <p>Analyze your financial patterns</p>
-                </div>
-                <div className="feature-card">
-                  <FiPieChart className="feature-icon" />
-                  <h4>Visual Reports</h4>
-                  <p>Beautiful charts of your data</p>
+                <div
+                  className="feature-card clickable-feature"
+                  onClick={() => handleShowPieChart(true)}
+                >
+                  <div className="feature-icon-container">
+                    <FiPieChart className="feature-icon" />
+                  </div>
+                  <div className="feature-content">
+                    <h4>Visual Reports</h4>
+                    <p>Beautiful charts of your data</p>
+                  </div>
                 </div>
               </div>
 
-              <button className="cta-button" onClick={handleCreate}>
-                <FiPlusCircle className="button-icon" />
-                Create Your First Transaction
-              </button>
+              <div className="cta-section">
+                <button className="cta-button primary" onClick={handleCreate}>
+                  <FiPlusCircle className="button-icon" />
+                  Create Your First Transaction
+                </button>
+
+                {transactions.length > 0 && (
+                  <button
+                    className="cta-button secondary"
+                    onClick={() => handleShowPieChart(true)}
+                  >
+                    <FiPieChart className="button-icon" />
+                    View Expense Distribution
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}

@@ -1,11 +1,21 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  FiSearch,
+  FiPlus,
+  FiX,
+  FiArrowUp,
+  FiArrowDown,
+  FiPieChart,
+  FiHome,
+} from "react-icons/fi";
 import { auth } from "../services/firebase";
 import { signOut } from "firebase/auth";
-import { FiSearch, FiPlus, FiX, FiArrowUp, FiArrowDown } from "react-icons/fi";
 import { useAuth } from "../hooks/useAuth";
+import { useTheme } from "../context/ThemeContext";
+import logoDark from "../assets/images/dark-transparent-image.png";
+import logoLight from "../assets/images/white-transparent-image.png";
 import "../styles/Sidebar.css";
-import logo from "../assets/images/dark-transparent-image.png";
 
 interface Transaction {
   id: string;
@@ -20,24 +30,33 @@ interface SidebarProps {
   toggleSidebar: () => void;
   transactions: Transaction[];
   onCreate: () => void;
-  onSelect: (tx: Transaction) => void;
+  isCreating: boolean;
+  onSelect: (tx: Transaction | null) => void;
   onDelete: (id: string) => void;
   selectedId: string | null;
   collapsed: boolean;
+  onShowPieChart: (show: boolean) => void;
+  showPieChart: boolean;
 }
 
 const Sidebar = ({
   onCreate,
+  isCreating,
   onSelect,
   onDelete,
   transactions,
   selectedId,
   collapsed,
   toggleSidebar,
+  onShowPieChart,
+  showPieChart,
 }: SidebarProps) => {
   const currentUser = useAuth();
+  const { theme } = useTheme();
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+
+  const logo = theme === "dark" ? logoLight : logoDark;
 
   const handleLogout = async () => {
     if (confirm("Are you sure you want to logout?")) {
@@ -48,7 +67,11 @@ const Sidebar = ({
   };
 
   const parseDbDate = (dateInput: unknown): Date => {
-    if (typeof dateInput === "object" && dateInput !== null && "toDate" in dateInput) {
+    if (
+      typeof dateInput === "object" &&
+      dateInput !== null &&
+      "toDate" in dateInput
+    ) {
       return (dateInput as { toDate: () => Date }).toDate();
     }
     if (dateInput instanceof Date) {
@@ -86,122 +109,139 @@ const Sidebar = ({
   );
 
   return (
-    <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
-      <div className="sidebar-top">
+    <div className={`sidebar ${collapsed ? "collapsed" : ""} theme-${theme}`}>
+      <div className="sidebar-header">
         <img className="logo" src={logo} alt="CashFlow Logo" />
         {!collapsed && (
-          <button className="toggle-button" onClick={toggleSidebar}>
-            ☰
+          <button className="sidebar-toggle-btn" onClick={toggleSidebar}>
+            {collapsed ? "☰" : "✕"}
           </button>
         )}
       </div>
 
       {!collapsed && (
-        <div className="search-container">
-          <FiSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search transactions..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-          {searchTerm && (
+        <>
+          <div className="sidebar-nav">
             <button
-              className="clear-search"
-              onClick={() => setSearchTerm("")}
-              aria-label="Clear search"
+              className={`nav-btn ${
+                !showPieChart && !selectedId && !isCreating ? "active" : ""
+              }`}
+              onClick={() => {
+                onSelect(null);
+                onShowPieChart(false);
+              }}
             >
-              <FiX size={14} />
+              <FiHome className="nav-icon" />
+              <span>Dashboard</span>
             </button>
-          )}
-        </div>
+            <button
+              className={`nav-btn ${showPieChart ? "active" : ""}`}
+              onClick={() => onShowPieChart(true)}
+            >
+              <FiPieChart className="nav-icon" />
+              <span>Reports</span>
+            </button>
+          </div>
+
+          <div className="search-wrapper">
+            <FiSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search transactions..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+            {searchTerm && (
+              <button
+                className="clear-search-btn"
+                onClick={() => setSearchTerm("")}
+                aria-label="Clear search"
+              >
+                <FiX />
+              </button>
+            )}
+          </div>
+        </>
       )}
 
-      <div className="transaction-list">
-        {filteredTransactions.length > 0 ? (
-          filteredTransactions.map((tx) => (
-            <div
-              key={tx.id}
-              className={`transaction-item ${selectedId === tx.id ? "selected" : ""}`}
-              onClick={() => onSelect(tx)}
-            >
-              <div className="transaction-content">
-                <span className="transaction-title">{tx.title}</span>
-                <div className="transaction-meta">
-                  <span className={`transaction-amount ${tx.type}`}>
-                    {tx.type === "income" ? (
-                      <FiArrowUp className="amount-icon income" />
-                    ) : (
-                      <FiArrowDown className="amount-icon expense" />
-                    )}
-                    R {tx.amount.toFixed(2)}
-                  </span>
-                  <span className="transaction-date">
-                    {formatDisplayDate(tx.date ?? tx.createdAt)}
-                  </span>
+      <div className="sidebar-content">
+        <div className="transactions-container">
+          {filteredTransactions.length > 0 ? (
+            <div className="transactions-list">
+              {filteredTransactions.map((tx) => (
+                <div
+                  key={tx.id}
+                  className={`transaction-card ${
+                    selectedId === tx.id ? "selected" : ""
+                  }`}
+                  onClick={() => onSelect(tx)}
+                >
+                  <div className="transaction-content">
+                    <h4 className="transaction-title">{tx.title}</h4>
+                    <div className="transaction-details">
+                      <span className={`amount ${tx.type}`}>
+                        {tx.type === "income" ? (
+                          <FiArrowUp className="amount-icon" />
+                        ) : (
+                          <FiArrowDown className="amount-icon" />
+                        )}
+                        R{tx.amount.toFixed(2)}
+                      </span>
+                      <span className="transaction-date">
+                        {formatDisplayDate(tx.date ?? tx.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    className="delete-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm("Delete this transaction?")) {
+                        onDelete(tx.id);
+                      }
+                    }}
+                    aria-label="Delete transaction"
+                  >
+                    ✕
+                  </button>
                 </div>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (confirm("Are you sure you want to delete this transaction?")) {
-                    onDelete(tx.id);
-                  }
-                }}
-                className="delete-button"
-                title="Delete transaction"
-                aria-label="Delete transaction"
-              >
-                ✕
-              </button>
+              ))}
             </div>
-          ))
-        ) : (
-          <div className="no-transactions">
-            {searchTerm ? "No matching transactions" : "No transactions yet"}
-          </div>
+          ) : (
+            <div className="empty-state">
+              {searchTerm ? "No matching transactions" : "No transactions yet"}
+            </div>
+          )}
+        </div>
+
+        {!collapsed && (
+          <button className="new-transaction-btn" onClick={onCreate}>
+            <FiPlus className="btn-icon" />
+            New Transaction
+          </button>
         )}
       </div>
 
-      <div className="create-transaction">
-        <button className="create-button" onClick={onCreate}>
-          <FiPlus className="button-icon" />
-          Create Transaction
-        </button>
-      </div>
-
-      <div className="sidebar-bottom">
+      <div className="user-section">
         {currentUser ? (
           <>
-            <div className="user-avatar">
-              {currentUser.photoURL ? (
-                <img
-                  src={currentUser.photoURL}
-                  alt="User Avatar"
-                  className="user-image"
-                />
-              ) : (
-                <span className="user-initial">
-                  {currentUser.email?.[0]?.toUpperCase() ?? '?'}
-                </span>
-              )}
+            <div className="user-info">
+              <div className="user-avatar">
+                {currentUser.photoURL ? (
+                  <img src={currentUser.photoURL} alt="User" />
+                ) : (
+                  <span>{currentUser.email?.[0]?.toUpperCase() ?? "?"}</span>
+                )}
+              </div>
+              <p className="user-email">{currentUser.email ?? "User"}</p>
+              <button className="logout-btn" onClick={handleLogout}>
+                Sign Out
+              </button>
             </div>
-            <p className="user-email">{currentUser.email ?? 'No email'}</p>
-            <button
-              className="logout-button"
-              onClick={handleLogout}
-              aria-label="Logout"
-            >
-              Logout
-            </button>
           </>
         ) : (
-          <button
-            className="login-button"
-            onClick={() => navigate("/login")}
-            aria-label="Login"
-          >
+          <button className="login-btn" onClick={() => navigate("/login")}>
             Login
           </button>
         )}
