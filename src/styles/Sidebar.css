@@ -16,9 +16,9 @@
   position: fixed;
   top: 0;
   left: 0;
-  height: 100vh;
+  height: 100%;
   width: auto;
-  padding: 1.5rem;
+  padding: 1rem;
   background: var(--sidebar-bg);
   border-right: 1px solid var(--sidebar-border);
   display: flex;
@@ -144,38 +144,54 @@
   color: var(--text-primary);
 }
 
-/* Transactions */
+/* Transactions Container */
 .transactions-container {
+  position: relative;
   flex: 1;
   overflow-y: auto;
-  margin-bottom: 1.5rem;
   padding-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.transactions-container::after {
+  content: "";
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(to bottom, transparent, var(--sidebar-bg));
+  pointer-events: none;
 }
 
 /* Transactions List */
 .transactions-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem; /* Reduced gap between items */
+  gap: 0.5rem;
 }
 
 .transaction-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 0; /* Adjusted padding */
-  border-radius: 0;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
   background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--sidebar-border);
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.1s ease;
+  transition: all 0.2s ease;
+  margin-bottom: 0.5rem;
 }
 
 .transaction-card:hover {
   background: var(--hover-bg);
-  transform: none;
-  box-shadow: none;
+  border-color: var(--sidebar-border);
+}
+
+.transaction-card.selected {
+  background: var(--active-bg);
+  border-color: var(--accent-primary);
 }
 
 .transaction-content {
@@ -214,6 +230,10 @@
   color: var(--expense-color);
 }
 
+.amount-icon {
+  font-size: 0.875rem;
+}
+
 .transaction-date {
   color: var(--text-secondary);
 }
@@ -233,6 +253,10 @@
   opacity: 1;
 }
 
+.delete-btn:hover {
+  color: var(--expense-color);
+}
+
 .empty-state {
   text-align: center;
   padding: 2rem 0;
@@ -245,13 +269,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.transactions-container {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 0.5rem;
-  margin-bottom: 0.5rem;
 }
 
 .new-transaction-btn {
@@ -277,19 +294,27 @@
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
+/* User Section */
 .user-section {
-  padding: 0.75rem;
+  padding: 0.75rem 0;
   margin-top: auto;
+  width: 100%;
   display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
   border-top: 1px solid var(--sidebar-border);
 }
 
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
 .user-avatar {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--accent-primary);
   color: white;
@@ -307,13 +332,13 @@
   object-fit: cover;
 }
 
-.user-info {
+.user-details {
   flex: 1;
-  display: flex;
-  justify-content: space-between;
-  gap: 1.5rem;
-  align-items: center;
   min-width: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .user-email {
@@ -322,7 +347,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 0.25rem;
+  margin: 0;
 }
 
 .logout-btn {
@@ -331,13 +356,15 @@
   color: var(--text-secondary);
   font-size: 0.75rem;
   cursor: pointer;
-  padding: 0;
-  text-align: left;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
 .logout-btn:hover {
   color: var(--expense-color);
-  text-decoration: underline;
+  background: var(--danger-hover);
 }
 
 .login-btn {
@@ -354,23 +381,6 @@
 
 .login-btn:hover {
   background: var(--accent-hover);
-}
-
-/* Dark theme adjustments */
-.theme-dark .user-section {
-  border-top-color: var(--sidebar-border);
-}
-
-.theme-dark .logout-btn:hover {
-  color: #f87171;
-}
-
-.theme-dark .login-btn {
-  background: #3b82f6;
-}
-
-.theme-dark .login-btn:hover {
-  background: #2563eb;
 }
 
 /* Dark Mode */
@@ -390,6 +400,22 @@
   --danger-hover: #7f1d1d;
 }
 
+.theme-dark .user-section {
+  border-top-color: var(--sidebar-border);
+}
+
+.theme-dark .logout-btn:hover {
+  color: #f87171;
+}
+
+.theme-dark .login-btn {
+  background: #3b82f6;
+}
+
+.theme-dark .login-btn:hover {
+  background: #2563eb;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .sidebar {
@@ -397,7 +423,24 @@
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
+  .sidebar-header {
+    padding: 1rem 0;
+    margin-bottom: 0.5rem;
+  }
+
   .sidebar.collapsed {
     transform: translateX(-100%);
+  }
+
+  .user-info {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .user-details {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
   }
 }

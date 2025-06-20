@@ -4,7 +4,6 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
-  Legend,
   Tooltip,
 } from "recharts";
 import "../styles/PieChart.css";
@@ -34,7 +33,7 @@ const PieChartComponent: React.FC<PieChartComponentProps> = ({
               Visualization of your spending categories
             </p>
           </div>
-          <button onClick={onClose} className="close-button">
+          <button onClick={onClose} className="close-button" aria-label="Close chart">
             <svg
               width="24"
               height="24"
@@ -59,15 +58,15 @@ const PieChartComponent: React.FC<PieChartComponentProps> = ({
         </div>
 
         <div className="chart-wrapper">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height={300}>
             <RechartsPieChart>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={70}
-                outerRadius={110}
-                paddingAngle={3}
+                innerRadius={60}
+                outerRadius={90}
+                paddingAngle={2}
                 dataKey="value"
                 label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                 labelLine={false}
@@ -93,17 +92,17 @@ const PieChartComponent: React.FC<PieChartComponentProps> = ({
                   boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 }}
               />
-              <Legend
+              {/* <Legend
                 layout="horizontal"
                 verticalAlign="bottom"
                 align="center"
                 iconType="circle"
-                iconSize={10}
+                iconSize={8}
                 wrapperStyle={{
-                  paddingTop: "20px",
-                  fontSize: "14px",
+                  paddingTop: "10px",
+                  fontSize: "12px",
                 }}
-              />
+              /> */}
             </RechartsPieChart>
           </ResponsiveContainer>
         </div>

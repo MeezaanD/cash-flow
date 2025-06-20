@@ -225,21 +225,21 @@ const Sidebar = ({
 
       <div className="user-section">
         {currentUser ? (
-          <>
-            <div className="user-info">
-              <div className="user-avatar">
-                {currentUser.photoURL ? (
-                  <img src={currentUser.photoURL} alt="User" />
-                ) : (
-                  <span>{currentUser.email?.[0]?.toUpperCase() ?? "?"}</span>
-                )}
-              </div>
+          <div className="user-info">
+            <div className="user-avatar">
+              {currentUser.photoURL ? (
+                <img src={currentUser.photoURL} alt="User" />
+              ) : (
+                <span>{currentUser.email?.[0]?.toUpperCase() ?? "?"}</span>
+              )}
+            </div>
+            <div className="user-details">
               <p className="user-email">{currentUser.email ?? "User"}</p>
               <button className="logout-btn" onClick={handleLogout}>
                 Sign Out
               </button>
             </div>
-          </>
+          </div>
         ) : (
           <button className="login-btn" onClick={() => navigate("/login")}>
             Login
