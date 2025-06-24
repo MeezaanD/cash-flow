@@ -13,31 +13,10 @@ import { auth } from "../services/firebase";
 import { signOut } from "firebase/auth";
 import { useAuth } from "../hooks/useAuth";
 import { useTheme } from "../context/ThemeContext";
+import { SidebarProps } from "../types";
 import logoDark from "../assets/images/dark-transparent-image.png";
 import logoLight from "../assets/images/white-transparent-image.png";
 import "../styles/Sidebar.css";
-
-interface Transaction {
-  id: string;
-  title: string;
-  amount: number;
-  type: "income" | "expense";
-  date?: Date | { toDate: () => Date };
-  createdAt?: Date | { toDate: () => Date };
-}
-
-interface SidebarProps {
-  toggleSidebar: () => void;
-  transactions: Transaction[];
-  onCreate: () => void;
-  isCreating: boolean;
-  onSelect: (tx: Transaction | null) => void;
-  onDelete: (id: string) => void;
-  selectedId: string | null;
-  collapsed: boolean;
-  onShowPieChart: (show: boolean) => void;
-  showPieChart: boolean;
-}
 
 const Sidebar = ({
   onCreate,
@@ -197,7 +176,7 @@ const Sidebar = ({
                     className="delete-btn"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (confirm("Delete this transaction?")) {
+                      if (confirm("Delete this transaction?") && tx.id) {
                         onDelete(tx.id);
                       }
                     }}

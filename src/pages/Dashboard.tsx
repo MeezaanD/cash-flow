@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { FiDollarSign, FiPieChart, FiPlusCircle } from "react-icons/fi";
 import { useTransactions } from "../hooks/useTransactions";
+import { Transaction } from "../types";
 import ThemeDropdown from "../components/ThemeDropdown";
 import Sidebar from "../components/Sidebar";
 import TransactionForm from "../components/TransactionForm";
@@ -138,7 +139,9 @@ const Dashboard: React.FC = () => {
             <TransactionForm
               transaction={selectedTx}
               onClose={handleCloseForm}
-              onSubmit={(data) => updateTransaction(selectedTx.id, data)}
+              onSubmit={(
+                data: Omit<Transaction, "id" | "date" | "createdAt">
+              ) => updateTransaction(selectedTx.id, data)}
             />
           ) : null
         ) : activeView === "reports" ? (
