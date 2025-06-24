@@ -6,18 +6,8 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
+import { PieChartComponentProps } from "../types";
 import "../styles/PieChart.css";
-
-interface PieChartData {
-  name: string;
-  value: number;
-  color: string;
-}
-
-interface PieChartComponentProps {
-  data: PieChartData[];
-  onClose: () => void;
-}
 
 const PieChartComponent: React.FC<PieChartComponentProps> = ({
   data,

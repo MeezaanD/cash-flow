@@ -1,11 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-export type Theme = 'light' | 'dark';
-
-interface ThemeContextType {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-}
+import { Theme, ThemeContextType } from "../types";
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
