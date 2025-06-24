@@ -14,7 +14,7 @@ export interface Transaction {
   title: string;
   amount: number;
   type: TransactionType;
-  category?: string;
+  category: string;
   description?: string;
   date?: Date | { toDate: () => Date };
   createdAt?: Date | { toDate: () => Date };
