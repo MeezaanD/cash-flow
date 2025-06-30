@@ -6,7 +6,16 @@ export interface ThemeContextType {
   setTheme: (theme: Theme) => void;
 }
 
-// Transaction (merged)
+// ViewType
+export type ViewType = "dashboard" | "reports" | "transaction" | "table";
+
+// Category
+export interface Category {
+  value: string;
+  label: string;
+}
+
+// Transaction
 export type TransactionType = "income" | "expense";
 
 export interface Transaction {
@@ -25,13 +34,12 @@ export interface SidebarProps {
   toggleSidebar: () => void;
   transactions: Transaction[];
   onCreate: () => void;
-  isCreating: boolean;
   onSelect: (tx: Transaction | null) => void;
   onDelete: (id: string) => void;
   selectedId: string | null;
   collapsed: boolean;
-  onShowPieChart: (show: boolean) => void;
-  showPieChart: boolean;
+  activeView: ViewType;
+  onViewChange: (view: ViewType) => void;
 }
 
 // TransactionFormProps
@@ -39,11 +47,6 @@ export interface TransactionFormProps {
   onSubmit: (data: Omit<Transaction, 'id' | 'date' | 'createdAt'>) => Promise<void> | void;
   onClose: () => void;
   transaction?: Transaction;
-}
-
-export interface Category {
-  value: string;
-  label: string;
 }
 
 // PieChart
@@ -56,4 +59,12 @@ export interface PieChartData {
 export interface PieChartComponentProps {
   data: PieChartData[];
   onClose: () => void;
+}
+
+// TransactionsTable
+export interface TransactionsTableProps {
+  transactions: Transaction[];
+  onDelete: (id: string) => void;
+  onSelect: (tx: Transaction) => void;
+  selectedId: string | null;
 }
