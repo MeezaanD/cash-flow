@@ -1,16 +1,19 @@
 .transactions-wrapper {
   width: 100%;
+  max-width: 1200px; /* Set a maximum width */
+  margin: 0 auto; /* Center the container */
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 0;
+  padding: 0 1rem; /* Add some side padding */
 }
 
 .transactions-controls {
   display: flex;
   gap: 1rem;
   align-items: center;
-  padding: 1rem 0rem;
+  padding: 1rem 0;
+  flex-wrap: wrap; /* Allow controls to wrap on smaller screens */
 }
 
 /* Table container styling */
@@ -23,11 +26,13 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  width: 100%; /* Ensure it takes full width of its container */
 }
 
 .MuiTable {
   flex: 1;
   min-width: 600px;
+  width: 100%; /* Ensure table takes full width of container */
 }
 
 /* Table header styling */
@@ -40,6 +45,7 @@
   color: var(--text-primary) !important;
   background-color: transparent !important;
   white-space: nowrap;
+  padding: 12px 16px !important;
 }
 
 /* Table row styling */
@@ -102,6 +108,7 @@
 .MuiTextField-root,
 .MuiFormControl-root {
   min-width: 120px;
+  flex: 1; /* Allow controls to grow */
 }
 
 .MuiTextField-root .MuiOutlinedInput-root,
@@ -170,12 +177,16 @@
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {
+  .transactions-wrapper {
+    padding: 0 0.75rem;
+  }
+  
   .transactions-controls {
     gap: 0.75rem;
   }
   
   .MuiTableCell-root {
-    padding: 8px 12px !important;
+    padding: 10px 12px !important;
     font-size: 0.85rem;
   }
   
@@ -186,22 +197,22 @@
 }
 
 @media (max-width: 768px) {
+  .transactions-wrapper {
+    padding: 0 0.5rem;
+  }
+  
   .transactions-controls {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
   }
   
   .MuiTableContainer-root {
     border-radius: 8px !important;
-    overflow-x: auto;
   }
   
   .MuiTableCell-root {
     padding: 8px !important;
-  }
-  
-  .transactions-controls {
-    padding: 0 0.5rem;
   }
   
   .amount-value {
@@ -209,7 +220,11 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
+  .MuiTable {
+    min-width: 100%; /* Allow table to shrink below 600px */
+  }
+  
   .MuiTableCell-root {
     padding: 6px !important;
     font-size: 0.8rem;
@@ -231,5 +246,15 @@
   .category-badge {
     padding: 2px 6px;
     font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .transactions-wrapper {
+    padding: 0 0.25rem;
+  }
+  
+  .MuiTableCell-root {
+    padding: 4px 6px !important;
   }
 }

@@ -133,6 +133,28 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
       return timeB - timeA;
     });
 
+  // Calculate total amount for filtered transactions
+  const totalAmount = filtered.reduce((sum, tx) => sum + tx.amount, 0);
+
+  // Calculate total income and expenses separately
+  const totalIncome = filtered
+    .filter(tx => tx.type === "income")
+    .reduce((sum, tx) => sum + tx.amount, 0);
+  
+  const totalExpense = filtered
+    .filter(tx => tx.type === "expense")
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  // Determine which totals to show based on current filters
+  let amountHeader = "Amount";
+  if (filterType === "all") {
+    amountHeader = `Amount (Total: R${totalAmount.toFixed(2)}, Income: R${totalIncome.toFixed(2)}, Expense: R${totalExpense.toFixed(2)})`;
+  } else if (filterType === "income") {
+    amountHeader = `Amount (Total Income: R${totalIncome.toFixed(2)})`;
+  } else if (filterType === "expense") {
+    amountHeader = `Amount (Total Expense: R${totalExpense.toFixed(2)})`;
+  }
+
   return (
     <Box className="transactions-wrapper">
       <Box className="transactions-controls">
@@ -202,7 +224,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
           <TableHead>
             <TableRow>
               <TableCell>Description</TableCell>
-              <TableCell align="right">Amount</TableCell>
+              <TableCell align="right">{amountHeader}</TableCell>
               <TableCell align="right">Date</TableCell>
               <TableCell align="right">Category</TableCell>
               <TableCell align="right">Actions</TableCell>
