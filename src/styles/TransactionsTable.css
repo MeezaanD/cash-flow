@@ -4,7 +4,6 @@
   display: flex;
   flex-direction: column;
   padding: 0;
-  margin: 0;
 }
 
 .transactions-controls {
@@ -28,7 +27,7 @@
 
 .MuiTable {
   flex: 1;
-  min-width: 600px; /* Prevents table from becoming too narrow */
+  min-width: 600px;
 }
 
 /* Table header styling */
@@ -88,46 +87,42 @@
   text-align: right;
 }
 
-/* Text field styling */
-.MuiTextField-root {
-  flex: 1;
+/* Category badge styling */
+.category-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  display: inline-block;
+  color: white !important;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-.MuiTextField-root .MuiOutlinedInput-root {
-  background-color: var(--input-bg) !important;
-  border-radius: 8px !important;
-  color: var(--text-primary) !important;
-}
-
-.MuiTextField-root .MuiOutlinedInput-notchedOutline {
-  border-color: var(--border-color) !important;
-}
-
-.MuiTextField-root .MuiInputLabel-root {
-  color: var(--text-secondary) !important;
-}
-
-.MuiTextField-root .MuiOutlinedInput-input {
-  color: var(--text-primary) !important;
-}
-
-/* Select dropdown styling */
+/* Form controls */
+.MuiTextField-root,
 .MuiFormControl-root {
   min-width: 120px;
 }
 
+.MuiTextField-root .MuiOutlinedInput-root,
 .MuiFormControl-root .MuiOutlinedInput-root {
   background-color: var(--input-bg) !important;
   border-radius: 8px !important;
   color: var(--text-primary) !important;
 }
 
+.MuiTextField-root .MuiOutlinedInput-notchedOutline,
+.MuiFormControl-root .MuiOutlinedInput-notchedOutline {
+  border-color: var(--border-color) !important;
+}
+
+.MuiTextField-root .MuiInputLabel-root,
 .MuiFormControl-root .MuiInputLabel-root {
   color: var(--text-secondary) !important;
 }
 
-.MuiFormControl-root .MuiOutlinedInput-notchedOutline {
-  border-color: var(--border-color) !important;
+.MuiTextField-root .MuiOutlinedInput-input {
+  color: var(--text-primary) !important;
 }
 
 .MuiMenuItem-root {
@@ -143,17 +138,6 @@
 .MuiIconButton-root:hover {
   color: var(--text-primary) !important;
   background-color: var(--icon-button-hover) !important;
-}
-
-/* Category badge styling */
-.category-badge {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  display: inline-block;
-  color: white !important;
-  font-weight: 500;
-  white-space: nowrap;
 }
 
 /* Light mode variables */
@@ -187,8 +171,6 @@
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .transactions-controls {
-    flex-direction: column;
-    align-items: stretch;
     gap: 0.75rem;
   }
   
@@ -204,6 +186,11 @@
 }
 
 @media (max-width: 768px) {
+  .transactions-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
   .MuiTableContainer-root {
     border-radius: 8px !important;
     overflow-x: auto;
