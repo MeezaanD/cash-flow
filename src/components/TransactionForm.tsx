@@ -8,8 +8,8 @@ import {
   FiX,
   FiChevronDown,
 } from "react-icons/fi";
-import "../styles/TransactionForm.css";
 import { Transaction, TransactionFormProps, Category } from "../types";
+import "../styles/TransactionForm.css";
 
 const CATEGORIES: Category[] = [
   { value: "personal", label: "Personal" },

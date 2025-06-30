@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { useTheme } from '../context/ThemeContext';
 import { FiSun, FiMoon } from 'react-icons/fi';
 import useClickOutside from '../hooks/useClickOutside';
+import { useTheme } from '../context/ThemeContext';
 import { Theme } from '../types';
 
 const ThemeDropdown: React.FC = () => {

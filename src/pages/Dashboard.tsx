@@ -1,11 +1,22 @@
 import React, { useState, useMemo } from "react";
 import { FiDollarSign, FiPieChart, FiPlusCircle } from "react-icons/fi";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  Alert,
+  Snackbar,
+} from "@mui/material";
 import { useTransactions } from "../hooks/useTransactions";
-import { Transaction } from "../types";
-import ThemeDropdown from "../components/ThemeDropdown";
-import Sidebar from "../components/Sidebar";
-import TransactionForm from "../components/TransactionForm";
+import { Transaction, ViewType } from "../types";
 import PieChart from "../components/PieChart";
+import Sidebar from "../components/Sidebar";
+import ThemeDropdown from "../components/ThemeDropdown";
+import TransactionForm from "../components/TransactionForm";
+import TransactionsTable from "../components/TransactionsTable";
 import "../styles/Dashboard.css";
 
 const Dashboard: React.FC = () => {
@@ -18,10 +29,15 @@ const Dashboard: React.FC = () => {
   >(null);
   const [isCreating, setIsCreating] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
-  const [showPieChart, setShowPieChart] = useState(false);
-  const [activeView, setActiveView] = useState<
-    "dashboard" | "reports" | "transaction"
-  >("dashboard");
+  const [activeView, setActiveView] = useState<ViewType>("dashboard");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(
+    null
+  );
+
+  // Error handling state
+  const [error, setError] = useState<string | null>(null);
+  const [showError, setShowError] = useState(false);
 
   const handleCreate = () => {
     setSelectedTx(null);
@@ -44,17 +60,31 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleDeleteTransaction = (id: string) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this transaction?"
-    );
-    if (confirmed) {
-      deleteTransaction(id);
-      if (selectedTransactionId === id) {
-        setSelectedTx(null);
-        setSelectedTransactionId(null);
+  const handleDeleteClick = (id: string) => {
+    setTransactionToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (transactionToDelete) {
+      try {
+        await deleteTransaction(transactionToDelete);
+        if (selectedTransactionId === transactionToDelete) {
+          setSelectedTx(null);
+          setSelectedTransactionId(null);
+        }
+      } catch (err: any) {
+        setError("Failed to delete transaction. Please try again.");
+        setShowError(true);
       }
     }
+    setDeleteDialogOpen(false);
+    setTransactionToDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setTransactionToDelete(null);
   };
 
   const handleCloseForm = () => {
@@ -66,13 +96,45 @@ const Dashboard: React.FC = () => {
   const toggleSidebar = () => setSidebarVisible((prev) => !prev);
 
   const handleShowPieChart = (show: boolean) => {
-    setShowPieChart(show);
     setActiveView(show ? "reports" : "dashboard");
     if (show) {
       setSelectedTx(null);
       setSelectedTransactionId(null);
       setIsCreating(false);
     }
+  };
+
+  const handleFormSubmit = async (
+    data: Omit<Transaction, "id" | "date" | "createdAt">
+  ) => {
+    try {
+      await addTransaction(data);
+      setIsCreating(false);
+      setActiveView("dashboard");
+    } catch (err: any) {
+      setError("Failed to add transaction. Please try again.");
+      setShowError(true);
+    }
+  };
+
+  const handleFormUpdate = async (
+    data: Omit<Transaction, "id" | "date" | "createdAt">
+  ) => {
+    if (!selectedTx) return;
+    try {
+      await updateTransaction(selectedTx.id, data);
+      setActiveView("dashboard");
+      setSelectedTx(null);
+      setSelectedTransactionId(null);
+    } catch (err: any) {
+      setError("Failed to update transaction. Please try again.");
+      setShowError(true);
+    }
+  };
+
+  const handleCloseError = () => {
+    setShowError(false);
+    setError(null);
   };
 
   const pieChartData = useMemo(() => {
@@ -113,12 +175,51 @@ const Dashboard: React.FC = () => {
         transactions={transactions}
         onCreate={handleCreate}
         onSelect={handleSelect}
-        onDelete={handleDeleteTransaction}
+        onDelete={handleDeleteClick}
         selectedId={selectedTransactionId}
-        onShowPieChart={handleShowPieChart}
-        showPieChart={showPieChart}
-        isCreating={isCreating}
+        activeView={activeView}
+        onViewChange={(view: string) => setActiveView(view as ViewType)}
       />
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={showError}
+        autoHideDuration={6000}
+        onClose={handleCloseError}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleCloseError}
+          severity="error"
+          sx={{ width: "100%" }}
+        >
+          {error}
+        </Alert>
+      </Snackbar>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCancelDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to delete this transaction? This action cannot
+            be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <div
         className={`dashboard-content ${sidebarVisible ? "" : "full-width"}`}
@@ -133,21 +234,26 @@ const Dashboard: React.FC = () => {
           isCreating ? (
             <TransactionForm
               onClose={handleCloseForm}
-              onSubmit={addTransaction}
+              onSubmit={handleFormSubmit}
             />
           ) : selectedTx ? (
             <TransactionForm
               transaction={selectedTx}
               onClose={handleCloseForm}
-              onSubmit={(
-                data: Omit<Transaction, "id" | "date" | "createdAt">
-              ) => updateTransaction(selectedTx.id, data)}
+              onSubmit={handleFormUpdate}
             />
           ) : null
         ) : activeView === "reports" ? (
           <PieChart
             data={pieChartData}
             onClose={() => handleShowPieChart(false)}
+          />
+        ) : activeView === "table" ? (
+          <TransactionsTable
+            transactions={transactions}
+            onDelete={handleDeleteClick}
+            onSelect={handleSelect}
+            selectedId={selectedTransactionId}
           />
         ) : (
           <div className="empty-state">
