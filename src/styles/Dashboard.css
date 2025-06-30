@@ -242,7 +242,7 @@
   padding: 2rem;
   transition: all 0.3s ease;
   border: 1px solid var(--border-color);
-  text-align: left;
+  text-align: center;
 }
 
 .clickable-feature {
@@ -262,6 +262,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: auto;
   border-radius: 16px;
   margin-bottom: 1.5rem;
 }
@@ -325,7 +326,9 @@
 
 .cta-section {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-evenly;
+  width: 100%;
   gap: 1rem;
   margin-top: 2rem;
 }
@@ -424,6 +427,12 @@
 
   .feature-grid {
     grid-template-columns: 1fr;
+  }
+
+  .cta-section {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
   }
 
   .cta-button {

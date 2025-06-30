@@ -151,17 +151,21 @@
   overflow-y: auto;
   padding-right: 0.5rem;
   margin-bottom: 0.5rem;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sidebar-border) transparent;
 }
 
 .transactions-container::after {
   content: "";
-  position: sticky;
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 20px;
+  height: 40px;
   background: linear-gradient(to bottom, transparent, var(--sidebar-bg));
   pointer-events: none;
+  z-index: 1;
 }
 
 /* Transactions List */
@@ -169,6 +173,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding-bottom: 2rem;
 }
 
 .transaction-card {

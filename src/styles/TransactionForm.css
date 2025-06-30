@@ -203,8 +203,7 @@
   left: 0;
   right: 0;
   margin-top: 0.25rem;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
+  background: white;
   border-radius: 0.75rem;
   box-shadow: 0 4px 6px var(--shadow-primary);
   z-index: 10;
@@ -220,16 +219,6 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-}
-
-.dropdown-item:hover {
-  background-color: var(--bg-tertiary);
-}
-
-.dropdown-item.selected {
-  background-color: var(--bg-tertiary);
-  color: var(--accent-primary);
-  font-weight: 500;
 }
 
 @media (max-width: 768px) {
