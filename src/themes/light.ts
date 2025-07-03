@@ -1,0 +1,15 @@
+export const lightTheme = {
+  sidebarBg: "#ffffff",
+  sidebarBorder: "#e2e8f0",
+  textPrimary: "#1a202c",
+  textSecondary: "#4a5568",
+  accentPrimary: "#3b82f6",
+  accentHover: "#2563eb",
+  cardBg: "#ffffff",
+  cardBorder: "#e2e8f0",
+  hoverBg: "#f8fafc",
+  activeBg: "#eff6ff",
+  incomeColor: "#10b981",
+  expenseColor: "#ef4444",
+  dangerHover: "#fee2e2",
+};
