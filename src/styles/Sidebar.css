@@ -1,26 +1,10 @@
 .sidebar {
-  --sidebar-bg: #ffffff;
-  --sidebar-border: #e2e8f0;
-  --text-primary: #1a202c;
-  --text-secondary: #4a5568;
-  --accent-primary: #3b82f6;
-  --accent-hover: #2563eb;
-  --card-bg: #ffffff;
-  --card-border: #e2e8f0;
-  --hover-bg: #f8fafc;
-  --active-bg: #eff6ff;
-  --income-color: #10b981;
-  --expense-color: #ef4444;
-  --danger-hover: #fee2e2;
-
   position: fixed;
   top: 0;
   left: 0;
   height: 100%;
   width: auto;
   padding: 1rem;
-  background: var(--sidebar-bg);
-  border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
   z-index: 100;
@@ -39,7 +23,7 @@
   align-items: center;
   padding-bottom: 1.5rem;
   margin-bottom: 1rem;
-  border-bottom: 1px solid var(--sidebar-border);
+  border-bottom: 1px solid;
 }
 
 .logo {
@@ -51,13 +35,8 @@
   border: none;
   font-size: 1.25rem;
   cursor: pointer;
-  color: var(--text-secondary);
   padding: 0.5rem;
   border-radius: 0.375rem;
-}
-
-.sidebar-toggle-btn:hover {
-  background: var(--hover-bg);
 }
 
 /* Navigation */
@@ -76,21 +55,9 @@
   border-radius: 0.5rem;
   background: none;
   border: none;
-  color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
   font-size: 0.9375rem;
-}
-
-.nav-btn:hover {
-  background: var(--hover-bg);
-  color: var(--text-primary);
-}
-
-.nav-btn.active {
-  background: var(--active-bg);
-  color: var(--accent-primary);
-  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .nav-icon {
@@ -107,17 +74,8 @@
   width: 100%;
   padding: 0.75rem 2.5rem;
   border-radius: 0.5rem;
-  border: 1px solid var(--sidebar-border);
-  background: var(--card-bg);
-  color: var(--text-primary);
   font-size: 0.9375rem;
   transition: all 0.2s ease;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .search-icon {
@@ -125,7 +83,6 @@
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-secondary);
 }
 
 .clear-search-btn {
@@ -135,16 +92,11 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: var(--text-secondary);
   cursor: pointer;
   padding: 0.25rem;
 }
 
-.clear-search-btn:hover {
-  color: var(--text-primary);
-}
-
-/* Transactions Container */
+/* Transactions */
 .transactions-container {
   position: relative;
   flex: 1;
@@ -153,7 +105,6 @@
   margin-bottom: 0.5rem;
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: var(--sidebar-border) transparent;
 }
 
 .transactions-container::after {
@@ -163,12 +114,10 @@
   left: 0;
   right: 0;
   height: 40px;
-  background: linear-gradient(to bottom, transparent, var(--sidebar-bg));
   pointer-events: none;
   z-index: 1;
 }
 
-/* Transactions List */
 .transactions-list {
   display: flex;
   flex-direction: column;
@@ -182,21 +131,9 @@
   align-items: center;
   padding: 0.75rem;
   border-radius: 0.5rem;
-  background: transparent;
-  border: 1px solid transparent;
+  border: 1px solid;
   cursor: pointer;
   transition: all 0.2s ease;
-  margin-bottom: 0.5rem;
-}
-
-.transaction-card:hover {
-  background: var(--hover-bg);
-  border-color: var(--sidebar-border);
-}
-
-.transaction-card.selected {
-  background: var(--active-bg);
-  border-color: var(--accent-primary);
 }
 
 .transaction-content {
@@ -209,7 +146,6 @@
 .transaction-title {
   font-size: 0.9375rem;
   font-weight: 500;
-  color: var(--text-primary);
   margin: 0;
 }
 
@@ -227,26 +163,17 @@
   font-weight: 500;
 }
 
-.amount.income {
-  color: var(--income-color);
-}
-
-.amount.expense {
-  color: var(--expense-color);
-}
-
 .amount-icon {
   font-size: 0.875rem;
 }
 
 .transaction-date {
-  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .delete-btn {
   background: none;
   border: none;
-  color: var(--text-secondary);
   cursor: pointer;
   padding: 0.25rem;
   margin-left: 0.5rem;
@@ -258,14 +185,9 @@
   opacity: 1;
 }
 
-.delete-btn:hover {
-  color: var(--expense-color);
-}
-
 .empty-state {
   text-align: center;
   padding: 2rem 0;
-  color: var(--text-secondary);
   font-size: 0.9375rem;
 }
 
@@ -286,17 +208,9 @@
   margin: 0.5rem 0;
   border: none;
   border-radius: 0.5rem;
-  background: var(--accent-primary);
-  color: white;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-}
-
-.new-transaction-btn:hover {
-  background: var(--accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
 /* User Section */
@@ -307,7 +221,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border-top: 1px solid var(--sidebar-border);
+  border-top: 1px solid;
 }
 
 .user-info {
@@ -321,7 +235,6 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--accent-primary);
   color: white;
   display: flex;
   align-items: center;
@@ -348,7 +261,6 @@
 
 .user-email {
   font-size: 0.8125rem;
-  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -358,7 +270,6 @@
 .logout-btn {
   background: none;
   border: none;
-  color: var(--text-secondary);
   font-size: 0.75rem;
   cursor: pointer;
   padding: 0.25rem 0.5rem;
@@ -367,58 +278,14 @@
   transition: all 0.2s ease;
 }
 
-.logout-btn:hover {
-  color: var(--expense-color);
-  background: var(--danger-hover);
-}
-
 .login-btn {
   width: 100%;
   padding: 0.5rem;
   border: none;
   border-radius: 0.25rem;
-  background: var(--accent-primary);
-  color: white;
   cursor: pointer;
   font-size: 0.875rem;
   transition: all 0.2s ease;
-}
-
-.login-btn:hover {
-  background: var(--accent-hover);
-}
-
-/* Dark Mode */
-.sidebar.theme-dark {
-  --sidebar-bg: #1e293b;
-  --sidebar-border: #334155;
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --accent-primary: #60a5fa;
-  --accent-hover: #3b82f6;
-  --card-bg: #1e293b;
-  --card-border: #334155;
-  --hover-bg: #334155;
-  --active-bg: #1e40af;
-  --income-color: #34d399;
-  --expense-color: #f87171;
-  --danger-hover: #7f1d1d;
-}
-
-.theme-dark .user-section {
-  border-top-color: var(--sidebar-border);
-}
-
-.theme-dark .logout-btn:hover {
-  color: #f87171;
-}
-
-.theme-dark .login-btn {
-  background: #3b82f6;
-}
-
-.theme-dark .login-btn:hover {
-  background: #2563eb;
 }
 
 /* Responsive */

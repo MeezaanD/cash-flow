@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { IconType } from "react-icons";
 import { useNavigate } from "react-router-dom";
 import {
   FiSearch,
@@ -20,6 +21,7 @@ import {
 import { auth } from "../services/firebase";
 import { signOut } from "firebase/auth";
 import { useAuth } from "../hooks/useAuth";
+import { useThemeVariant } from "../hooks/useThemeVariant";
 import { useTheme } from "../context/ThemeContext";
 import { SidebarProps } from "../types";
 import logoDark from "../assets/images/dark-transparent-image.png";
@@ -42,6 +44,8 @@ const Sidebar = ({
 }) => {
   const currentUser = useAuth();
   const { theme } = useTheme();
+  const styles = useThemeVariant();
+  const themeVariant = useThemeVariant();
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -87,9 +91,7 @@ const Sidebar = ({
     ) {
       return (dateInput as { toDate: () => Date }).toDate();
     }
-    if (dateInput instanceof Date) {
-      return dateInput;
-    }
+    if (dateInput instanceof Date) return dateInput;
     if (typeof dateInput === "string") {
       const dateOnly = dateInput.split(" at ")[0];
       return new Date(dateOnly);
@@ -122,8 +124,15 @@ const Sidebar = ({
   );
 
   return (
-    <div className={`sidebar ${collapsed ? "collapsed" : ""} theme-${theme}`}>
-      {/* Confirmation Dialog */}
+    <div
+      className={`sidebar ${collapsed ? "collapsed" : ""}`}
+      style={{
+        background: styles.sidebarBg,
+        borderRight: `1px solid ${styles.sidebarBorder}`,
+        color: styles.textPrimary,
+      }}
+    >
+      {/* Dialog */}
       <Dialog
         open={dialogOpen}
         onClose={handleCancelAction}
@@ -154,6 +163,7 @@ const Sidebar = ({
         </DialogActions>
       </Dialog>
 
+      {/* Header */}
       <div className="sidebar-header">
         <img className="logo" src={logo} alt="CashFlow Logo" />
         {!collapsed && (
@@ -163,30 +173,42 @@ const Sidebar = ({
         )}
       </div>
 
+      {/* Navigation & Search */}
       {!collapsed && (
         <>
           <div className="sidebar-nav">
-            <button
-              className={`nav-btn ${activeView === "dashboard" ? "active" : ""}`}
-              onClick={() => onViewChange("dashboard")}
-            >
-              <FiHome className="nav-icon" />
-              <span>Dashboard</span>
-            </button>
-            <button
-              className={`nav-btn ${activeView === "reports" ? "active" : ""}`}
-              onClick={() => onViewChange("reports")}
-            >
-              <FiPieChart className="nav-icon" />
-              <span>Reports</span>
-            </button>
-            <button
-              className={`nav-btn ${activeView === "table" ? "active" : ""}`}
-              onClick={() => onViewChange("table")}
-            >
-              <FiSearch className="nav-icon" />
-              <span>Transactions</span>
-            </button>
+            {["dashboard", "reports", "table"].map((view) => {
+              const isActive = activeView === view;
+              const isDark = theme === "dark";
+              const activeColor = isDark ? "#ffffff" : "#1a202c";
+              const inactiveColor = themeVariant.textSecondary;
+
+              const iconMap: Record<string, IconType> = {
+                dashboard: FiHome,
+                reports: FiPieChart,
+                table: FiSearch,
+              };
+
+              const IconComponent = iconMap[view];
+
+              return (
+                <button
+                  key={view}
+                  className={`nav-btn ${isActive ? "active" : ""}`}
+                  onClick={() => onViewChange(view)}
+                >
+                  <IconComponent
+                    className="nav-icon"
+                    style={{ color: isActive ? activeColor : inactiveColor }}
+                  />
+                  <span
+                    style={{ color: isActive ? activeColor : inactiveColor }}
+                  >
+                    {view.charAt(0).toUpperCase() + view.slice(1)}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
           <div className="search-wrapper">
@@ -197,12 +219,18 @@ const Sidebar = ({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
+              style={{
+                background: styles.cardBg,
+                color: styles.textPrimary,
+                border: `1px solid ${styles.cardBorder}`,
+              }}
             />
             {searchTerm && (
               <button
                 className="clear-search-btn"
                 onClick={() => setSearchTerm("")}
                 aria-label="Clear search"
+                style={{ color: styles.textSecondary }}
               >
                 <FiX />
               </button>
@@ -211,6 +239,7 @@ const Sidebar = ({
         </>
       )}
 
+      {/* Transactions */}
       <div className="sidebar-content">
         <div className="transactions-container">
           {filteredTransactions.length > 0 ? (
@@ -220,11 +249,32 @@ const Sidebar = ({
                   key={tx.id}
                   className={`transaction-card ${selectedId === tx.id ? "selected" : ""}`}
                   onClick={() => onSelect(tx)}
+                  style={{
+                    background:
+                      selectedId === tx.id ? styles.activeBg : "transparent",
+                    borderColor:
+                      selectedId === tx.id
+                        ? styles.accentPrimary
+                        : "transparent",
+                  }}
                 >
                   <div className="transaction-content">
-                    <h4 className="transaction-title">{tx.title}</h4>
+                    <h4
+                      className="transaction-title"
+                      style={{ color: styles.textPrimary }}
+                    >
+                      {tx.title}
+                    </h4>
                     <div className="transaction-details">
-                      <span className={`amount ${tx.type}`}>
+                      <span
+                        className="amount"
+                        style={{
+                          color:
+                            tx.type === "income"
+                              ? styles.incomeColor
+                              : styles.expenseColor,
+                        }}
+                      >
                         {tx.type === "income" ? (
                           <FiArrowUp className="amount-icon" />
                         ) : (
@@ -232,7 +282,10 @@ const Sidebar = ({
                         )}
                         R{tx.amount.toFixed(2)}
                       </span>
-                      <span className="transaction-date">
+                      <span
+                        className="transaction-date"
+                        style={{ color: styles.textSecondary }}
+                      >
                         {formatDisplayDate(tx.date ?? tx.createdAt)}
                       </span>
                     </div>
@@ -244,6 +297,7 @@ const Sidebar = ({
                       if (tx.id) handleDeleteClick(tx.id);
                     }}
                     aria-label="Delete transaction"
+                    style={{ color: styles.textSecondary }}
                   >
                     ✕
                   </button>
@@ -251,24 +305,41 @@ const Sidebar = ({
               ))}
             </div>
           ) : (
-            <div className="empty-state">
+            <div
+              className="empty-state"
+              style={{ color: styles.textSecondary }}
+            >
               {searchTerm ? "No matching transactions" : "No transactions yet"}
             </div>
           )}
         </div>
 
         {!collapsed && (
-          <button className="new-transaction-btn" onClick={onCreate}>
+          <button
+            className="new-transaction-btn"
+            onClick={onCreate}
+            style={{
+              background: styles.accentPrimary,
+              color: "#fff",
+            }}
+          >
             <FiPlus className="btn-icon" />
             New Transaction
           </button>
         )}
       </div>
 
-      <div className="user-section">
+      {/* User */}
+      <div
+        className="user-section"
+        style={{ borderTopColor: styles.sidebarBorder }}
+      >
         {currentUser ? (
           <div className="user-info">
-            <div className="user-avatar">
+            <div
+              className="user-avatar"
+              style={{ background: styles.accentPrimary }}
+            >
               {currentUser.photoURL ? (
                 <img src={currentUser.photoURL} alt="User" />
               ) : (
@@ -276,14 +347,29 @@ const Sidebar = ({
               )}
             </div>
             <div className="user-details">
-              <p className="user-email">{currentUser.email ?? "User"}</p>
-              <button className="logout-btn" onClick={handleLogoutClick}>
+              <p className="user-email" style={{ color: styles.textSecondary }}>
+                {currentUser.email ?? "User"}
+              </p>
+              <button
+                className="logout-btn"
+                onClick={handleLogoutClick}
+                style={{
+                  color: styles.textSecondary,
+                }}
+              >
                 Sign Out
               </button>
             </div>
           </div>
         ) : (
-          <button className="login-btn" onClick={() => navigate("/login")}>
+          <button
+            className="login-btn"
+            onClick={() => navigate("/login")}
+            style={{
+              background: styles.accentPrimary,
+              color: "#fff",
+            }}
+          >
             Login
           </button>
         )}

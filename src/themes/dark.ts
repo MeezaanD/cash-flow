@@ -1,0 +1,15 @@
+export const darkTheme = {
+  sidebarBg: "#1e293b",
+  sidebarBorder: "#334155",
+  textPrimary: "#f8fafc",
+  textSecondary: "#94a3b8",
+  accentPrimary: "#60a5fa",
+  accentHover: "#3b82f6",
+  cardBg: "#1e293b",
+  cardBorder: "#334155",
+  hoverBg: "#334155",
+  activeBg: "#1e40af",
+  incomeColor: "#34d399",
+  expenseColor: "#f87171",
+  dangerHover: "#7f1d1d",
+};

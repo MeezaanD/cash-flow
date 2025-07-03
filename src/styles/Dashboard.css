@@ -380,7 +380,6 @@
 .theme-dark .welcome-card,
 .theme-dark .feature-card {
   background: var(--card-bg-dark);
-  border-color: var(--border-color-dark);
 }
 
 .theme-dark .feature-icon-container {
