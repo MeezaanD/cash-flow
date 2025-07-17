@@ -174,7 +174,7 @@ const Dashboard: React.FC = () => {
   return (
     <div
       className="dashboard-wrapper"
-      style={{ background: styles.appBg, color: styles.textPrimary }}
+      style={{ background: styles.cardBg, color: styles.textPrimary }}
     >
       <ThemeDropdown />
       <Sidebar
