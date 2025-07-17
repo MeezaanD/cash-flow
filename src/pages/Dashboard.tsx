@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useTransactions } from "../hooks/useTransactions";
 import { Transaction, ViewType } from "../types";
+import { useThemeVariant } from "@/hooks/useThemeVariant";
 import PieChart from "../components/PieChart";
 import Sidebar from "../components/Sidebar";
 import ThemeDropdown from "../components/ThemeDropdown";
@@ -20,8 +21,13 @@ import TransactionsTable from "../components/TransactionsTable";
 import "../styles/Dashboard.css";
 
 const Dashboard: React.FC = () => {
-  const { transactions, addTransaction, updateTransaction, deleteTransaction } =
-    useTransactions();
+  const styles = useThemeVariant();
+  const {
+    transactions,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+  } = useTransactions();
 
   const [selectedTx, setSelectedTx] = useState<any | null>(null);
   const [selectedTransactionId, setSelectedTransactionId] = useState<
@@ -35,7 +41,6 @@ const Dashboard: React.FC = () => {
     null
   );
 
-  // Error handling state
   const [error, setError] = useState<string | null>(null);
   const [showError, setShowError] = useState(false);
 
@@ -167,7 +172,10 @@ const Dashboard: React.FC = () => {
   }, [transactions]);
 
   return (
-    <div className="dashboard-wrapper">
+    <div
+      className="dashboard-wrapper"
+      style={{ background: styles.appBg, color: styles.textPrimary }}
+    >
       <ThemeDropdown />
       <Sidebar
         collapsed={!sidebarVisible}
@@ -181,7 +189,6 @@ const Dashboard: React.FC = () => {
         onViewChange={(view: string) => setActiveView(view as ViewType)}
       />
 
-      {/* Error Snackbar */}
       <Snackbar
         open={showError}
         autoHideDuration={6000}
@@ -197,7 +204,6 @@ const Dashboard: React.FC = () => {
         </Alert>
       </Snackbar>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteDialogOpen}
         onClose={handleCancelDelete}
@@ -223,9 +229,20 @@ const Dashboard: React.FC = () => {
 
       <div
         className={`dashboard-content ${sidebarVisible ? "" : "full-width"}`}
+        style={{
+          background: styles.cardBg,
+          transition: "all 0.3s ease",
+        }}
       >
         {!sidebarVisible && (
-          <button className="sidebar-toggle" onClick={toggleSidebar}>
+          <button
+            className="sidebar-toggle"
+            onClick={toggleSidebar}
+            style={{
+              color: styles.textPrimary,
+              borderColor: styles.cardBorder,
+            }}
+          >
             ☰ Open Sidebar
           </button>
         )}
@@ -256,11 +273,19 @@ const Dashboard: React.FC = () => {
             selectedId={selectedTransactionId}
           />
         ) : (
-          <div className="empty-state">
-            <div className="welcome-card">
+          <div className="empty-state" style={{ color: styles.textPrimary }}>
+            <div
+              className="welcome-card"
+              style={{
+                background: styles.cardBg,
+                borderColor: styles.cardBorder,
+              }}
+            >
               <div className="welcome-header">
                 <h2>Welcome to CashFlow</h2>
-                <p className="subtitle">Your personal finance companion</p>
+                <p className="subtitle" style={{ color: styles.textSecondary }}>
+                  Your personal finance companion
+                </p>
               </div>
 
               <div className="feature-grid">
@@ -288,7 +313,14 @@ const Dashboard: React.FC = () => {
               </div>
 
               <div className="cta-section">
-                <button className="cta-button primary" onClick={handleCreate}>
+                <button
+                  className="cta-button primary"
+                  onClick={handleCreate}
+                  style={{
+                    background: styles.accentPrimary,
+                    color: "#fff",
+                  }}
+                >
                   <FiPlusCircle className="button-icon" />
                   Create Your First Transaction
                 </button>
@@ -297,6 +329,10 @@ const Dashboard: React.FC = () => {
                   <button
                     className="cta-button secondary"
                     onClick={() => handleShowPieChart(true)}
+                    style={{
+                      border: `1px solid ${styles.accentPrimary}`,
+                      color: styles.accentPrimary,
+                    }}
                   >
                     <FiPieChart className="button-icon" />
                     View Expense Distribution
