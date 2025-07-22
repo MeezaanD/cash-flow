@@ -1,3 +1,6 @@
+/* =========================
+  Sidebar Container
+  ========================= */
 .sidebar {
   position: fixed;
   top: 0;
@@ -12,11 +15,14 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
+/* Sidebar collapsed state */
 .sidebar.collapsed {
   transform: translateX(-100%);
 }
 
-/* Header */
+/* =========================
+  Sidebar Header
+  ========================= */
 .sidebar-header {
   display: flex;
   justify-content: space-between;
@@ -39,7 +45,9 @@
   border-radius: 0.375rem;
 }
 
-/* Navigation */
+/* =========================
+  Navigation Section
+  ========================= */
 .sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -64,7 +72,9 @@
   font-size: 1.25rem;
 }
 
-/* Search */
+/* =========================
+  Search Section
+  ========================= */
 .search-wrapper {
   position: relative;
   margin-bottom: 1.5rem;
@@ -96,7 +106,9 @@
   padding: 0.25rem;
 }
 
-/* Transactions */
+/* =========================
+  Transactions Section
+  ========================= */
 .transactions-container {
   position: relative;
   flex: 1;
@@ -181,16 +193,21 @@
   transition: opacity 0.2s ease;
 }
 
+/* Show delete button on hover */
 .transaction-card:hover .delete-btn {
   opacity: 1;
 }
 
+/* Empty state for transactions */
 .empty-state {
   text-align: center;
   padding: 2rem 0;
   font-size: 0.9375rem;
 }
 
+/* =========================
+  Sidebar Content Wrapper
+  ========================= */
 .sidebar-content {
   flex: 1;
   display: flex;
@@ -198,6 +215,7 @@
   overflow: hidden;
 }
 
+/* New Transaction Button */
 .new-transaction-btn {
   display: flex;
   align-items: center;
@@ -213,7 +231,9 @@
   transition: all 0.2s ease;
 }
 
-/* User Section */
+/* =========================
+  User Section
+  ========================= */
 .user-section {
   padding: 0.75rem 0;
   margin-top: auto;
@@ -288,31 +308,33 @@
   transition: all 0.2s ease;
 }
 
-/* Responsive */
+/* =========================
+  Responsive Styles
+  ========================= */
 @media (max-width: 768px) {
   .sidebar {
-    width: 100%;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+   width: 100%;
+   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
   .sidebar-header {
-    padding: 1rem 0;
-    margin-bottom: 0.5rem;
+   padding: 1rem 0;
+   margin-bottom: 0.5rem;
   }
 
   .sidebar.collapsed {
-    transform: translateX(-100%);
+   transform: translateX(-100%);
   }
 
   .user-info {
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
+   flex-direction: row;
+   justify-content: center;
+   align-items: center;
   }
 
   .user-details {
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
+   flex-direction: row;
+   justify-content: center;
+   align-items: center;
   }
 }
