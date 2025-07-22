@@ -22,12 +22,8 @@ import "../styles/Dashboard.css";
 
 const Dashboard: React.FC = () => {
   const styles = useThemeVariant();
-  const {
-    transactions,
-    addTransaction,
-    updateTransaction,
-    deleteTransaction,
-  } = useTransactions();
+  const { transactions, addTransaction, updateTransaction, deleteTransaction } =
+    useTransactions();
 
   const [selectedTx, setSelectedTx] = useState<any | null>(null);
   const [selectedTransactionId, setSelectedTransactionId] = useState<

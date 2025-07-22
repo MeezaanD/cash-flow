@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { auth, googleProvider } from "../services/firebase";
+import { auth, googleProvider } from "../../services/firebase";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { useNavigate, Link } from "react-router-dom";
-import "../styles/Login.css";
+import "../../styles/Login.css";
 
 const Login = () => {
   const navigate = useNavigate();
