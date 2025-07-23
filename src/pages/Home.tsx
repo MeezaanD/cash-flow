@@ -9,55 +9,67 @@ import {
   DollarSign,
   GraduationCap,
   User,
+  ArrowRight,
+  TrendingUp,
+  PieChart,
 } from "lucide-react";
 import preview from "../assets/images/cashflow.png";
 import "../styles/Home.css";
 
 const features = [
   {
-    icon: <Shield size={32} />,
-    color: "blue",
+    icon: <Shield size={28} />,
+    color: "purple",
     title: "Secure Login",
     desc: "Protected by Fortuna authentication with enterprise-grade security",
   },
   {
-    icon: <Clock size={32} />,
-    color: "yellow",
+    icon: <Clock size={28} />,
+    color: "teal",
     title: "Real-time Tracking",
     desc: "Instantly log and update your income and expenses as they happen",
   },
   {
-    icon: <Users size={32} />,
-    color: "green",
+    icon: <TrendingUp size={28} />,
+    color: "blue",
+    title: "Visual Analytics",
+    desc: "Beautiful charts to understand your spending patterns",
+  },
+  {
+    icon: <Users size={28} />,
+    color: "amber",
     title: "Clean Interface",
     desc: "Intuitive UI designed for effortless financial management",
   },
   {
-    icon: <Cloud size={32} />,
-    color: "purple",
+    icon: <Cloud size={28} />,
+    color: "green",
     title: "Cloud Sync",
     desc: "Your data syncs securely across all devices via Firebase",
+  },
+  {
+    icon: <PieChart size={28} />,
+    color: "red",
+    title: "Smart Budgeting",
+    desc: "Set budgets and get alerts when you're approaching limits",
   },
 ];
 
 const idealFor = [
   {
-    icon: <DollarSign size={32} />,
+    icon: <DollarSign size={28} />,
     color: "blue",
     title: "Budget-conscious individuals",
-    desc: null,
   },
   {
-    icon: <GraduationCap size={32} />,
-    color: "yellow",
+    icon: <GraduationCap size={28} />,
+    color: "purple",
     title: "Students and freelancers",
-    desc: null,
   },
   {
-    icon: <User size={32} />,
-    color: "green",
-    title: "Anyone wanting a lightweight finance tracker",
-    desc: null,
+    icon: <User size={28} />,
+    color: "teal",
+    title: "Financial beginners",
   },
 ];
 
@@ -65,81 +77,72 @@ const Home: React.FC = () => (
   <div className="home-container">
     {/* Hero Section */}
     <section className="hero-section">
-      <div className="hero-content">
-        <div className="hero-text">
-          <h1>
-            Your Personal <span className="text-blue">Finance</span>
-            <span className="text-blue">Companion</span>
-          </h1>
-          <p>
-            Track income, monitor expenses, and stay in control. CashFlow is a
-            simple, fast, and secure budgeting app built with privacy in mind.
-          </p>
-          <div className="hero-buttons">
-            <a href="/register">
-              <button className="btn-primary">Try CashFlow - It's Free!</button>
-            </a>
-            <a href="/login">
-              <button className="btn-secondary">Login</button>
-            </a>
+      <div className="hero-container">
+        <div className="hero-content">
+          <div className="hero-text">
+            <h1>
+              Take Control of Your <br />
+              <span className="highlight">Personal Finances</span>
+            </h1>
+            <p className="hero-description">
+              Track income, monitor expenses, and achieve your financial goals
+              with CashFlow - the simple, fast, and secure budgeting app.
+            </p>
+            <div className="hero-buttons">
+              <a href="/dashboard">
+                <button className="btn-primary">
+                  Get Started <ArrowRight size={18} />
+                </button>
+              </a>
+              <a href="/login">
+                <button className="btn-secondary">Login</button>
+              </a>
+            </div>
           </div>
-        </div>
-        <div className="hero-preview">
-          <img
-            src={preview}
-            alt="App Preview"
-            className="hero-preview-image"
-          />
+          <div className="hero-image-container">
+            <img
+              src={preview}
+              alt="CashFlow App Dashboard"
+              className="hero-image"
+            />
+            <div className="image-highlight"></div>
+          </div>
         </div>
       </div>
     </section>
 
     {/* Features Section */}
     <section className="features-section">
-      <div className="features-content">
-        <div className="features-header">
-          <h2>Powerful features for better budgeting</h2>
-          <p>Everything you need to take control of your finances</p>
+      <div className="container">
+        <div className="section-header">
+          <span className="section-subtitle">Features</span>
+          <h2>Powerful financial tools</h2>
+          <p>Everything you need to take control of your money</p>
         </div>
 
         <div className="features-grid">
-          {/* Dashboard Preview */}
-          <div className="dashboard-preview">
-            <img
-              src={preview}
-              alt="CashFlow Dashboard Preview"
-              className="dashboard-image"
-            />
-            <h3>CashFlow Dashboard</h3>
-          </div>
-          {/* Features List */}
-          <div className="features-list">
-            {features.map((f) => (
-              <div className="feature-item" key={f.title}>
-                <div className={`feature-icon ${f.color}`}>{f.icon}</div>
-                <div className="feature-content">
-                  <h3>{f.title}</h3>
-                  <p>{f.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          {features.map((f) => (
+            <div className={`feature-card ${f.color}`} key={f.title}>
+              <div className="feature-icon">{f.icon}</div>
+              <h3>{f.title}</h3>
+              <p>{f.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
 
     {/* Ideal For Section */}
-    <section className="simple-section">
-      <div className="simple-content">
-        <div className="simple-header">
-          <h2>Ideal For:</h2>
+    <section className="audience-section">
+      <div className="container">
+        <div className="section-header">
+          <span className="section-subtitle">Who's it for</span>
+          <h2>Perfect for your financial journey</h2>
         </div>
-        <div className="simple-grid ideal-for-grid">
+        <div className="audience-grid">
           {idealFor.map((item) => (
-            <div className="simple-item" key={item.title}>
-              <div className={`simple-item-icon feature-icon ${item.color}`}>
-                {item.icon}
-              </div>
+            <div className={`audience-card ${item.color}`} key={item.title}>
+              <div className="audience-icon">{item.icon}</div>
               <h3>{item.title}</h3>
             </div>
           ))}
@@ -149,23 +152,25 @@ const Home: React.FC = () => (
 
     {/* CTA Section */}
     <section className="cta-section">
-      <div className="cta-content">
-        <h2>Start budgeting like a boss</h2>
+      <div className="container">
+        <h2>Ready to transform your finances?</h2>
         <p>
-          Sign up today and take control of your personal finances with
-          CashFlow
+          Join thousands of users who are already taking control of their money
         </p>
         <a href="/register">
-          <button className="btn-white">Create Account</button>
+          <button className="btn-white">
+            Create Free Account <ArrowRight size={18} />
+          </button>
         </a>
       </div>
     </section>
 
     {/* Developer Contact */}
     <section className="contact-section">
-      <div className="contact-content">
-        <div className="contact-header">
-          <h2>Contact the Developer</h2>
+      <div className="container">
+        <div className="section-header">
+          <span className="section-subtitle">Contact</span>
+          <h2>Meet the Developer</h2>
         </div>
         <div className="developer-card">
           <div className="developer-avatar">MD</div>
@@ -173,38 +178,18 @@ const Home: React.FC = () => (
           <p className="developer-title">Full Stack Developer</p>
           <p className="developer-description">
             Passionate about creating simple, effective solutions for everyday
-            problems. CashFlow is built with modern web technologies to
-            enhance user experience.
+            problems with modern web technologies.
           </p>
           <div className="contact-links">
-            <div className="contact-link">
-              <div className="contact-icon blue">
-                <Mail size={24} />
-              </div>
-              <p>Email</p>
-              <a
-                href="mailto:meezaandavids365@gmail.com"
-                className="btn-link"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Send Email
-              </a>
-            </div>
-            <div className="contact-link">
-              <div className="contact-icon purple">
-                <Globe size={24} />
-              </div>
-              <p>Portfolio</p>
-              <a
-                href="https://meezaand.github.io/"
-                className="btn-link"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View Portfolio
-              </a>
-            </div>
+            <a
+              href="mailto:meezaandavids365@gmail.com"
+              className="contact-link"
+            >
+              <Mail size={20} /> Email
+            </a>
+            <a href="https://meezaand.github.io/" className="contact-link">
+              <Globe size={20} /> Portfolio
+            </a>
           </div>
         </div>
       </div>
@@ -212,8 +197,9 @@ const Home: React.FC = () => (
 
     {/* Footer */}
     <footer className="footer">
-      <div className="footer-content">
-        <p>© 2025 CashFlow by Meezaan Davids. Built with React, Firebase.</p>
+      <div className="container">
+        <p>© 2025 CashFlow by Meezaan Davids</p>
+        <p className="tech-stack">Built with React, TypeScript & Firebase</p>
       </div>
     </footer>
   </div>
