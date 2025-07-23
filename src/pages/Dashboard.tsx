@@ -308,9 +308,9 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div className="cta-section">
+              <div className="cTa-section">
                 <button
-                  className="cta-button primary"
+                  className="cTa-button primary"
                   onClick={handleCreate}
                   style={{
                     background: styles.accentPrimary,
@@ -323,7 +323,7 @@ const Dashboard: React.FC = () => {
 
                 {transactions.length > 0 && (
                   <button
-                    className="cta-button secondary"
+                    className="cTa-button secondary"
                     onClick={() => handleShowPieChart(true)}
                     style={{
                       border: `1px solid ${styles.accentPrimary}`,
