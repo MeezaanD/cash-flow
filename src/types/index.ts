@@ -29,6 +29,12 @@ export interface Transaction {
   createdAt?: Date | { toDate: () => Date };
 }
 
+// DateRange
+export interface DateRange {
+  startDate: string;
+  endDate: string;
+}
+
 // SidebarProps
 export interface SidebarProps {
   toggleSidebar: () => void;
@@ -44,7 +50,9 @@ export interface SidebarProps {
 
 // TransactionFormProps
 export interface TransactionFormProps {
-  onSubmit: (data: Omit<Transaction, 'id' | 'date' | 'createdAt'>) => Promise<void> | void;
+  onSubmit: (
+    data: Omit<Transaction, "id" | "date" | "createdAt">
+  ) => Promise<void> | void;
   onClose: () => void;
   transaction?: Transaction;
 }
@@ -59,6 +67,8 @@ export interface PieChartData {
 export interface PieChartComponentProps {
   data: PieChartData[];
   onClose: () => void;
+  dateRange?: DateRange;
+  onDateRangeChange?: (range: DateRange) => void;
 }
 
 // TransactionsTable

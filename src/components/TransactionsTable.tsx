@@ -19,6 +19,8 @@ import {
 } from "@mui/material";
 import { FiArrowUp, FiArrowDown, FiTrash2 } from "react-icons/fi";
 import { TransactionsTableProps } from "../types";
+import DateRangeFilter, { DateRange } from "./DateRangeFilter";
+import { filterTransactionsByDateRange } from "../utils/dateRangeFilter";
 import "../styles/TransactionsTable.css";
 
 const categoryColors: Record<string, string> = {
@@ -53,9 +55,15 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
   selectedId,
 }) => {
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">(
+    "all"
+  );
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterMonth, setFilterMonth] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<DateRange>({
+    startDate: "",
+    endDate: "",
+  });
 
   // Get all unique categories from transactions
   const allCategories = React.useMemo(() => {
@@ -106,43 +114,60 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
     }
   };
 
-  const filtered = [...transactions]
-    .filter((tx) => {
-      const matchesSearch = tx.title.toLowerCase().includes(search.toLowerCase());
-      const matchesType = filterType === "all" || tx.type === filterType;
-      const matchesCategory = filterCategory === "all" || tx.category === filterCategory;
-      const matchesMonth = filterMonth === "all" || 
-        getMonthFromDate(tx.date ?? tx.createdAt) === parseInt(filterMonth);
-      
-      return matchesSearch && matchesType && matchesCategory && matchesMonth;
-    })
-    .sort((a, b) => {
-      const parseDate = (d: unknown): number => {
-        if (typeof d === "object" && d !== null && "toDate" in d) {
-          return (d as { toDate: () => Date }).toDate().getTime();
-        }
-        if (typeof d === "string" || typeof d === "number") {
-          return new Date(d).getTime();
-        }
-        return 0;
-      };
+  const filtered = React.useMemo(() => {
+    // First filter by date range
+    let dateFiltered = filterTransactionsByDateRange(transactions, dateRange);
 
-      const timeA = parseDate(a.date ?? a.createdAt);
-      const timeB = parseDate(b.date ?? b.createdAt);
+    // Then apply other filters
+    return dateFiltered
+      .filter((tx) => {
+        const matchesSearch = tx.title
+          .toLowerCase()
+          .includes(search.toLowerCase());
+        const matchesType = filterType === "all" || tx.type === filterType;
+        const matchesCategory =
+          filterCategory === "all" || tx.category === filterCategory;
+        const matchesMonth =
+          filterMonth === "all" ||
+          getMonthFromDate(tx.date ?? tx.createdAt) === parseInt(filterMonth);
 
-      return timeB - timeA;
-    });
+        return matchesSearch && matchesType && matchesCategory && matchesMonth;
+      })
+      .sort((a, b) => {
+        const parseDate = (d: unknown): number => {
+          if (typeof d === "object" && d !== null && "toDate" in d) {
+            return (d as { toDate: () => Date }).toDate().getTime();
+          }
+          if (typeof d === "string" || typeof d === "number") {
+            return new Date(d).getTime();
+          }
+          return 0;
+        };
+
+        const timeA = parseDate(a.date ?? a.createdAt);
+        const timeB = parseDate(b.date ?? b.createdAt);
+
+        return timeB - timeA;
+      });
+  }, [
+    transactions,
+    dateRange,
+    search,
+    filterType,
+    filterCategory,
+    filterMonth,
+  ]);
 
   // Calculate total amount for filtered transactions
   const totalAmount = filtered.reduce((sum, tx) => sum + tx.amount, 0);
 
   // Calculate total income and expenses separately
   const totalIncome = filtered
-    .filter(tx => tx.type === "income")
+    .filter((tx) => tx.type === "income")
     .reduce((sum, tx) => sum + tx.amount, 0);
-  
+
   const totalExpense = filtered
-    .filter(tx => tx.type === "expense")
+    .filter((tx) => tx.type === "expense")
     .reduce((sum, tx) => sum + tx.amount, 0);
 
   // Determine which totals to show based on current filters
@@ -154,6 +179,14 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
   } else if (filterType === "expense") {
     amountHeader = `Amount (Total Expense: R${totalExpense.toFixed(2)})`;
   }
+
+  const handleDateRangeChange = (newRange: DateRange) => {
+    setDateRange(newRange);
+  };
+
+  const handleClearDateRange = () => {
+    setDateRange({ startDate: "", endDate: "" });
+  };
 
   return (
     <Box className="transactions-wrapper">
@@ -219,6 +252,15 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
           </Select>
         </FormControl>
       </Box>
+
+      <Box sx={{ mb: 2 }}>
+        <DateRangeFilter
+          dateRange={dateRange}
+          onDateRangeChange={handleDateRangeChange}
+          onClear={handleClearDateRange}
+        />
+      </Box>
+
       <TableContainer component={Paper}>
         <Table stickyHeader aria-label="transactions table">
           <TableHead>

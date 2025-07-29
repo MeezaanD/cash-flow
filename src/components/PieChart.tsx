@@ -7,12 +7,27 @@ import {
   Tooltip,
 } from "recharts";
 import { PieChartComponentProps } from "../types";
+import DateRangeFilter, { DateRange } from "./DateRangeFilter";
 import "../styles/PieChart.css";
 
 const PieChartComponent: React.FC<PieChartComponentProps> = ({
   data,
   onClose,
+  dateRange,
+  onDateRangeChange,
 }) => {
+  const handleDateRangeChange = (newRange: DateRange) => {
+    if (onDateRangeChange) {
+      onDateRangeChange(newRange);
+    }
+  };
+
+  const handleClearDateRange = () => {
+    if (onDateRangeChange) {
+      onDateRangeChange({ startDate: "", endDate: "" });
+    }
+  };
+
   return (
     <div className="pie-chart-component">
       <div className="chart-container enhanced">
@@ -50,6 +65,16 @@ const PieChartComponent: React.FC<PieChartComponentProps> = ({
             </svg>
           </button>
         </div>
+
+        {onDateRangeChange && (
+          <div className="chart-filters">
+            <DateRangeFilter
+              dateRange={dateRange || { startDate: "", endDate: "" }}
+              onDateRangeChange={handleDateRangeChange}
+              onClear={handleClearDateRange}
+            />
+          </div>
+        )}
 
         <div className="chart-wrapper">
           <ResponsiveContainer width="100%" height={300}>

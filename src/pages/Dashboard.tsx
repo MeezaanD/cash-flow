@@ -11,8 +11,9 @@ import {
   Snackbar,
 } from "@mui/material";
 import { useTransactions } from "../hooks/useTransactions";
-import { Transaction, ViewType } from "../types";
+import { Transaction, ViewType, DateRange } from "../types";
 import { useThemeVariant } from "@/hooks/useThemeVariant";
+import { filterTransactionsByDateRange } from "../utils/dateRangeFilter";
 import PieChart from "../components/PieChart";
 import Sidebar from "../components/Sidebar";
 import ThemeDropdown from "../components/ThemeDropdown";
@@ -36,9 +37,18 @@ const Dashboard: React.FC = () => {
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(
     null
   );
+  const [dateRange, setDateRange] = useState<DateRange>({
+    startDate: "",
+    endDate: "",
+  });
 
   const [error, setError] = useState<string | null>(null);
   const [showError, setShowError] = useState(false);
+
+  // Filter transactions by date range
+  const filteredTransactions = useMemo(() => {
+    return filterTransactionsByDateRange(transactions, dateRange);
+  }, [transactions, dateRange]);
 
   const handleCreate = () => {
     setSelectedTx(null);
@@ -141,7 +151,7 @@ const Dashboard: React.FC = () => {
   const pieChartData = useMemo(() => {
     const categoryMap: Record<string, number> = {};
 
-    transactions.forEach((tx) => {
+    filteredTransactions.forEach((tx) => {
       if (tx.type === "expense") {
         categoryMap[tx.category] = (categoryMap[tx.category] || 0) + tx.amount;
       }
@@ -165,7 +175,11 @@ const Dashboard: React.FC = () => {
       value,
       color: colors[index % colors.length],
     }));
-  }, [transactions]);
+  }, [filteredTransactions]);
+
+  const handleDateRangeChange = (newRange: DateRange) => {
+    setDateRange(newRange);
+  };
 
   return (
     <div
@@ -260,10 +274,12 @@ const Dashboard: React.FC = () => {
           <PieChart
             data={pieChartData}
             onClose={() => handleShowPieChart(false)}
+            dateRange={dateRange}
+            onDateRangeChange={handleDateRangeChange}
           />
         ) : activeView === "table" ? (
           <TransactionsTable
-            transactions={transactions}
+            transactions={filteredTransactions}
             onDelete={handleDeleteClick}
             onSelect={handleSelect}
             selectedId={selectedTransactionId}
