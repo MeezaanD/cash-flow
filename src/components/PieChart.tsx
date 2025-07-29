@@ -23,7 +23,11 @@ const PieChartComponent: React.FC<PieChartComponentProps> = ({
               Visualization of your spending categories
             </p>
           </div>
-          <button onClick={onClose} className="close-button" aria-label="Close chart">
+          <button
+            onClick={onClose}
+            className="close-button"
+            aria-label="Close chart"
+          >
             <svg
               width="24"
               height="24"
@@ -80,19 +84,15 @@ const PieChartComponent: React.FC<PieChartComponentProps> = ({
                   border: "1px solid var(--border-color)",
                   borderRadius: "8px",
                   boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  color: "var(--text-color)",
+                }}
+                labelStyle={{
+                  color: "var(--text-color)",
+                }}
+                itemStyle={{
+                  color: "var(--text-color)",
                 }}
               />
-              {/* <Legend
-                layout="horizontal"
-                verticalAlign="bottom"
-                align="center"
-                iconType="circle"
-                iconSize={8}
-                wrapperStyle={{
-                  paddingTop: "10px",
-                  fontSize: "12px",
-                }}
-              /> */}
             </RechartsPieChart>
           </ResponsiveContainer>
         </div>

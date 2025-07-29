@@ -119,6 +119,46 @@
   scrollbar-width: thin;
 }
 
+/* Custom scrollbar styling */
+.transactions-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.transactions-container::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.transactions-container::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, rgba(156, 163, 175, 0.5));
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.transactions-container::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, rgba(156, 163, 175, 0.7));
+}
+
+/* Dark theme scrollbar */
+.theme-dark .transactions-container::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-dark, rgba(75, 85, 99, 0.6));
+}
+
+.theme-dark .transactions-container::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover-dark, rgba(75, 85, 99, 0.8));
+}
+
+/* Firefox scrollbar */
+.transactions-container {
+  scrollbar-color: var(--scrollbar-thumb, rgba(156, 163, 175, 0.5)) transparent;
+  scrollbar-width: thin;
+}
+
+.theme-dark .transactions-container {
+  scrollbar-color: var(--scrollbar-thumb-dark, rgba(75, 85, 99, 0.6))
+    transparent;
+}
+
 .transactions-container::after {
   content: "";
   position: absolute;
@@ -313,28 +353,28 @@
   ========================= */
 @media (max-width: 768px) {
   .sidebar {
-   width: 100%;
-   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
   .sidebar-header {
-   padding: 1rem 0;
-   margin-bottom: 0.5rem;
+    padding: 1rem 0;
+    margin-bottom: 0.5rem;
   }
 
   .sidebar.collapsed {
-   transform: translateX(-100%);
+    transform: translateX(-100%);
   }
 
   .user-info {
-   flex-direction: row;
-   justify-content: center;
-   align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
   }
 
   .user-details {
-   flex-direction: row;
-   justify-content: center;
-   align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
   }
 }
