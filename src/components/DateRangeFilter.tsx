@@ -6,11 +6,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Button,
-  Typography,
   Chip,
 } from "@mui/material";
-import { FiCalendar, FiX } from "react-icons/fi";
+import { FiX } from "react-icons/fi";
 
 export interface DateRange {
   startDate: string;
