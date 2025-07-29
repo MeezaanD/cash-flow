@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Shield,
   Clock,
-  Users,
   Cloud,
   Mail,
   Globe,
@@ -12,6 +11,7 @@ import {
   ArrowRight,
   TrendingUp,
   PieChart,
+  Calendar,
 } from "lucide-react";
 import preview from "../assets/images/cashflow.png";
 import logo from "../assets/images/dark-transparent-image.png";
@@ -37,10 +37,10 @@ const features = [
     desc: "Beautiful charts to understand your spending patterns",
   },
   {
-    icon: <Users size={28} />,
-    color: "amber",
-    title: "Clean Interface",
-    desc: "Intuitive UI designed for effortless financial management",
+    icon: <Calendar size={28} />,
+    color: "indigo",
+    title: "Smart Date Filtering",
+    desc: "Filter transactions and charts by custom date ranges or preset periods",
   },
   {
     icon: <Cloud size={28} />,
@@ -235,6 +235,74 @@ const Home: React.FC = () => {
                 className="hero-image"
               />
               <div className="image-highlight"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Date Range Filtering Section */}
+      <section className="date-filtering-section">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-subtitle">New Feature</span>
+            <h2>Smart Date Range Filtering</h2>
+            <p>
+              Analyze your finances with precision using advanced date filtering
+            </p>
+          </div>
+
+          <div className="date-filtering-content">
+            <div className="date-filtering-text">
+              <h3>Filter by Time Periods</h3>
+              <p>
+                Choose from preset ranges like last 7 days, 30 days, 3 months,
+                or 6 months for quick analysis.
+              </p>
+
+              <h3>Custom Date Ranges</h3>
+              <p>
+                Select specific start and end dates to analyze any time period
+                that matters to you.
+              </p>
+
+              <h3>Cross-Component Sync</h3>
+              <p>
+                Your date range applies to both the transaction table and pie
+                chart, ensuring consistent data across all views.
+              </p>
+
+              <div className="date-filtering-benefits">
+                <div className="benefit-item">
+                  <Calendar size={20} />
+                  <span>Quick preset options</span>
+                </div>
+                <div className="benefit-item">
+                  <TrendingUp size={20} />
+                  <span>Trend analysis</span>
+                </div>
+                <div className="benefit-item">
+                  <PieChart size={20} />
+                  <span>Filtered charts</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="date-filtering-visual">
+              <div className="filter-preview">
+                <div className="filter-header">
+                  <Calendar size={24} />
+                  <span>Date Range Filter</span>
+                </div>
+                <div className="filter-options">
+                  <div className="filter-option active">Last 7 days</div>
+                  <div className="filter-option">Last 30 days</div>
+                  <div className="filter-option">Custom range</div>
+                </div>
+                <div className="filter-result">
+                  <span>Showing transactions from</span>
+                  <strong>Dec 15 - Dec 22, 2024</strong>
+                </div>
+              </div>
             </div>
           </div>
         </div>
