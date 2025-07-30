@@ -12,9 +12,16 @@ import {
   TrendingUp,
   PieChart,
   Calendar,
+  Github,
+  Linkedin,
+  UserPlus,
+  Plus,
+  BarChart3,
+  Target,
 } from "lucide-react";
 import preview from "../assets/images/cashflow.png";
 import logo from "../assets/images/dark-transparent-image.png";
+import profilePhoto from "../assets/images/profile-photo.jpeg";
 import "../styles/Home.css";
 
 const features = [
@@ -71,6 +78,33 @@ const idealFor = [
     icon: <User size={28} />,
     color: "teal",
     title: "Financial beginners",
+  },
+];
+
+const howItWorks = [
+  {
+    icon: <UserPlus size={28} />,
+    step: "1",
+    title: "Create Account",
+    desc: "Sign up with your email and set up your secure profile in seconds",
+  },
+  {
+    icon: <Plus size={28} />,
+    step: "2",
+    title: "Add Transactions",
+    desc: "Log your income and expenses with categories and descriptions",
+  },
+  {
+    icon: <BarChart3 size={28} />,
+    step: "3",
+    title: "Track Progress",
+    desc: "View real-time charts and insights about your spending patterns",
+  },
+  {
+    icon: <Target size={28} />,
+    step: "4",
+    title: "Achieve Goals",
+    desc: "Set budgets and financial targets to reach your money goals",
   },
 ];
 
@@ -329,6 +363,28 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="how-it-works-section">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-subtitle">How it works</span>
+            <h2>Get started in 4 simple steps</h2>
+            <p>Your journey to financial freedom starts here</p>
+          </div>
+
+          <div className="how-it-works-grid">
+            {howItWorks.map((step) => (
+              <div className="how-it-works-card" key={step.step}>
+                <div className="step-number">{step.step}</div>
+                <div className="step-icon">{step.icon}</div>
+                <h3>{step.title}</h3>
+                <p>{step.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Ideal For Section */}
       <section className="audience-section">
         <div className="container">
@@ -347,22 +403,6 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="cta-section">
-        <div className="container">
-          <h2>Ready to transform your finances?</h2>
-          <p>
-            Join thousands of users who are already taking control of their
-            money
-          </p>
-          <a href="/register">
-            <button className="btn-white">
-              Create Free Account <ArrowRight size={18} />
-            </button>
-          </a>
-        </div>
-      </section>
-
       {/* Developer Contact */}
       <section className="contact-section">
         <div className="container">
@@ -371,7 +411,11 @@ const Home: React.FC = () => {
             <h2>Meet the Developer</h2>
           </div>
           <div className="developer-card">
-            <div className="developer-avatar">MD</div>
+            <img
+              src={profilePhoto}
+              alt="Meezaan Davids"
+              className="developer-avatar"
+            />
             <h3>Meezaan Davids</h3>
             <p className="developer-title">Full Stack Developer</p>
             <p className="developer-description">
@@ -387,6 +431,15 @@ const Home: React.FC = () => {
               </a>
               <a href="https://meezaand.github.io/" className="contact-link">
                 <Globe size={20} /> Portfolio
+              </a>
+              <a href="https://github.com/MeezaanD" className="contact-link">
+                <Github size={20} /> GitHub
+              </a>
+              <a
+                href="https://www.linkedin.com/in/meezaan-davids-4a7aa8265/"
+                className="contact-link"
+              >
+                <Linkedin size={20} /> LinkedIn
               </a>
             </div>
           </div>

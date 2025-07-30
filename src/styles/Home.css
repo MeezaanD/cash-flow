@@ -99,7 +99,11 @@ p {
 }
 
 .btn-primary {
-  background-color: var(--primary);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-dark) 100%
+  );
   color: white;
   box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
 }
@@ -166,6 +170,7 @@ p {
   min-height: 100vh;
   position: relative;
   overflow: hidden;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
 }
 
 .hero-content {
@@ -244,7 +249,7 @@ p {
 =========================================================== */
 .features-section {
   padding: 6rem 0;
-  background-color: #f8fafc;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
 }
 
 .features-grid {
@@ -254,13 +259,14 @@ p {
 }
 
 .feature-card {
-  background: white;
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
   border-radius: 1rem;
   padding: 2rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease;
+  border: 1px solid rgba(226, 232, 240, 0.5);
 }
 
 .feature-card:hover {
@@ -277,6 +283,11 @@ p {
   align-items: center;
   justify-content: center;
   margin-bottom: 1.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.1) 0%,
+    rgba(99, 102, 241, 0.05) 100%
+  );
 }
 
 /* Feature Card Color Variants */
@@ -311,10 +322,89 @@ p {
 }
 
 /* ===========================================================
+  How It Works Section
+=========================================================== */
+.how-it-works-section {
+  padding: 6rem 0;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+}
+
+.how-it-works-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.how-it-works-card {
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+  position: relative;
+  border: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.how-it-works-card:hover {
+  transform: translateY(-5px);
+}
+
+.step-number {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-dark) 100%
+  );
+  color: white;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.step-icon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem auto 1.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.1) 0%,
+    rgba(99, 102, 241, 0.05) 100%
+  );
+  color: var(--primary);
+}
+
+.how-it-works-card h3 {
+  margin-bottom: 1rem;
+  color: var(--dark);
+}
+
+.how-it-works-card p {
+  color: var(--gray);
+  line-height: 1.6;
+}
+
+/* ===========================================================
   Audience Section
 =========================================================== */
 .audience-section {
   padding: 6rem 0;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
 }
 
 .audience-grid {
@@ -328,6 +418,8 @@ p {
   padding: 2rem;
   border-radius: 1rem;
   transition: transform 0.3s ease;
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+  border: 1px solid rgba(226, 232, 240, 0.5);
 }
 
 .audience-card:hover {
@@ -342,6 +434,11 @@ p {
   align-items: center;
   justify-content: center;
   margin: 0 auto 1.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.1) 0%,
+    rgba(99, 102, 241, 0.05) 100%
+  );
 }
 
 /* Audience Card Color Variants */
@@ -386,31 +483,28 @@ p {
 =========================================================== */
 .contact-section {
   padding: 6rem 0;
-  background-color: #f8fafc;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
 }
 
 .developer-card {
-  background: white;
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
   border-radius: 1rem;
   padding: 3rem;
   max-width: 500px;
   margin: 0 auto;
   text-align: center;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(226, 232, 240, 0.5);
 }
 
 .developer-avatar {
   width: 5rem;
   height: 5rem;
-  background: linear-gradient(135deg, var(--primary), var(--purple));
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   margin: 0 auto 1.5rem;
-  color: white;
-  font-size: 1.5rem;
-  font-weight: 700;
+  object-fit: cover;
+  border: 3px solid var(--primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .developer-title {
@@ -639,12 +733,14 @@ p {
     margin-bottom: 2rem;
   }
   .features-grid,
-  .audience-grid {
+  .audience-grid,
+  .how-it-works-grid {
     grid-template-columns: 1fr;
   }
   .contact-links {
     flex-direction: column;
     gap: 1rem;
+    align-items: center;
   }
   .navbar-container {
     flex-direction: column;
@@ -942,7 +1038,7 @@ p {
 =========================================================== */
 .date-filtering-section {
   padding: 6rem 0;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
 }
 
 .date-filtering-content {
@@ -991,7 +1087,7 @@ p {
 }
 
 .filter-preview {
-  background: white;
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
   border-radius: 1rem;
   padding: 2rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
