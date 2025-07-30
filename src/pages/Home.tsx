@@ -22,6 +22,7 @@ import {
 import preview from "../assets/images/cashflow.png";
 import logo from "../assets/images/dark-transparent-image.png";
 import profilePhoto from "../assets/images/profile-photo.jpeg";
+import AuthModals from "../components/AuthModals";
 import "../styles/Home.css";
 
 const features = [
@@ -110,6 +111,8 @@ const howItWorks = [
 
 const Home: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Prevent background scroll when menu is open
@@ -140,6 +143,19 @@ const Home: React.FC = () => {
       document.removeEventListener("mousedown", handleClick);
     };
   }, [mobileMenuOpen]);
+
+  const handleAuthClick = (mode: "login" | "register") => {
+    setAuthMode(mode);
+    setAuthModalOpen(true);
+  };
+
+  const handleAuthClose = () => {
+    setAuthModalOpen(false);
+  };
+
+  const handleAuthModeChange = (newMode: "login" | "register") => {
+    setAuthMode(newMode);
+  };
 
   return (
     <div className="home-container">
@@ -173,15 +189,20 @@ const Home: React.FC = () => {
             >
               &#9776;
             </button>
-            <a href="/login" className="navbar-link navbar-auth">
+            <button
+              onClick={() => handleAuthClick("login")}
+              className="navbar-link navbar-auth"
+              style={{ background: "none", border: "none", cursor: "pointer" }}
+            >
               Login
-            </a>
-            <a
-              href="/register"
+            </button>
+            <button
+              onClick={() => handleAuthClick("register")}
               className="navbar-link navbar-auth navbar-register"
+              style={{ background: "none", border: "none", cursor: "pointer" }}
             >
               Register
-            </a>
+            </button>
           </div>
         </div>
         {/* Mobile menu */}
@@ -221,23 +242,42 @@ const Home: React.FC = () => {
             >
               Features
             </a>
-            <a
-              href="/login"
+            <button
+              onClick={() => {
+                handleAuthClick("login");
+                setMobileMenuOpen(false);
+              }}
               className="navbar-link navbar-auth"
-              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                width: "100%",
+                textAlign: "center",
+              }}
             >
               Login
-            </a>
-            <a
-              href="/register"
+            </button>
+            <button
+              onClick={() => {
+                handleAuthClick("register");
+                setMobileMenuOpen(false);
+              }}
               className="navbar-link navbar-auth navbar-register"
-              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                width: "100%",
+                textAlign: "center",
+              }}
             >
               Register
-            </a>
+            </button>
           </div>
         )}
       </nav>
+
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-container">
@@ -252,14 +292,18 @@ const Home: React.FC = () => {
                 with CashFlow - the simple, fast, and secure budgeting app.
               </p>
               <div className="hero-buttons">
-                <a href="/dashboard">
-                  <button className="btn-primary">
-                    Get Started <ArrowRight size={18} />
-                  </button>
-                </a>
-                <a href="/login">
-                  <button className="btn-secondary">Login</button>
-                </a>
+                <button
+                  onClick={() => handleAuthClick("register")}
+                  className="btn-primary"
+                >
+                  Get Started <ArrowRight size={18} />
+                </button>
+                <button
+                  onClick={() => handleAuthClick("login")}
+                  className="btn-secondary"
+                >
+                  Login
+                </button>
               </div>
             </div>
             <div className="hero-image-container">
@@ -453,6 +497,14 @@ const Home: React.FC = () => {
           <p className="tech-stack">Built with React, TypeScript & Firebase</p>
         </div>
       </footer>
+
+      {/* Auth Modals */}
+      <AuthModals
+        open={authModalOpen}
+        onClose={handleAuthClose}
+        mode={authMode}
+        onModeChange={handleAuthModeChange}
+      />
     </div>
   );
 };

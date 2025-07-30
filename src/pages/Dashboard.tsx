@@ -19,6 +19,7 @@ import Sidebar from "../components/Sidebar";
 import ThemeDropdown from "../components/ThemeDropdown";
 import TransactionForm from "../components/TransactionForm";
 import TransactionsTable from "../components/TransactionsTable";
+import AuthModals from "../components/AuthModals";
 import "../styles/Dashboard.css";
 
 const Dashboard: React.FC = () => {
@@ -41,6 +42,8 @@ const Dashboard: React.FC = () => {
     startDate: "",
     endDate: "",
   });
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
 
   const [error, setError] = useState<string | null>(null);
   const [showError, setShowError] = useState(false);
@@ -100,6 +103,7 @@ const Dashboard: React.FC = () => {
 
   const handleCloseForm = () => {
     setSelectedTx(null);
+    setSelectedTransactionId(null);
     setIsCreating(false);
     setActiveView("dashboard");
   };
@@ -107,11 +111,10 @@ const Dashboard: React.FC = () => {
   const toggleSidebar = () => setSidebarVisible((prev) => !prev);
 
   const handleShowPieChart = (show: boolean) => {
-    setActiveView(show ? "reports" : "dashboard");
     if (show) {
-      setSelectedTx(null);
-      setSelectedTransactionId(null);
-      setIsCreating(false);
+      setActiveView("reports");
+    } else {
+      setActiveView("dashboard");
     }
   };
 
@@ -120,10 +123,9 @@ const Dashboard: React.FC = () => {
   ) => {
     try {
       await addTransaction(data);
-      setIsCreating(false);
-      setActiveView("dashboard");
+      handleCloseForm();
     } catch (err: any) {
-      setError("Failed to add transaction. Please try again.");
+      setError("Failed to create transaction. Please try again.");
       setShowError(true);
     }
   };
@@ -131,21 +133,33 @@ const Dashboard: React.FC = () => {
   const handleFormUpdate = async (
     data: Omit<Transaction, "id" | "date" | "createdAt">
   ) => {
-    if (!selectedTx) return;
-    try {
-      await updateTransaction(selectedTx.id, data);
-      setActiveView("dashboard");
-      setSelectedTx(null);
-      setSelectedTransactionId(null);
-    } catch (err: any) {
-      setError("Failed to update transaction. Please try again.");
-      setShowError(true);
+    if (selectedTx?.id) {
+      try {
+        await updateTransaction(selectedTx.id, data);
+        handleCloseForm();
+      } catch (err: any) {
+        setError("Failed to update transaction. Please try again.");
+        setShowError(true);
+      }
     }
   };
 
   const handleCloseError = () => {
     setShowError(false);
     setError(null);
+  };
+
+  const handleAuthClick = (mode: "login" | "register") => {
+    setAuthMode(mode);
+    setAuthModalOpen(true);
+  };
+
+  const handleAuthClose = () => {
+    setAuthModalOpen(false);
+  };
+
+  const handleAuthModeChange = (newMode: "login" | "register") => {
+    setAuthMode(newMode);
   };
 
   const pieChartData = useMemo(() => {
@@ -197,6 +211,7 @@ const Dashboard: React.FC = () => {
         selectedId={selectedTransactionId}
         activeView={activeView}
         onViewChange={(view: string) => setActiveView(view as ViewType)}
+        onAuthClick={handleAuthClick}
       />
 
       <Snackbar
@@ -236,6 +251,13 @@ const Dashboard: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <AuthModals
+        open={authModalOpen}
+        onClose={handleAuthClose}
+        mode={authMode}
+        onModeChange={handleAuthModeChange}
+      />
 
       <div
         className={`dashboard-content ${sidebarVisible ? "" : "full-width"}`}
