@@ -348,6 +348,14 @@
   transition: all 0.2s ease;
 }
 
+.login-btn:hover {
+  color: #fff !important;
+}
+
+.login-btn:focus {
+  color: #fff !important;
+}
+
 /* =========================
   Responsive Styles
   ========================= */

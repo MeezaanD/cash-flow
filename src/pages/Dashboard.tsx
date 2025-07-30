@@ -271,7 +271,7 @@ const Dashboard: React.FC = () => {
             className="sidebar-toggle"
             onClick={toggleSidebar}
             style={{
-              color: styles.textPrimary,
+              color: "#ffffff",
               borderColor: styles.cardBorder,
             }}
           >

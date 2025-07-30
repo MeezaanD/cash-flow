@@ -627,6 +627,11 @@ p {
   font-weight: 600;
 }
 
+.navbar-auth:hover {
+  color: var(--primary) !important;
+  background: transparent !important;
+}
+
 .navbar-register {
   background: var(--primary) !important;
   color: #fff;
