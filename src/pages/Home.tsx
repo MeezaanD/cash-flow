@@ -22,6 +22,7 @@ import {
 import preview from "../assets/images/cashflow.png";
 import logo from "../assets/images/dark-transparent-image.png";
 import profilePhoto from "../assets/images/profile-photo.jpeg";
+import AuthModals from "../components/AuthModals";
 import "../styles/Home.css";
 
 const features = [
@@ -110,6 +111,8 @@ const howItWorks = [
 
 const Home: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Prevent background scroll when menu is open
@@ -140,6 +143,19 @@ const Home: React.FC = () => {
       document.removeEventListener("mousedown", handleClick);
     };
   }, [mobileMenuOpen]);
+
+  const handleAuthClick = (mode: "login" | "register") => {
+    setAuthMode(mode);
+    setAuthModalOpen(true);
+  };
+
+  const handleAuthClose = () => {
+    setAuthModalOpen(false);
+  };
+
+  const handleAuthModeChange = (newMode: "login" | "register") => {
+    setAuthMode(newMode);
+  };
 
   return (
     <div className="home-container">
@@ -173,15 +189,20 @@ const Home: React.FC = () => {
             >
               &#9776;
             </button>
-            <a href="/login" className="navbar-link navbar-auth">
+            <button
+              onClick={() => handleAuthClick("login")}
+              className="navbar-link navbar-auth"
+              style={{ background: "none", border: "none", cursor: "pointer" }}
+            >
               Login
-            </a>
-            <a
-              href="/register"
+            </button>
+            <button
+              onClick={() => handleAuthClick("register")}
               className="navbar-link navbar-auth navbar-register"
+              style={{ background: "none", border: "none", cursor: "pointer" }}
             >
               Register
-            </a>
+            </button>
           </div>
         </div>
         {/* Mobile menu */}
@@ -221,23 +242,42 @@ const Home: React.FC = () => {
             >
               Features
             </a>
-            <a
-              href="/login"
+            <button
+              onClick={() => {
+                handleAuthClick("login");
+                setMobileMenuOpen(false);
+              }}
               className="navbar-link navbar-auth"
-              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                width: "100%",
+                textAlign: "center",
+              }}
             >
               Login
-            </a>
-            <a
-              href="/register"
+            </button>
+            <button
+              onClick={() => {
+                handleAuthClick("register");
+                setMobileMenuOpen(false);
+              }}
               className="navbar-link navbar-auth navbar-register"
-              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                width: "100%",
+                textAlign: "center",
+              }}
             >
               Register
-            </a>
+            </button>
           </div>
         )}
       </nav>
+
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-container">
@@ -252,14 +292,18 @@ const Home: React.FC = () => {
                 with CashFlow - the simple, fast, and secure budgeting app.
               </p>
               <div className="hero-buttons">
-                <a href="/dashboard">
-                  <button className="btn-primary">
-                    Get Started <ArrowRight size={18} />
-                  </button>
-                </a>
-                <a href="/login">
-                  <button className="btn-secondary">Login</button>
-                </a>
+                <button
+                  onClick={() => handleAuthClick("register")}
+                  className="btn-primary"
+                >
+                  Get Started <ArrowRight size={18} />
+                </button>
+                <button
+                  onClick={() => handleAuthClick("login")}
+                  className="btn-secondary"
+                >
+                  Login
+                </button>
               </div>
             </div>
             <div className="hero-image-container">
@@ -407,40 +451,89 @@ const Home: React.FC = () => {
       <section className="contact-section">
         <div className="container">
           <div className="section-header">
-            <span className="section-subtitle">Contact</span>
-            <h2>Meet the Developer</h2>
+            <span className="section-subtitle">Meet the Creator</span>
+            <h2>The Developer Behind CashFlow</h2>
           </div>
           <div className="developer-card">
-            <img
-              src={profilePhoto}
-              alt="Meezaan Davids"
-              className="developer-avatar"
-            />
-            <h3>Meezaan Davids</h3>
-            <p className="developer-title">Full Stack Developer</p>
-            <p className="developer-description">
-              Passionate about creating simple, effective solutions for everyday
-              problems with modern web technologies.
-            </p>
-            <div className="contact-links">
-              <a
-                href="mailto:meezaandavids365@gmail.com"
-                className="contact-link"
-              >
-                <Mail size={20} /> Email
-              </a>
-              <a href="https://meezaand.github.io/" className="contact-link">
-                <Globe size={20} /> Portfolio
-              </a>
-              <a href="https://github.com/MeezaanD" className="contact-link">
-                <Github size={20} /> GitHub
-              </a>
-              <a
-                href="https://www.linkedin.com/in/meezaan-davids-4a7aa8265/"
-                className="contact-link"
-              >
-                <Linkedin size={20} /> LinkedIn
-              </a>
+            <div className="developer-content">
+              <div className="developer-image">
+                <div className="avatar-container">
+                  <img
+                    src={profilePhoto}
+                    alt="Meezaan Davids"
+                    className="developer-avatar"
+                  />
+                  <div className="avatar-glow"></div>
+                </div>
+              </div>
+
+              <div className="developer-details">
+                <div className="developer-info">
+                  <h3 className="developer-name">Meezaan Davids</h3>
+                  <p className="developer-title">Full Stack Developer</p>
+                  <div className="developer-tags">
+                    <span className="tag">React</span>
+                    <span className="tag">TypeScript</span>
+                    <span className="tag">Firebase</span>
+                    <span className="tag">UI/UX</span>
+                  </div>
+                </div>
+
+                <div className="developer-description">
+                  <p>
+                    Passionate about creating simple, effective solutions for
+                    everyday problems with modern web technologies. I believe in
+                    building applications that not only work flawlessly but also
+                    provide an exceptional user experience.
+                  </p>
+                </div>
+
+                <div className="contact-links">
+                  <a
+                    href="mailto:meezaandavids365@gmail.com"
+                    className="contact-link email-link"
+                  >
+                    <Mail size={20} />
+                    <span>Email</span>
+                  </a>
+                  <a
+                    href="https://meezaand.github.io/"
+                    className="contact-link portfolio-link"
+                  >
+                    <Globe size={20} />
+                    <span>Portfolio</span>
+                  </a>
+                  <a
+                    href="https://github.com/MeezaanD"
+                    className="contact-link github-link"
+                  >
+                    <Github size={20} />
+                    <span>GitHub</span>
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/in/meezaan-davids-4a7aa8265/"
+                    className="contact-link linkedin-link"
+                  >
+                    <Linkedin size={20} />
+                    <span>LinkedIn</span>
+                  </a>
+                </div>
+
+                <div className="developer-stats">
+                  <div className="stat-item">
+                    <span className="stat-number">100%</span>
+                    <span className="stat-label">Passion</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-number">24/7</span>
+                    <span className="stat-label">Learning</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-number">∞</span>
+                    <span className="stat-label">Creativity</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -453,6 +546,14 @@ const Home: React.FC = () => {
           <p className="tech-stack">Built with React, TypeScript & Firebase</p>
         </div>
       </footer>
+
+      {/* Auth Modals */}
+      <AuthModals
+        open={authModalOpen}
+        onClose={handleAuthClose}
+        mode={authMode}
+        onModeChange={handleAuthModeChange}
+      />
     </div>
   );
 };

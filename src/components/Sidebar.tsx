@@ -1,15 +1,8 @@
-import { useState } from "react";
-import { IconType } from "react-icons";
-import { useNavigate } from "react-router-dom";
-import {
-  FiSearch,
-  FiPlus,
-  FiX,
-  FiArrowUp,
-  FiArrowDown,
-  FiPieChart,
-  FiHome,
-} from "react-icons/fi";
+import React, { useState } from "react";
+import { FiPlus, FiPieChart, FiList } from "react-icons/fi";
+import { useAuth } from "../hooks/useAuth";
+import { signOut } from "firebase/auth";
+import { auth } from "../services/firebase";
 import {
   Dialog,
   DialogTitle,
@@ -18,15 +11,24 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import { auth } from "../services/firebase";
-import { signOut } from "firebase/auth";
-import { useAuth } from "../hooks/useAuth";
-import { useThemeVariant } from "../hooks/useThemeVariant";
-import { useTheme } from "../context/ThemeContext";
-import { SidebarProps } from "../types";
+import { Transaction } from "../types";
 import logoDark from "../assets/images/dark-transparent-image.png";
 import logoLight from "../assets/images/white-transparent-image.png";
+import { useThemeVariant } from "../hooks/useThemeVariant";
+import { useTheme } from "../context/ThemeContext";
+import { FiSearch, FiX, FiArrowUp, FiArrowDown } from "react-icons/fi";
 import "../styles/Sidebar.css";
+
+interface SidebarProps {
+  onCreate: () => void;
+  onSelect: (tx: Transaction | null) => void;
+  onDelete: (id: string) => void;
+  transactions: Transaction[];
+  selectedId: string | null;
+  collapsed: boolean;
+  toggleSidebar: () => void;
+  onAuthClick?: (mode: "login" | "register") => void;
+}
 
 const Sidebar = ({
   onCreate,
@@ -36,18 +38,18 @@ const Sidebar = ({
   selectedId,
   collapsed,
   toggleSidebar,
+  onAuthClick,
   onViewChange,
   activeView,
 }: SidebarProps & {
   onViewChange: (view: string) => void;
   activeView: string;
 }) => {
-  const currentUser = useAuth();
+  const { currentUser } = useAuth();
   const { theme } = useTheme();
   const styles = useThemeVariant();
   const themeVariant = useThemeVariant();
   const [searchTerm, setSearchTerm] = useState("");
-  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"logout" | "delete">("logout");
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(
@@ -71,7 +73,7 @@ const Sidebar = ({
     if (dialogType === "logout") {
       await signOut(auth);
       localStorage.removeItem("token");
-      navigate("/login");
+      // No longer navigate, just close the dialog
     } else if (dialogType === "delete" && transactionToDelete) {
       onDelete(transactionToDelete);
     }
@@ -183,8 +185,8 @@ const Sidebar = ({
               const activeColor = isDark ? "#ffffff" : "#1a202c";
               const inactiveColor = themeVariant.textSecondary;
 
-              const iconMap: Record<string, IconType> = {
-                dashboard: FiHome,
+              const iconMap: Record<string, React.ElementType> = {
+                dashboard: FiList,
                 reports: FiPieChart,
                 table: FiSearch,
               };
@@ -364,7 +366,7 @@ const Sidebar = ({
         ) : (
           <button
             className="login-btn"
-            onClick={() => navigate("/login")}
+            onClick={() => onAuthClick?.("login")}
             style={{
               background: styles.accentPrimary,
               color: "#fff",
