@@ -158,7 +158,7 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="home-container">
+    <div className="home-container theme-light">
       {/* Sticky Navbar */}
       <nav className="navbar">
         <div className="navbar-container">
