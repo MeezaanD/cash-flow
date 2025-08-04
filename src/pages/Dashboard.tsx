@@ -24,8 +24,14 @@ import "../styles/Dashboard.css";
 
 const Dashboard: React.FC = () => {
   const styles = useThemeVariant();
-  const { transactions, addTransaction, updateTransaction, deleteTransaction } =
-    useTransactions();
+  const {
+    transactions,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    loading,
+    error: apiError,
+  } = useTransactions();
 
   const [selectedTx, setSelectedTx] = useState<any | null>(null);
   const [selectedTransactionId, setSelectedTransactionId] = useState<
@@ -194,6 +200,64 @@ const Dashboard: React.FC = () => {
   const handleDateRangeChange = (newRange: DateRange) => {
     setDateRange(newRange);
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div
+        className="dashboard-wrapper"
+        style={{
+          background: styles.cardBg,
+          color: styles.textPrimary,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <h2>Loading your financial data...</h2>
+          <p>Please wait while we fetch your transactions.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (apiError) {
+    return (
+      <div
+        className="dashboard-wrapper"
+        style={{
+          background: styles.cardBg,
+          color: styles.textPrimary,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <h2>Error loading data</h2>
+          <p>{apiError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              background: styles.accentPrimary,
+              color: "#fff",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "5px",
+              cursor: "pointer",
+              marginTop: "1rem",
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

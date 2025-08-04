@@ -342,11 +342,7 @@ const Sidebar = ({
               className="user-avatar"
               style={{ background: styles.accentPrimary }}
             >
-              {currentUser.photoURL ? (
-                <img src={currentUser.photoURL} alt="User" />
-              ) : (
-                <span>{currentUser.email?.[0]?.toUpperCase() ?? "?"}</span>
-              )}
+              <span>{currentUser.email?.[0]?.toUpperCase() ?? "?"}</span>
             </div>
             <div className="user-details">
               <p className="user-email" style={{ color: styles.textSecondary }}>

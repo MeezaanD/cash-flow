@@ -23,6 +23,7 @@ import preview from "../assets/images/cashflow.png";
 import logo from "../assets/images/dark-transparent-image.png";
 import profilePhoto from "../assets/images/profile-photo.jpeg";
 import AuthModals from "../components/AuthModals";
+import { LoginForm } from "../components/LoginForm";
 import "../styles/Home.css";
 
 const features = [
@@ -203,6 +204,19 @@ const Home: React.FC = () => {
             >
               Register
             </button>
+            <a
+              href="/simple-login"
+              className="navbar-link navbar-auth"
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "#667eea",
+                fontWeight: "600",
+              }}
+            >
+              yoyo - Secure API
+            </a>
           </div>
         </div>
         {/* Mobile menu */}
@@ -274,6 +288,22 @@ const Home: React.FC = () => {
             >
               Register
             </button>
+            <a
+              href="/simple-login"
+              className="navbar-link navbar-auth"
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                width: "100%",
+                textAlign: "center",
+                color: "#667eea",
+                fontWeight: "600",
+              }}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Simple API
+            </a>
           </div>
         )}
       </nav>
@@ -446,6 +476,99 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* API Authentication Demo Section */}
+      {/* <section
+        className="api-demo-section"
+        style={{
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "white",
+          padding: "4rem 0",
+        }}
+      >
+        <div className="container">
+          <div className="section-header" style={{ color: "white" }}>
+            <span className="section-subtitle" style={{ color: "#e2e8f0" }}>
+              New Feature
+            </span>
+            <h2>Dual Authentication System</h2>
+            <p>Try both Firebase and custom API authentication methods</p>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "2rem",
+            }}
+          >
+            <LoginForm
+              onLoginSuccess={() => {
+                alert("Login successful! You can now access the dashboard.");
+                window.location.href = "/dashboard";
+              }}
+            />
+          </div>
+
+          <div
+            style={{
+              marginTop: "2rem",
+              textAlign: "center",
+              color: "#e2e8f0",
+            }}
+          >
+            <h3 style={{ marginBottom: "1rem" }}>How it works:</h3>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                gap: "1rem",
+                maxWidth: "800px",
+                margin: "0 auto",
+              }}
+            >
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.1)",
+                  padding: "1rem",
+                  borderRadius: "8px",
+                }}
+              >
+                <h4>API Authentication</h4>
+                <p>
+                  Use username/password to get a JWT token from your custom
+                  backend
+                </p>
+              </div>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.1)",
+                  padding: "1rem",
+                  borderRadius: "8px",
+                }}
+              >
+                <h4>Firebase Authentication</h4>
+                <p>
+                  Use email/password with Firebase Auth, then get a JWT for your
+                  API
+                </p>
+              </div>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.1)",
+                  padding: "1rem",
+                  borderRadius: "8px",
+                }}
+              >
+                <h4>Financial Data API</h4>
+                <p>
+                  Use the JWT token to fetch financial data from your backend
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section> */}
 
       {/* Developer Contact */}
       <section className="contact-section">
