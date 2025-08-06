@@ -25,7 +25,7 @@ export interface Transaction {
 // API configuration
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://us-central1-your-project-id.cloudfunctions.net";
+  "https://us-central1-cash-flow-eb5bd.cloudfunctions.net";
 
 class ApiService {
   private tokenCache: { token: string; expiresAt: number } | null = null;

@@ -18,7 +18,7 @@ Authorization: Bearer <firebase_id_token>
 
 ### Getting a Firebase ID Token
 
-In your React app, you can get the current user's ID token:
+In the application, you can get the current user's ID token:
 
 ```typescript
 import { getIdToken } from "firebase/auth";
