@@ -13,7 +13,7 @@ import {
 import { useTransactions } from "../hooks/useTransactions";
 import { Transaction, ViewType, DateRange } from "../types";
 import { useThemeVariant } from "@/hooks/useThemeVariant";
-import { filterTransactionsByDateRange } from "../utils/dateRangeFilter";
+import { filterTransactionsByDateRangeObject } from "../utils/dateRangeFilter";
 import PieChart from "../components/PieChart";
 import Sidebar from "../components/Sidebar";
 import ThemeDropdown from "../components/ThemeDropdown";
@@ -50,7 +50,7 @@ const Dashboard: React.FC = () => {
 
   // Filter transactions by date range
   const filteredTransactions = useMemo(() => {
-    return filterTransactionsByDateRange(transactions, dateRange);
+    return filterTransactionsByDateRangeObject(transactions, dateRange);
   }, [transactions, dateRange]);
 
   const handleCreate = () => {

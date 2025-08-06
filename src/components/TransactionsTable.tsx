@@ -20,7 +20,7 @@ import {
 import { FiArrowUp, FiArrowDown, FiTrash2 } from "react-icons/fi";
 import { TransactionsTableProps } from "../types";
 import DateRangeFilter, { DateRange } from "./DateRangeFilter";
-import { filterTransactionsByDateRange } from "../utils/dateRangeFilter";
+import { filterTransactionsByDateRangeObject } from "../utils/dateRangeFilter";
 import "../styles/TransactionsTable.css";
 
 const categoryColors: Record<string, string> = {
@@ -116,7 +116,10 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 
   const filtered = React.useMemo(() => {
     // First filter by date range
-    let dateFiltered = filterTransactionsByDateRange(transactions, dateRange);
+    let dateFiltered = filterTransactionsByDateRangeObject(
+      transactions,
+      dateRange
+    );
 
     // Then apply other filters
     return dateFiltered

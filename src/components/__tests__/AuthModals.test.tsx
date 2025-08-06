@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import AuthModals from "../AuthModals";
-import { clearAllMocks } from "../../__tests__/utils/test-utils";
+import { clearAllMocks } from "../../utils/test-utils";
 
 // Mock Material-UI icons
 jest.mock("@mui/icons-material", () => ({

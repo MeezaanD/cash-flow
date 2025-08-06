@@ -5,7 +5,7 @@ import {
   setupAuthenticatedUser,
   setupUnauthenticatedUser,
   clearAllMocks,
-} from "../../__tests__/utils/test-utils";
+} from "../../utils/test-utils";
 
 // Mock Firebase auth
 jest.mock("../../services/firebase", () => ({

@@ -27,16 +27,11 @@ const config = {
     "!src/**/*.d.ts",
     "!src/main.tsx",
     "!src/vite-env.d.ts",
-    "!src/__tests__/utils/test-utils.ts",
   ],
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov", "html"],
   extensionsToTreatAsEsm: [".ts", ".tsx"],
-  testPathIgnorePatterns: [
-    "/node_modules/",
-    "/dist/",
-    "src/__tests__/utils/test-utils.ts",
-  ],
+  testPathIgnorePatterns: ["/node_modules/", "/dist/"],
 };
 
 export default config;

@@ -72,7 +72,7 @@ const AllTheProviders: React.FC<AllTheProvidersProps> = ({ children }) => {
   return React.createElement(
     BrowserRouter,
     {},
-    React.createElement(ThemeProvider, {}, children)
+    React.createElement(ThemeProvider, { children }, children)
   );
 };
 
