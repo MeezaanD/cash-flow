@@ -3,21 +3,29 @@ import { DateRange } from "../components/DateRangeFilter";
 
 export const filterTransactionsByDateRange = (
   transactions: Transaction[],
-  dateRange: DateRange
+  startDate?: string,
+  endDate?: string
 ): Transaction[] => {
-  if (!dateRange.startDate || !dateRange.endDate) {
+  // If no date range is provided, return all transactions
+  if (!startDate && !endDate) {
     return transactions;
   }
 
-  const startDate = new Date(dateRange.startDate);
-  const endDate = new Date(dateRange.endDate);
+  let start: Date | null = null;
+  let end: Date | null = null;
 
-  // Set time to start of day for start date and end of day for end date
-  startDate.setHours(0, 0, 0, 0);
-  endDate.setHours(23, 59, 59, 999);
+  if (startDate) {
+    start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+  }
+
+  if (endDate) {
+    end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+  }
 
   return transactions.filter((transaction) => {
-    let transactionDate: Date;
+    let transactionDate: Date | null = null;
 
     // Parse transaction date
     if (transaction.date) {
@@ -42,12 +50,34 @@ export const filterTransactionsByDateRange = (
       } else {
         transactionDate = new Date(transaction.createdAt);
       }
-    } else {
-      return false; // Skip transactions without a date
     }
 
-    return transactionDate >= startDate && transactionDate <= endDate;
+    // Skip transactions without a valid date
+    if (!transactionDate || isNaN(transactionDate.getTime())) {
+      return false;
+    }
+
+    // Apply date range filters
+    if (start && transactionDate < start) {
+      return false;
+    }
+    if (end && transactionDate > end) {
+      return false;
+    }
+
+    return true;
   });
+};
+
+export const filterTransactionsByDateRangeObject = (
+  transactions: Transaction[],
+  dateRange: DateRange
+): Transaction[] => {
+  return filterTransactionsByDateRange(
+    transactions,
+    dateRange.startDate,
+    dateRange.endDate
+  );
 };
 
 export const formatDateRange = (dateRange: DateRange): string => {

@@ -1,6 +1,16 @@
 import { useState, useEffect } from "react";
 import { db, auth } from "../services/firebase";
-import { collection, addDoc, deleteDoc, updateDoc, doc, query, where, getDocs, Timestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  doc,
+  query,
+  where,
+  getDocs,
+  Timestamp,
+} from "firebase/firestore";
 
 export const useTransactions = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -30,7 +40,10 @@ export const useTransactions = () => {
     );
 
     const querySnapshot = await getDocs(q);
-    const fetchedTransactions = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const fetchedTransactions = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
     setTransactions(fetchedTransactions);
     setLoading(false);
@@ -78,5 +91,11 @@ export const useTransactions = () => {
     }
   };
 
-  return { transactions, addTransaction, deleteTransaction, updateTransaction, loading };
+  return {
+    transactions,
+    addTransaction,
+    deleteTransaction,
+    updateTransaction,
+    loading,
+  };
 };
