@@ -5,7 +5,7 @@ import React from "react";
 jest.mock("./services/firebase", () => ({
   auth: {
     currentUser: null,
-    onAuthStateChanged: jest.fn((callback) => {
+    onAuthStateChanged: jest.fn((callback: (user: unknown) => void) => {
       // Call the callback immediately with null
       callback(null);
       // Return a proper unsubscribe function
@@ -34,12 +34,14 @@ const localStorageMock = {
   length: 0,
   key: jest.fn(),
 };
-global.localStorage = localStorageMock;
+Object.defineProperty(window, "localStorage", {
+  value: localStorageMock,
+});
 
 // Mock window.matchMedia for responsive tests
 Object.defineProperty(window, "matchMedia", {
   writable: true,
-  value: jest.fn().mockImplementation((query) => ({
+  value: jest.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -52,22 +54,42 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // Mock IntersectionObserver for component tests
-global.IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
+Object.defineProperty(global, "IntersectionObserver", {
+  writable: true,
+  value: jest.fn().mockImplementation(() => ({
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+    disconnect: jest.fn(),
+  })),
+});
 
 // Mock ResizeObserver for component tests
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
+Object.defineProperty(global, "ResizeObserver", {
+  writable: true,
+  value: jest.fn().mockImplementation(() => ({
+    observe: jest.fn(),
+    unobserve: jest.fn(),
+    disconnect: jest.fn(),
+  })),
+});
 
 // Mock TextEncoder and TextDecoder if not available
 if (typeof global.TextEncoder === "undefined") {
-  const { TextEncoder, TextDecoder } = require("util");
-  global.TextEncoder = TextEncoder;
-  global.TextDecoder = TextDecoder;
+  // Mock TextEncoder
+  Object.defineProperty(global, "TextEncoder", {
+    value: class TextEncoder {
+      encode(text: string): Uint8Array {
+        return new Uint8Array(Buffer.from(text, 'utf8'));
+      }
+    },
+  });
+
+  // Mock TextDecoder
+  Object.defineProperty(global, "TextDecoder", {
+    value: class TextDecoder {
+      decode(bytes: Uint8Array): string {
+        return Buffer.from(bytes).toString('utf8');
+      }
+    },
+  });
 }

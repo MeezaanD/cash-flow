@@ -23,7 +23,7 @@ export const setupAuthenticatedUser = () => {
   });
 
   // Mock onAuthStateChanged to call callback with user
-  (auth.onAuthStateChanged as jest.Mock).mockImplementation((callback) => {
+  (auth.onAuthStateChanged as jest.Mock).mockImplementation((callback: (user: unknown) => void) => {
     callback(mockUser);
     return jest.fn(); // Return unsubscribe function
   });
@@ -38,7 +38,7 @@ export const setupUnauthenticatedUser = () => {
   });
 
   // Mock onAuthStateChanged to call callback with null
-  (auth.onAuthStateChanged as jest.Mock).mockImplementation((callback) => {
+  (auth.onAuthStateChanged as jest.Mock).mockImplementation((callback: (user: unknown) => void) => {
     callback(null);
     return jest.fn(); // Return unsubscribe function
   });
