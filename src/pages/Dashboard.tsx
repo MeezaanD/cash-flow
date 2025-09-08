@@ -16,7 +16,7 @@ import { useThemeVariant } from "@/hooks/useThemeVariant";
 import { filterTransactionsByDateRangeObject } from "../utils/dateRangeFilter";
 import PieChart from "../components/PieChart";
 import Sidebar from "../components/Sidebar";
-import ThemeDropdown from "../components/ThemeDropdown";
+import SettingsModal from "../components/SettingsModal";
 import TransactionForm from "../components/TransactionForm";
 import TransactionsTable from "../components/TransactionsTable";
 import AuthModals from "../components/AuthModals";
@@ -44,6 +44,8 @@ const Dashboard: React.FC = () => {
   });
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [importSuccess, setImportSuccess] = useState<string | null>(null);
 
   const [error, setError] = useState<string | null>(null);
   const [showError, setShowError] = useState(false);
@@ -149,10 +151,7 @@ const Dashboard: React.FC = () => {
     setError(null);
   };
 
-  const handleAuthClick = (mode: "login" | "register") => {
-    setAuthMode(mode);
-    setAuthModalOpen(true);
-  };
+  // Auth modal opener passed directly via onOpenLogin from Sidebar
 
   const handleAuthClose = () => {
     setAuthModalOpen(false);
@@ -195,12 +194,25 @@ const Dashboard: React.FC = () => {
     setDateRange(newRange);
   };
 
+  // kept helper removed (handled inline in SettingsModal props)
+
+  // Export helpers provided inline to SettingsModal props below
+
+  // Removed unused local import helper (handled inline in SettingsModal props)
+
   return (
     <div
       className="dashboard-wrapper"
       style={{ background: styles.cardBg, color: styles.textPrimary }}
     >
-      <ThemeDropdown />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          justifyContent: "flex-end",
+        }}
+      ></div>
       <Sidebar
         collapsed={!sidebarVisible}
         toggleSidebar={toggleSidebar}
@@ -211,7 +223,8 @@ const Dashboard: React.FC = () => {
         selectedId={selectedTransactionId}
         activeView={activeView}
         onViewChange={(view: string) => setActiveView(view as ViewType)}
-        onAuthClick={handleAuthClick}
+        onOpenLogin={() => setAuthModalOpen(true)}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
 
       <Snackbar
@@ -226,6 +239,21 @@ const Dashboard: React.FC = () => {
           sx={{ width: "100%" }}
         >
           {error}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={!!importSuccess}
+        autoHideDuration={4000}
+        onClose={() => setImportSuccess(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setImportSuccess(null)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {importSuccess}
         </Alert>
       </Snackbar>
 
@@ -251,6 +279,175 @@ const Dashboard: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <SettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onImport={async (file) => {
+          try {
+            const text = await file.text();
+            let records: any[] = [];
+            if (file.name.toLowerCase().endsWith(".json")) {
+              records = JSON.parse(text);
+            } else if (file.name.toLowerCase().endsWith(".csv")) {
+              const [headerLine, ...lines] = text
+                .split(/\r?\n/)
+                .filter(Boolean);
+              const headers = headerLine
+                .split(",")
+                .map((h) => h.replace(/^\"|\"$/g, ""));
+              const parseCSVValue = (cell: string) =>
+                cell.replace(/^\"|\"$/g, "").replace(/\"\"/g, '"');
+              records = lines.map((line) => {
+                const cells = line.match(/\"(?:[^\"]|\"\")*\"|[^,]+/g) || [];
+                const obj: any = {};
+                headers.forEach((h, i) => {
+                  obj[h] = parseCSVValue(cells[i] ?? "");
+                });
+                return obj;
+              });
+            } else {
+              throw new Error("Unsupported file type. Use CSV or JSON.");
+            }
+
+            const required = ["title", "amount", "type", "category"];
+            let imported = 0;
+            let skippedDuplicates = 0;
+            const errors: string[] = [];
+
+            const existingSignatures = new Set(
+              transactions.map(
+                (t) =>
+                  `${t.title}|${t.amount}|${t.type}|${t.category}|${t.date && typeof t.date === "object" && "toDate" in t.date ? t.date.toDate().toISOString().slice(0, 10) : t.date ? new Date(t.date as any).toISOString().slice(0, 10) : ""}`
+              )
+            );
+
+            for (const [index, r] of records.entries()) {
+              const row = typeof r === "object" ? r : {};
+              const missing = required.filter(
+                (k) => !(k in row) || row[k] === ""
+              );
+              if (missing.length) {
+                errors.push(`Row ${index + 1}: Missing ${missing.join(", ")}`);
+                continue;
+              }
+              const amountNum = Number(row.amount);
+              if (!isFinite(amountNum)) {
+                errors.push(`Row ${index + 1}: Invalid amount`);
+                continue;
+              }
+              if (row.type !== "income" && row.type !== "expense") {
+                errors.push(`Row ${index + 1}: Invalid type`);
+                continue;
+              }
+              const dateISO = row.date
+                ? new Date(row.date).toISOString().slice(0, 10)
+                : "";
+              const signature = `${row.title}|${amountNum}|${row.type}|${row.category}|${dateISO}`;
+              if (existingSignatures.has(signature)) {
+                skippedDuplicates++;
+                continue;
+              }
+              try {
+                await addTransaction({
+                  title: row.title,
+                  amount: amountNum,
+                  type: row.type,
+                  category: row.category,
+                  description: row.description ?? "",
+                });
+                imported++;
+                existingSignatures.add(signature);
+              } catch (e) {
+                errors.push(`Row ${index + 1}: Failed to save`);
+              }
+            }
+
+            if (errors.length) {
+              setError(
+                `Imported ${imported}, skipped ${skippedDuplicates}. Errors: ${errors.slice(0, 3).join("; ")}${errors.length > 3 ? "..." : ""}`
+              );
+              setShowError(true);
+            } else {
+              setImportSuccess(
+                `Imported ${imported}, skipped ${skippedDuplicates}.`
+              );
+            }
+          } catch (e: any) {
+            setError(e.message || "Failed to import file.");
+            setShowError(true);
+          }
+        }}
+        onExportCSV={() => {
+          const headers = [
+            "title",
+            "amount",
+            "type",
+            "category",
+            "description",
+            "date",
+            "createdAt",
+            "id",
+          ];
+          const rows = transactions.map((t) => {
+            const safe = (v: any) => {
+              if (v == null) return "";
+              const s = String(v).replace(/\"/g, '""');
+              return `"${s}"`;
+            };
+            const date =
+              t.date && typeof t.date === "object" && "toDate" in t.date
+                ? t.date.toDate().toISOString()
+                : t.date
+                  ? new Date(t.date as any).toISOString()
+                  : "";
+            const createdAt =
+              t.createdAt &&
+              typeof t.createdAt === "object" &&
+              "toDate" in t.createdAt
+                ? t.createdAt.toDate().toISOString()
+                : t.createdAt
+                  ? new Date(t.createdAt as any).toISOString()
+                  : "";
+            return [
+              t.title,
+              t.amount,
+              t.type,
+              t.category,
+              t.description ?? "",
+              date,
+              createdAt,
+              t.id ?? "",
+            ]
+              .map(safe)
+              .join(",");
+          });
+          const csv = [headers.join(","), ...rows].join("\n");
+          const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "transactions.csv";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }}
+        onExportJSON={() => {
+          const json = JSON.stringify(transactions, null, 2);
+          const blob = new Blob([json], {
+            type: "application/json;charset=utf-8",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "transactions.json";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }}
+      />
 
       <AuthModals
         open={authModalOpen}

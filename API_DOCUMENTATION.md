@@ -274,5 +274,5 @@ firebase functions:list
 
 3. **Advanced Features:**
    - Bulk operations
-   - Export functionality
+   - Client-side import/export (Implemented in app UI: Settings → Data)
    - Analytics endpoints

@@ -21,6 +21,8 @@ import { FiArrowUp, FiArrowDown, FiTrash2 } from "react-icons/fi";
 import { TransactionsTableProps } from "../types";
 import DateRangeFilter, { DateRange } from "./DateRangeFilter";
 import { filterTransactionsByDateRangeObject } from "../utils/dateRangeFilter";
+import { useTheme } from "../context/ThemeContext";
+import { formatCurrency } from "../utils/formatCurrency";
 import "../styles/TransactionsTable.css";
 
 // Constants moved outside component
@@ -58,39 +60,52 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
   onSelect,
   selectedId,
 }) => {
+  const { currency } = useTheme();
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">(
+    "all"
+  );
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterMonth, setFilterMonth] = useState("all");
-  const [dateRange, setDateRange] = useState<DateRange>({ startDate: "", endDate: "" });
+  const [dateRange, setDateRange] = useState<DateRange>({
+    startDate: "",
+    endDate: "",
+  });
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
 
   // Memoized filtered transactions
   const { filtered, totals } = useMemo(() => {
-    const dateFiltered = filterTransactionsByDateRangeObject(transactions, dateRange);
-    
+    const dateFiltered = filterTransactionsByDateRangeObject(
+      transactions,
+      dateRange
+    );
+
     const filtered = dateFiltered
-      .filter(tx => {
-        const matchesSearch = tx.title.toLowerCase().includes(search.toLowerCase());
+      .filter((tx) => {
+        const matchesSearch = tx.title
+          .toLowerCase()
+          .includes(search.toLowerCase());
         const matchesType = filterType === "all" || tx.type === filterType;
-        const matchesCategory = filterCategory === "all" || tx.category === filterCategory;
+        const matchesCategory =
+          filterCategory === "all" || tx.category === filterCategory;
         const dateValue = tx.date ?? tx.createdAt;
-        const month =
-          dateValue
-            ? new Date(
-                typeof dateValue === "object" && "toDate" in dateValue
-                  ? dateValue.toDate()
-                  : dateValue
-              ).getMonth()
-            : -1;
-        const matchesMonth = filterMonth === "all" || month === parseInt(filterMonth);
-        
+        const month = dateValue
+          ? new Date(
+              typeof dateValue === "object" && "toDate" in dateValue
+                ? dateValue.toDate()
+                : dateValue
+            ).getMonth()
+          : -1;
+        const matchesMonth =
+          filterMonth === "all" || month === parseInt(filterMonth);
+
         return matchesSearch && matchesType && matchesCategory && matchesMonth;
       })
       .sort((a, b) => {
         const getValidDate = (value: any) => {
           if (!value) return new Date(0);
-          if (typeof value === "object" && "toDate" in value) return value.toDate();
+          if (typeof value === "object" && "toDate" in value)
+            return value.toDate();
           return new Date(value);
         };
         const dateA = getValidDate(a.date ?? a.createdAt).getTime();
@@ -99,15 +114,26 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
       });
 
     const totalAmount = filtered.reduce((sum, tx) => sum + tx.amount, 0);
-    const totalIncome = filtered.filter(tx => tx.type === "income").reduce((sum, tx) => sum + tx.amount, 0);
-    const totalExpense = filtered.filter(tx => tx.type === "expense").reduce((sum, tx) => sum + tx.amount, 0);
+    const totalIncome = filtered
+      .filter((tx) => tx.type === "income")
+      .reduce((sum, tx) => sum + tx.amount, 0);
+    const totalExpense = filtered
+      .filter((tx) => tx.type === "expense")
+      .reduce((sum, tx) => sum + tx.amount, 0);
 
     return { filtered, totals: { totalAmount, totalIncome, totalExpense } };
-  }, [transactions, dateRange, search, filterType, filterCategory, filterMonth]);
+  }, [
+    transactions,
+    dateRange,
+    search,
+    filterType,
+    filterCategory,
+    filterMonth,
+  ]);
 
   // Memoized unique categories
-  const allCategories = useMemo(() => 
-    Array.from(new Set(transactions.map(tx => tx.category))).sort(), 
+  const allCategories = useMemo(
+    () => Array.from(new Set(transactions.map((tx) => tx.category))).sort(),
     [transactions]
   );
 
@@ -115,19 +141,25 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - scrollTop <= clientHeight + 50 && visibleCount < filtered.length) {
-      setVisibleCount(prev => Math.min(prev + LOAD_MORE_COUNT, filtered.length));
+    if (
+      scrollHeight - scrollTop <= clientHeight + 50 &&
+      visibleCount < filtered.length
+    ) {
+      setVisibleCount((prev) =>
+        Math.min(prev + LOAD_MORE_COUNT, filtered.length)
+      );
     }
   };
 
   const resetVisibleCount = () => setVisibleCount(INITIAL_VISIBLE_COUNT);
 
   // Dynamic header text based on filters
-  const amountHeader = filterType === "all" 
-    ? `Amount (Total: R${totals.totalAmount.toFixed(2)}, Income: R${totals.totalIncome.toFixed(2)}, Expense: R${totals.totalExpense.toFixed(2)})`
-    : filterType === "income" 
-      ? `Amount (Total Income: R${totals.totalIncome.toFixed(2)})`
-      : `Amount (Total Expense: R${totals.totalExpense.toFixed(2)})`;
+  const amountHeader =
+    filterType === "all"
+      ? `Amount (Total: ${formatCurrency(totals.totalAmount, currency)}, Income: ${formatCurrency(totals.totalIncome, currency)}, Expense: ${formatCurrency(totals.totalExpense, currency)})`
+      : filterType === "income"
+        ? `Amount (Total Income: ${formatCurrency(totals.totalIncome, currency)})`
+        : `Amount (Total Expense: ${formatCurrency(totals.totalExpense, currency)})`;
 
   return (
     <Box className="transactions-wrapper">
@@ -144,7 +176,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
           fullWidth
           sx={{ flex: 1 }}
         />
-        
+
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <InputLabel>Type</InputLabel>
           <Select
@@ -175,11 +207,14 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
             {allCategories.map((category) => (
               <MenuItem key={category} value={category}>
                 <Box display="flex" alignItems="center" gap={1}>
-                  <Chip size="small" sx={{ 
-                    backgroundColor: CATEGORY_COLORS[category] || "#9CA3AF",
-                    width: 12, 
-                    height: 12 
-                  }} />
+                  <Chip
+                    size="small"
+                    sx={{
+                      backgroundColor: CATEGORY_COLORS[category] || "#9CA3AF",
+                      width: 12,
+                      height: 12,
+                    }}
+                  />
                   {category}
                 </Box>
               </MenuItem>
@@ -234,13 +269,15 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
             left: 0,
             right: 0,
             height: "30px",
-            background: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 100%)",
+            background:
+              "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 100%)",
             pointerEvents: "none",
             display: visibleCount < filtered.length ? "block" : "none",
             zIndex: 1,
           },
           ".theme-dark &::after": {
-            background: "linear-gradient(to bottom, rgba(31,41,55,0) 0%, rgba(31,41,55,0.9) 100%)",
+            background:
+              "linear-gradient(to bottom, rgba(31,41,55,0) 0%, rgba(31,41,55,0.9) 100%)",
           },
         }}
       >
@@ -265,7 +302,9 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
               >
                 <TableCell component="th" scope="row">
                   <Box sx={{ fontWeight: 500 }}>{tx.title}</Box>
-                  <Box sx={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
+                  <Box
+                    sx={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}
+                  >
                     {tx.type}
                   </Box>
                 </TableCell>
@@ -277,8 +316,14 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                   }}
                 >
                   <Box className="amount-cell">
-                    {tx.type === "income" ? <FiArrowUp size={14} /> : <FiArrowDown size={14} />}
-                    <span className="amount-value">R{tx.amount.toFixed(2)}</span>
+                    {tx.type === "income" ? (
+                      <FiArrowUp size={14} />
+                    ) : (
+                      <FiArrowDown size={14} />
+                    )}
+                    <span className="amount-value">
+                      {formatCurrency(tx.amount, currency)}
+                    </span>
                   </Box>
                 </TableCell>
                 <TableCell align="right">
@@ -287,7 +332,10 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                     let dateObj: Date;
                     if (!dateValue) {
                       dateObj = new Date(0);
-                    } else if (typeof dateValue === "object" && "toDate" in dateValue) {
+                    } else if (
+                      typeof dateValue === "object" &&
+                      "toDate" in dateValue
+                    ) {
                       dateObj = dateValue.toDate();
                     } else {
                       dateObj = new Date(dateValue);
@@ -303,7 +351,8 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
                   <Box
                     className="category-badge"
                     sx={{
-                      backgroundColor: CATEGORY_COLORS[tx.category] || "#9CA3AF",
+                      backgroundColor:
+                        CATEGORY_COLORS[tx.category] || "#9CA3AF",
                       padding: "4px 10px",
                       borderRadius: "12px",
                       fontSize: "0.75rem",
@@ -332,7 +381,9 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
               <TableRow>
                 <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
                   <Typography variant="body2" color="textSecondary">
-                    {search ? "No matching transactions found" : "No transactions available"}
+                    {search
+                      ? "No matching transactions found"
+                      : "No transactions available"}
                   </Typography>
                 </TableCell>
               </TableRow>
