@@ -318,6 +318,60 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Data Import/Export Section */}
+      <section className="date-filtering-section">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-subtitle">New Feature</span>
+            <h2>Import and Export Transactions</h2>
+            <p>
+              Move your data in and out of CashFlow with CSV or JSON — with
+              smart validation and duplicate protection.
+            </p>
+          </div>
+
+          <div className="date-filtering-content">
+            <div className="date-filtering-text">
+              <h3>Simple Export</h3>
+              <p>
+                Download all your transactions as CSV or JSON directly from the
+                Settings modal.
+              </p>
+
+              <h3>Safe Import</h3>
+              <p>
+                Import CSV/JSON files and we automatically validate required
+                fields and skip duplicates.
+              </p>
+
+              <h3>Instant Feedback</h3>
+              <p>
+                Get success and error notifications after each import so you
+                always know what happened.
+              </p>
+            </div>
+
+            <div className="date-filtering-visual">
+              <div className="filter-preview">
+                <div className="filter-header">
+                  <PieChart size={24} />
+                  <span>Settings → Data</span>
+                </div>
+                <div className="filter-options">
+                  <div className="filter-option active">Import CSV/JSON</div>
+                  <div className="filter-option">Export CSV</div>
+                  <div className="filter-option">Export JSON</div>
+                </div>
+                <div className="filter-result">
+                  <span>Data tools available in</span>
+                  <strong> Settings → Data</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Date Range Filtering Section */}
       <section className="date-filtering-section">
         <div className="container">

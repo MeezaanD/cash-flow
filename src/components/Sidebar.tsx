@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import { FiPlus, FiPieChart, FiList } from "react-icons/fi";
+import { FiPlus, FiPieChart, FiList, FiSettings } from "react-icons/fi";
 import { useAuth } from "../hooks/useAuth";
-import { signOut } from "firebase/auth";
-import { auth } from "../services/firebase";
 import {
   Dialog,
   DialogTitle,
@@ -27,7 +25,8 @@ interface SidebarProps {
   selectedId: string | null;
   collapsed: boolean;
   toggleSidebar: () => void;
-  onAuthClick?: (mode: "login" | "register") => void;
+  onOpenSettings?: () => void;
+  onOpenLogin?: () => void;
 }
 
 const Sidebar = ({
@@ -38,7 +37,8 @@ const Sidebar = ({
   selectedId,
   collapsed,
   toggleSidebar,
-  onAuthClick,
+  onOpenSettings,
+  onOpenLogin,
   onViewChange,
   activeView,
 }: SidebarProps & {
@@ -51,17 +51,12 @@ const Sidebar = ({
   const themeVariant = useThemeVariant();
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogType, setDialogType] = useState<"logout" | "delete">("logout");
+  const [dialogType, setDialogType] = useState<"delete">("delete");
   const [transactionToDelete, setTransactionToDelete] = useState<string | null>(
     null
   );
 
   const logo = theme === "dark" ? logoLight : logoDark;
-
-  const handleLogoutClick = () => {
-    setDialogType("logout");
-    setDialogOpen(true);
-  };
 
   const handleDeleteClick = (id: string) => {
     setDialogType("delete");
@@ -70,11 +65,7 @@ const Sidebar = ({
   };
 
   const handleConfirmAction = async () => {
-    if (dialogType === "logout") {
-      await signOut(auth);
-      localStorage.removeItem("token");
-      // No longer navigate, just close the dialog
-    } else if (dialogType === "delete" && transactionToDelete) {
+    if (dialogType === "delete" && transactionToDelete) {
       onDelete(transactionToDelete);
     }
     setDialogOpen(false);
@@ -141,26 +132,18 @@ const Sidebar = ({
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          {dialogType === "logout" ? "Confirm Logout" : "Confirm Deletion"}
-        </DialogTitle>
+        <DialogTitle id="alert-dialog-title">Confirm Deletion</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            {dialogType === "logout"
-              ? "Are you sure you want to logout?"
-              : "Are you sure you want to delete this transaction?"}
+            Are you sure you want to delete this transaction?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancelAction} color="primary">
             Cancel
           </Button>
-          <Button
-            onClick={handleConfirmAction}
-            color={dialogType === "logout" ? "primary" : "error"}
-            autoFocus
-          >
-            {dialogType === "logout" ? "Logout" : "Delete"}
+          <Button onClick={handleConfirmAction} color="error" autoFocus>
+            Delete
           </Button>
         </DialogActions>
       </Dialog>
@@ -337,7 +320,22 @@ const Sidebar = ({
         style={{ borderTopColor: styles.sidebarBorder }}
       >
         {currentUser ? (
-          <div className="user-info">
+          <button
+            className="user-info"
+            onClick={() => onOpenSettings?.()}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              width: "100%",
+              padding: "8px 10px",
+              borderRadius: 8,
+              background: styles.cardBg,
+              textAlign: "left",
+              border: `1px solid ${styles.sidebarBorder}`,
+              transition: "background 0.2s ease,border-color 0.2s ease",
+            }}
+          >
             <div
               className="user-avatar"
               style={{ background: styles.accentPrimary }}
@@ -349,30 +347,29 @@ const Sidebar = ({
               )}
             </div>
             <div className="user-details">
-              <p className="user-email" style={{ color: styles.textSecondary }}>
-                {currentUser.email ?? "User"}
+              <p className="user-email" style={{ color: styles.textPrimary }}>
+                {currentUser.displayName || currentUser.email || "User"}
               </p>
-              <button
-                className="logout-btn"
-                onClick={handleLogoutClick}
-                style={{
-                  color: styles.textSecondary,
-                }}
-              >
-                Sign Out
-              </button>
+                <FiSettings style={{ color: styles.textSecondary, fontSize: 18 }} title="Settings" />
             </div>
-          </div>
+          </button>
         ) : (
           <button
             className="login-btn"
-            onClick={() => onAuthClick?.("login")}
+            onClick={() => onOpenLogin?.()}
             style={{
               background: styles.accentPrimary,
               color: "#fff",
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              padding: "10px 12px",
+              borderRadius: 8,
             }}
           >
-            Login
+            <span>Login</span>
           </button>
         )}
       </div>
