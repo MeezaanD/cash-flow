@@ -163,7 +163,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 
   return (
     <Box className="transactions-wrapper">
-      <Box className="transactions-controls">
+      <Box className="transactions-controls" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <TextField
           label="Search transactions"
           variant="outlined"
@@ -239,20 +239,20 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
             ))}
           </Select>
         </FormControl>
-      </Box>
 
-      <Box sx={{ mb: 2 }}>
-        <DateRangeFilter
-          dateRange={dateRange}
-          onDateRangeChange={(newRange) => {
-            setDateRange(newRange);
-            resetVisibleCount();
-          }}
-          onClear={() => {
-            setDateRange({ startDate: "", endDate: "" });
-            resetVisibleCount();
-          }}
-        />
+        <Box>
+          <DateRangeFilter
+            dateRange={dateRange}
+            onDateRangeChange={(newRange) => {
+              setDateRange(newRange);
+              resetVisibleCount();
+            }}
+            onClear={() => {
+              setDateRange({ startDate: "", endDate: "" });
+              resetVisibleCount();
+            }}
+          />
+        </Box>
       </Box>
 
       <TableContainer

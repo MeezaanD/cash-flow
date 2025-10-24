@@ -58,6 +58,13 @@ const Sidebar = ({
 
   const logo = theme === "dark" ? logoLight : logoDark;
 
+  const handleCreateTransaction = () => {
+    onCreate();
+    if (window.innerWidth < 768) {
+      toggleSidebar();
+    }
+  };
+
   const handleDeleteClick = (id: string) => {
     setDialogType("delete");
     setTransactionToDelete(id);
@@ -302,7 +309,7 @@ const Sidebar = ({
         {!collapsed && (
           <button
             className="new-transaction-btn"
-            onClick={onCreate}
+            onClick={handleCreateTransaction}
             style={{
               background: styles.accentPrimary,
               color: "#fff",

@@ -386,7 +386,7 @@
 
   .user-details {
     flex-direction: row;
-    justify-content: center;
+    justify-content: end;
     align-items: center;
   }
 }
