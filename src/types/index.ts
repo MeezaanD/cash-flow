@@ -9,7 +9,7 @@ export interface ThemeContextType {
 }
 
 // ViewType
-export type ViewType = "dashboard" | "reports" | "transaction" | "table";
+export type ViewType = "dashboard" | "reports" | "transaction" | "table" | "list";
 
 // Category
 export interface Category {

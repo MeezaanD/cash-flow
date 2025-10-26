@@ -8,6 +8,7 @@ import {
   DialogContentText,
   DialogActions,
   Button,
+  useMediaQuery,
 } from "@mui/material";
 import { Transaction } from "../types";
 import logoDark from "../assets/images/dark-transparent-image.png";
@@ -49,6 +50,7 @@ const Sidebar = ({
   const { theme } = useTheme();
   const styles = useThemeVariant();
   const themeVariant = useThemeVariant();
+  const isMobile = useMediaQuery("(max-width:768px)");
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"delete">("delete");
@@ -169,7 +171,12 @@ const Sidebar = ({
       {!collapsed && (
         <>
           <div className="sidebar-nav">
-            {["dashboard", "reports", "table"].map((view) => {
+            {[
+              "dashboard",
+              "reports",
+              "list",
+              ...(isMobile ? [] : ["table"]),
+            ].map((view) => {
               const isActive = activeView === view;
               const isDark = theme === "dark";
               const activeColor = isDark ? "#ffffff" : "#1a202c";
@@ -179,6 +186,7 @@ const Sidebar = ({
                 dashboard: FiList,
                 reports: FiPieChart,
                 table: FiSearch,
+                list: FiList,
               };
 
               const IconComponent = iconMap[view];
@@ -357,7 +365,10 @@ const Sidebar = ({
               <p className="user-email" style={{ color: styles.textPrimary }}>
                 {currentUser.displayName || currentUser.email || "User"}
               </p>
-                <FiSettings style={{ color: styles.textSecondary, fontSize: 18 }} title="Settings" />
+              <FiSettings
+                style={{ color: styles.textSecondary, fontSize: 18 }}
+                title="Settings"
+              />
             </div>
           </button>
         ) : (
