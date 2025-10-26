@@ -19,6 +19,7 @@ import Sidebar from "../components/Sidebar";
 import SettingsModal from "../components/SettingsModal";
 import TransactionForm from "../components/TransactionForm";
 import TransactionsTable from "../components/TransactionsTable";
+import TransactionsList from "../components/TransactionsList";
 import AuthModals from "../components/AuthModals";
 import "../styles/Dashboard.css";
 
@@ -495,6 +496,14 @@ const Dashboard: React.FC = () => {
             onClose={() => handleShowPieChart(false)}
             dateRange={dateRange}
             onDateRangeChange={handleDateRangeChange}
+          />
+        ) : activeView === "list" ? (
+          <TransactionsList
+            transactions={
+              Array.isArray(filteredTransactions) ? filteredTransactions : []
+            }
+            onSelect={handleSelect}
+            selectedId={selectedTransactionId}
           />
         ) : activeView === "table" ? (
           <TransactionsTable

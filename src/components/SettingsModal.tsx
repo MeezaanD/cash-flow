@@ -91,13 +91,39 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="md"
+      PaperProps={{
+        sx: {
+          maxHeight: { xs: "90vh", sm: "80vh" },
+          margin: { xs: 1 },
+        },
+      }}
+    >
       <DialogTitle>Settings</DialogTitle>
-      <DialogContent>
-        <Box display="flex" gap={2} mt={1}>
+      <DialogContent
+        sx={{
+          overflow: "auto",
+          px: { xs: 1, sm: 3 },
+          pb: { xs: 1, sm: 3 },
+        }}
+      >
+        <Box
+          display="flex"
+          flexDirection={{ xs: "column", sm: "row" }}
+          gap={2}
+          mt={1}
+        >
           <Paper
             variant="outlined"
-            sx={{ width: 220, flexShrink: 0, borderRadius: 2 }}
+            sx={{
+              width: { xs: "100%", sm: 220 },
+              flexShrink: 0,
+              borderRadius: 2,
+            }}
           >
             <List component="nav" disablePadding>
               <ListItemButton
@@ -125,7 +151,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             </List>
           </Paper>
 
-          <Box flex={1}>
+          <Box flex={1} sx={{ minWidth: 0 }}>
             {activeTab === "general" && (
               <Box>
                 <Typography
@@ -186,7 +212,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                       Import transactions from CSV/JSON. Duplicates are
                       automatically skipped.
                     </Typography>
-                    <Box display="flex" gap={1}>
+                    <Box
+                      display="flex"
+                      flexDirection={{ xs: "column", sm: "row" }}
+                      gap={1}
+                    >
                       <input
                         type="file"
                         accept=".csv,.json,application/json,text/csv"
@@ -206,6 +236,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                             .getElementById("settings-import-input")
                             ?.click()
                         }
+                        sx={{ width: { xs: "100%", sm: "auto" } }}
                       >
                         Import
                       </Button>
@@ -213,6 +244,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                         variant="outlined"
                         size="small"
                         onClick={onExportCSV}
+                        sx={{ width: { xs: "100%", sm: "auto" } }}
                       >
                         Export CSV
                       </Button>
@@ -220,6 +252,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                         variant="outlined"
                         size="small"
                         onClick={onExportJSON}
+                        sx={{ width: { xs: "100%", sm: "auto" } }}
                       >
                         Export JSON
                       </Button>
@@ -231,23 +264,55 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           </Box>
         </Box>
       </DialogContent>
-      <DialogActions>
-        {currentUser ? (
-          <Button
-            color="error"
-            variant="outlined"
-            onClick={handleSignOut}
-            sx={{ mr: "auto" }}
-          >
-            Sign Out
+      <DialogActions
+        sx={{
+          flexDirection: { xs: "column-reverse", sm: "row" },
+          gap: { xs: 1, sm: 0 },
+          px: { xs: 2, sm: 3 },
+          pb: { xs: 2, sm: 2 },
+        }}
+      >
+        <Box
+          sx={{
+            width: { xs: "100%", sm: "auto" },
+            display: "flex",
+            gap: 1,
+            flexDirection: { xs: "column", sm: "row" },
+          }}
+        >
+          {currentUser ? (
+            <Button
+              color="error"
+              variant="outlined"
+              onClick={handleSignOut}
+              sx={{
+                mr: { sm: "auto" },
+                width: { xs: "100%", sm: "auto" },
+              }}
+            >
+              Sign Out
+            </Button>
+          ) : (
+            <Button
+              variant="outlined"
+              onClick={onClose}
+              sx={{
+                mr: { sm: "auto" },
+                width: { xs: "100%", sm: "auto" },
+              }}
+            >
+              Sign In
+            </Button>
+          )}
+          <Button onClick={onClose} sx={{ width: { xs: "100%", sm: "auto" } }}>
+            Close
           </Button>
-        ) : (
-          <Button variant="outlined" onClick={onClose} sx={{ mr: "auto" }}>
-            Sign In
-          </Button>
-        )}
-        <Button onClick={onClose}>Close</Button>
-        <Button onClick={handleApply} variant="contained">
+        </Box>
+        <Button
+          onClick={handleApply}
+          variant="contained"
+          sx={{ width: { xs: "100%", sm: "auto" } }}
+        >
           Apply
         </Button>
       </DialogActions>
