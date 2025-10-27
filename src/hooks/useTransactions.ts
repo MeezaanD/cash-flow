@@ -59,14 +59,20 @@ export const useTransactions = () => {
     category: string;
     description?: string;
     amount: number;
+    date?: Date;
   }) => {
     if (!user) throw new Error("User not authenticated");
 
-    const transactionData = {
+    const transactionData: any = {
       ...transaction,
       createdAt: Timestamp.now(),
       userId: user.uid,
     };
+
+    // Add custom date if provided, otherwise let Firestore handle it
+    if (transaction.date) {
+      transactionData.date = Timestamp.fromDate(transaction.date);
+    }
 
     await addDoc(collection(db, "transactions"), transactionData);
     await fetchTransactions();
@@ -84,7 +90,14 @@ export const useTransactions = () => {
   const updateTransaction = async (id: string, updates: any) => {
     try {
       const transactionRef = doc(db, "transactions", id);
-      await updateDoc(transactionRef, updates);
+      const updateData: any = { ...updates };
+
+      // Convert date to Timestamp if provided
+      if (updates.date instanceof Date) {
+        updateData.date = Timestamp.fromDate(updates.date);
+      }
+
+      await updateDoc(transactionRef, updateData);
       await fetchTransactions();
     } catch (error) {
       console.error("Error updating transaction:", error);

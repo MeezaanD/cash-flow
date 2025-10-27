@@ -6,10 +6,12 @@
 
 - **Secure Login:** User authentication with Firebase.
 - **Real-Time Tracking:** Instantly log and update income and expenses.
+- **Date Selection:** Choose custom dates for transactions (defaults to current date).
 - **Clean Interface:** Simple, user-friendly design.
 - **Cloud Sync:** Data stored and synced via Firebase.
 - **Fast Hosting:** Deployed on Vercel for quick load times.
-- **Import/Export (New):** Import transactions from CSV/JSON with validation and deduping, export all data as CSV/JSON from the Settings modal.
+- **Import/Export:** Import transactions from CSV/JSON with validation and deduping, export all data as CSV/JSON from the Settings modal.
+- **MVC Architecture:** Clean separation of concerns with Model-View-Controller pattern.
 
 ## Tech Stack
 
