@@ -10,29 +10,28 @@ import {
   Alert,
   Snackbar,
 } from "@mui/material";
-import { useTransactions } from "../hooks/useTransactions";
-import { Transaction, ViewType, DateRange } from "../types";
+import { useTransactionsContext } from "../context/TransactionsContext";
+import { ViewType, DateRange } from "../types";
 import { useThemeVariant } from "@/hooks/useThemeVariant";
 import { filterTransactionsByDateRangeObject } from "../utils/dateRangeFilter";
 import PieChart from "../components/PieChart";
 import Sidebar from "../components/Sidebar";
 import SettingsModal from "../components/SettingsModal";
-import TransactionForm from "../components/TransactionForm";
-import TransactionsTable from "../components/TransactionsTable";
-import TransactionsList from "../components/TransactionsList";
+import TransactionForm from "../views/Transactions/TransactionForm";
+import TransactionsTable from "../views/Transactions/TransactionsTable";
+import TransactionsList from "../views/Transactions/TransactionsList";
 import AuthModals from "../components/AuthModals";
 import "../styles/Dashboard.css";
 
 const Dashboard: React.FC = () => {
   const styles = useThemeVariant();
-  const { transactions, addTransaction, updateTransaction, deleteTransaction } =
-    useTransactions();
+  const { transactions, addTransaction, deleteTransaction } =
+    useTransactionsContext();
 
   const [selectedTx, setSelectedTx] = useState<any | null>(null);
   const [selectedTransactionId, setSelectedTransactionId] = useState<
     string | null
   >(null);
-  const [isCreating, setIsCreating] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [activeView, setActiveView] = useState<ViewType>("dashboard");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -59,7 +58,6 @@ const Dashboard: React.FC = () => {
   const handleCreate = () => {
     setSelectedTx(null);
     setSelectedTransactionId(null);
-    setIsCreating(true);
     setActiveView("transaction");
   };
 
@@ -67,12 +65,10 @@ const Dashboard: React.FC = () => {
     if (tx) {
       setSelectedTx(tx);
       setSelectedTransactionId(tx.id);
-      setIsCreating(false);
       setActiveView("transaction");
     } else {
       setSelectedTx(null);
       setSelectedTransactionId(null);
-      setIsCreating(false);
       setActiveView("dashboard");
     }
   };
@@ -107,7 +103,6 @@ const Dashboard: React.FC = () => {
   const handleCloseForm = () => {
     setSelectedTx(null);
     setSelectedTransactionId(null);
-    setIsCreating(false);
     setActiveView("dashboard");
   };
 
@@ -118,32 +113,6 @@ const Dashboard: React.FC = () => {
       setActiveView("reports");
     } else {
       setActiveView("dashboard");
-    }
-  };
-
-  const handleFormSubmit = async (
-    data: Omit<Transaction, "id" | "date" | "createdAt">
-  ) => {
-    try {
-      await addTransaction(data);
-      handleCloseForm();
-    } catch (err: any) {
-      setError("Failed to create transaction. Please try again.");
-      setShowError(true);
-    }
-  };
-
-  const handleFormUpdate = async (
-    data: Omit<Transaction, "id" | "date" | "createdAt">
-  ) => {
-    if (selectedTx?.id) {
-      try {
-        await updateTransaction(selectedTx.id, data);
-        handleCloseForm();
-      } catch (err: any) {
-        setError("Failed to update transaction. Please try again.");
-        setShowError(true);
-      }
     }
   };
 
@@ -217,7 +186,6 @@ const Dashboard: React.FC = () => {
       <Sidebar
         collapsed={!sidebarVisible}
         toggleSidebar={toggleSidebar}
-        transactions={transactions}
         onCreate={handleCreate}
         onSelect={handleSelect}
         onDelete={handleDeleteClick}
@@ -478,18 +446,10 @@ const Dashboard: React.FC = () => {
         )}
 
         {activeView === "transaction" ? (
-          isCreating ? (
-            <TransactionForm
-              onClose={handleCloseForm}
-              onSubmit={handleFormSubmit}
-            />
-          ) : selectedTx ? (
-            <TransactionForm
-              transaction={selectedTx}
-              onClose={handleCloseForm}
-              onSubmit={handleFormUpdate}
-            />
-          ) : null
+          <TransactionForm
+            transaction={selectedTx || undefined}
+            onClose={handleCloseForm}
+          />
         ) : activeView === "reports" ? (
           <PieChart
             data={pieChartData}
@@ -499,15 +459,11 @@ const Dashboard: React.FC = () => {
           />
         ) : activeView === "list" ? (
           <TransactionsList
-            transactions={
-              Array.isArray(filteredTransactions) ? filteredTransactions : []
-            }
             onSelect={handleSelect}
             selectedId={selectedTransactionId}
           />
         ) : activeView === "table" ? (
           <TransactionsTable
-            transactions={filteredTransactions}
             onDelete={handleDeleteClick}
             onSelect={handleSelect}
             selectedId={selectedTransactionId}

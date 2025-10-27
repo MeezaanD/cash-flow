@@ -13,15 +13,14 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { FiArrowUp, FiArrowDown, FiSearch } from "react-icons/fi";
-import { Transaction } from "../types";
-import { useTheme } from "../context/ThemeContext";
-import { useThemeVariant } from "../hooks/useThemeVariant";
-import { formatCurrency } from "../utils/formatCurrency";
-import "../styles/TransactionList.css";
+import { useTransactionsContext } from "../../context/TransactionsContext";
+import { useTheme } from "../../context/ThemeContext";
+import { useThemeVariant } from "../../hooks/useThemeVariant";
+import { formatCurrency } from "../../utils/formatCurrency";
+import "../../styles/TransactionList.css";
 
-interface TransactionListProps {
-  transactions: Transaction[];
-  onSelect?: (tx: Transaction) => void;
+interface TransactionsListProps {
+  onSelect?: (tx: any) => void;
   selectedId?: string | null;
 }
 
@@ -35,13 +34,13 @@ const CATEGORY_COLORS: Record<string, string> = {
   travel: "#0088FE",
 };
 
-const TransactionList: React.FC<TransactionListProps> = ({
-  transactions,
+const TransactionsList: React.FC<TransactionsListProps> = ({
   onSelect,
   selectedId,
 }) => {
+  const { transactions } = useTransactionsContext();
   const { currency } = useTheme();
-  const themeVariant = useThemeVariant(); // ✅ get the actual theme object
+  const themeVariant = useThemeVariant();
   const [search, setSearch] = useState("");
 
   const sorted = useMemo(() => {
@@ -65,7 +64,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
   }, [sorted, search]);
 
   const grouped = useMemo(() => {
-    return filtered.reduce((acc: Record<string, Transaction[]>, tx) => {
+    return filtered.reduce((acc: Record<string, any[]>, tx) => {
       const dateVal = tx.date ?? tx.createdAt;
       let dateObj: Date;
       if (!dateVal) dateObj = new Date(0);
@@ -222,7 +221,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                                 fontSize: "0.9rem",
                                 color: themeVariant.textPrimary,
                               }}
-                              component="span" // ✅ prevent <p> nesting
+                              component="span"
                             >
                               {tx.title}
                             </Typography>
@@ -247,7 +246,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                                   ml: 0.5,
                                   color: themeVariant.textPrimary,
                                 }}
-                                component="span" // ✅ prevent <p> nesting
+                                component="span"
                               >
                                 {formatCurrency(tx.amount, currency)}
                               </Typography>
@@ -284,7 +283,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
                                 fontSize: "0.75rem",
                                 color: themeVariant.textSecondary,
                               }}
-                              component="span" // ✅ prevent <p> nesting
+                              component="span"
                             >
                               • {tx.type}
                             </Typography>
@@ -321,4 +320,4 @@ const TransactionList: React.FC<TransactionListProps> = ({
   );
 };
 
-export default TransactionList;
+export default TransactionsList;

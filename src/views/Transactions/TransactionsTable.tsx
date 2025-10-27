@@ -18,14 +18,19 @@ import {
   Chip,
 } from "@mui/material";
 import { FiArrowUp, FiArrowDown, FiTrash2 } from "react-icons/fi";
-import { TransactionsTableProps } from "../types";
-import DateRangeFilter, { DateRange } from "./DateRangeFilter";
-import { filterTransactionsByDateRangeObject } from "../utils/dateRangeFilter";
-import { useTheme } from "../context/ThemeContext";
-import { formatCurrency } from "../utils/formatCurrency";
-import "../styles/TransactionsTable.css";
+import { useTransactionsContext } from "../../context/TransactionsContext";
+import DateRangeFilter, { DateRange } from "../../components/DateRangeFilter";
+import { filterTransactionsByDateRangeObject } from "../../utils/dateRangeFilter";
+import { useTheme } from "../../context/ThemeContext";
+import { formatCurrency } from "../../utils/formatCurrency";
+import "../../styles/TransactionsTable.css";
 
-// Constants moved outside component
+interface TransactionsTableProps {
+  onDelete: (id: string) => void;
+  onSelect: (tx: any) => void;
+  selectedId: string | null;
+}
+
 const CATEGORY_COLORS: Record<string, string> = {
   debit_order: "#FFBB28",
   entertainment: "#FF6B6B",
@@ -55,11 +60,11 @@ const INITIAL_VISIBLE_COUNT = 15;
 const LOAD_MORE_COUNT = 15;
 
 const TransactionsTable: React.FC<TransactionsTableProps> = ({
-  transactions,
   onDelete,
   onSelect,
   selectedId,
 }) => {
+  const { transactions } = useTransactionsContext();
   const { currency } = useTheme();
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">(
@@ -73,7 +78,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
   });
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
 
-  // Memoized filtered transactions
   const { filtered, totals } = useMemo(() => {
     const dateFiltered = filterTransactionsByDateRangeObject(
       transactions,
@@ -131,7 +135,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
     filterMonth,
   ]);
 
-  // Memoized unique categories
   const allCategories = useMemo(
     () => Array.from(new Set(transactions.map((tx) => tx.category))).sort(),
     [transactions]
@@ -153,7 +156,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 
   const resetVisibleCount = () => setVisibleCount(INITIAL_VISIBLE_COUNT);
 
-  // Dynamic header text based on filters
   const amountHeader =
     filterType === "all"
       ? `Amount (Total: ${formatCurrency(totals.totalAmount, currency)}, Income: ${formatCurrency(totals.totalIncome, currency)}, Expense: ${formatCurrency(totals.totalExpense, currency)})`
@@ -163,7 +165,10 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 
   return (
     <Box className="transactions-wrapper">
-      <Box className="transactions-controls" sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box
+        className="transactions-controls"
+        sx={{ display: "flex", alignItems: "center", gap: 2 }}
+      >
         <TextField
           label="Search transactions"
           variant="outlined"

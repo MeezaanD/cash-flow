@@ -7,9 +7,17 @@ import {
   FiSave,
   FiX,
   FiChevronDown,
+  FiCalendar,
 } from "react-icons/fi";
-import { Transaction, TransactionFormProps, Category } from "../types";
-import "../styles/TransactionForm.css";
+import { useTransactionsContext } from "../../context/TransactionsContext";
+import { Transaction } from "../../models/TransactionModel";
+import { Category } from "../../types";
+import "../../styles/TransactionForm.css";
+
+interface TransactionFormProps {
+  onClose: () => void;
+  transaction?: Transaction;
+}
 
 const CATEGORIES: Category[] = [
   { value: "personal", label: "Personal" },
@@ -21,15 +29,16 @@ const CATEGORIES: Category[] = [
 ];
 
 const TransactionForm: React.FC<TransactionFormProps> = ({
-  onSubmit,
   onClose,
   transaction,
 }) => {
+  const { addTransaction, updateTransaction } = useTransactionsContext();
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState(0);
   const [type, setType] = useState<Transaction["type"]>("expense");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
+  const [date, setDate] = useState<string>("");
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -40,13 +49,34 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       setType(transaction.type);
       setCategory(transaction.category ?? "");
       setDescription(transaction.description ?? "");
+
+      // Parse date from transaction
+      let transactionDate: Date | null = null;
+      if (transaction.date) {
+        if (
+          typeof transaction.date === "object" &&
+          "toDate" in transaction.date
+        ) {
+          transactionDate = transaction.date.toDate();
+        } else if (transaction.date instanceof Date) {
+          transactionDate = transaction.date;
+        }
+      }
+
+      // Set date in YYYY-MM-DD format for date input
+      if (transactionDate) {
+        setDate(transactionDate.toISOString().split("T")[0]);
+      } else {
+        setDate("");
+      }
     } else {
-      // Reset form for new transaction
+      // Reset form for new transaction (default to today's date)
       setTitle("");
       setAmount(0);
       setType("expense");
       setCategory("");
       setDescription("");
+      setDate(new Date().toISOString().split("T")[0]);
     }
   }, [transaction]);
 
@@ -54,13 +84,26 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await onSubmit({
+      const data: any = {
         title,
         amount: Number(amount),
         type,
         category,
         description,
-      });
+      };
+
+      // Include date if provided (convert to Date object, otherwise use current date)
+      if (date) {
+        data.date = new Date(date);
+      } else {
+        data.date = new Date(); // Use current date if not specified
+      }
+
+      if (transaction && transaction.id) {
+        await updateTransaction(transaction.id, data);
+      } else {
+        await addTransaction(data);
+      }
       onClose();
     } finally {
       setIsSubmitting(false);
@@ -157,6 +200,19 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add any additional details"
             rows={3}
+          />
+        </div>
+
+        <div className="input-group">
+          <label>
+            <FiCalendar className="input-icon" />
+            <span>Date</span>
+          </label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
           />
         </div>
 
