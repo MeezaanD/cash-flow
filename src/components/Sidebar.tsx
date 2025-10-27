@@ -15,6 +15,7 @@ import logoDark from "../assets/images/dark-transparent-image.png";
 import logoLight from "../assets/images/white-transparent-image.png";
 import { useThemeVariant } from "../hooks/useThemeVariant";
 import { useTheme } from "../context/ThemeContext";
+import { useTransactionsContext } from "../context/TransactionsContext";
 import { FiSearch, FiX, FiArrowUp, FiArrowDown } from "react-icons/fi";
 import "../styles/Sidebar.css";
 
@@ -22,7 +23,6 @@ interface SidebarProps {
   onCreate: () => void;
   onSelect: (tx: Transaction | null) => void;
   onDelete: (id: string) => void;
-  transactions: Transaction[];
   selectedId: string | null;
   collapsed: boolean;
   toggleSidebar: () => void;
@@ -34,7 +34,6 @@ const Sidebar = ({
   onCreate,
   onSelect,
   onDelete,
-  transactions,
   selectedId,
   collapsed,
   toggleSidebar,
@@ -48,6 +47,7 @@ const Sidebar = ({
 }) => {
   const { currentUser } = useAuth();
   const { theme } = useTheme();
+  const { transactions } = useTransactionsContext();
   const styles = useThemeVariant();
   const themeVariant = useThemeVariant();
   const isMobile = useMediaQuery("(max-width:768px)");

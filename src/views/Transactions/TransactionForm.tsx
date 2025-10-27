@@ -8,8 +8,15 @@ import {
   FiX,
   FiChevronDown,
 } from "react-icons/fi";
-import { Transaction, TransactionFormProps, Category } from "../types";
-import "../styles/TransactionForm.css";
+import { useTransactionsContext } from "../../context/TransactionsContext";
+import { Transaction } from "../../models/TransactionModel";
+import { Category } from "../../types";
+import "../../styles/TransactionForm.css";
+
+interface TransactionFormProps {
+  onClose: () => void;
+  transaction?: Transaction;
+}
 
 const CATEGORIES: Category[] = [
   { value: "personal", label: "Personal" },
@@ -21,10 +28,10 @@ const CATEGORIES: Category[] = [
 ];
 
 const TransactionForm: React.FC<TransactionFormProps> = ({
-  onSubmit,
   onClose,
   transaction,
 }) => {
+  const { addTransaction, updateTransaction } = useTransactionsContext();
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState(0);
   const [type, setType] = useState<Transaction["type"]>("expense");
@@ -54,13 +61,19 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await onSubmit({
+      const data = {
         title,
         amount: Number(amount),
         type,
         category,
         description,
-      });
+      };
+
+      if (transaction && transaction.id) {
+        await updateTransaction(transaction.id, data);
+      } else {
+        await addTransaction(data);
+      }
       onClose();
     } finally {
       setIsSubmitting(false);
