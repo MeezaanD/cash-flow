@@ -3,8 +3,6 @@ import {
 	Shield,
 	Clock,
 	Cloud,
-	Mail,
-	Globe,
 	DollarSign,
 	GraduationCap,
 	User,
@@ -12,18 +10,17 @@ import {
 	TrendingUp,
 	PieChart,
 	Calendar,
-	Github,
-	Linkedin,
 	UserPlus,
 	Plus,
 	BarChart3,
 	Target,
+	Menu,
+	X,
 } from 'lucide-react';
-import preview from '../assets/images/cashflow.png';
-import logo from '../assets/images/dark-transparent-image.png';
-import profilePhoto from '../assets/images/profile-photo.jpeg';
+// import preview from '../assets/images/cashflow.png';
+// import logo from '../assets/images/white-transparent-image.png';
+// import profilePhoto from '../assets/images/profile-photo.jpeg';
 import AuthModals from '../components/AuthModals';
-import '../styles/Home.css';
 
 const features = [
 	{
@@ -109,23 +106,41 @@ const howItWorks = [
 	},
 ];
 
+const colorMap: Record<string, string> = {
+	purple: 'from-purple-500 to-pink-500',
+	teal: 'from-teal-500 to-cyan-500',
+	blue: 'from-blue-500 to-indigo-500',
+	indigo: 'from-indigo-500 to-purple-500',
+	green: 'from-green-500 to-emerald-500',
+	red: 'from-red-500 to-orange-500',
+};
+
 const Home: React.FC = () => {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [authModalOpen, setAuthModalOpen] = useState(false);
 	const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+	const [scrolled, setScrolled] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
 
-	// Prevent background scroll when menu is open
+	useEffect(() => {
+		const handleScroll = () => {
+			setScrolled(window.scrollY > 20);
+		};
+		window.addEventListener('scroll', handleScroll);
+		return () => window.removeEventListener('scroll', handleScroll);
+	}, []);
+
 	useEffect(() => {
 		if (mobileMenuOpen) {
-			document.body.classList.add('menu-open');
+			document.body.style.overflow = 'hidden';
 		} else {
-			document.body.classList.remove('menu-open');
+			document.body.style.overflow = 'unset';
 		}
-		return () => document.body.classList.remove('menu-open');
+		return () => {
+			document.body.style.overflow = 'unset';
+		};
 	}, [mobileMenuOpen]);
 
-	// Close menu on ESC or click outside
 	useEffect(() => {
 		if (!mobileMenuOpen) return;
 		const handleKey = (e: KeyboardEvent) => {
@@ -158,301 +173,358 @@ const Home: React.FC = () => {
 	};
 
 	return (
-		<div className="home-container theme-light">
+		<div className="min-h-screen bg-background">
 			{/* Sticky Navbar */}
-			<nav className="navbar">
-				<div className="navbar-container">
-					<div className="navbar-left">
-						<a href="/" className="navbar-logo">
-							<img src={logo} alt="CashFlow Logo" className="navbar-logo-img" />
-						</a>
-					</div>
-					<div className="navbar-center">
-						<a href="/" className="navbar-link">
-							Home
-						</a>
-						<a href="/dashboard" className="navbar-link">
-							Dashboard
-						</a>
-						<a href="#features" className="navbar-link">
-							Features
-						</a>
-					</div>
-					<div className="navbar-right">
-						{/* Hamburger only on mobile, auth links only on desktop */}
+			<nav
+				className={`fixed top-4 left-4 right-4 z-50 transition-all duration-300 ${
+					scrolled
+						? 'bg-background/95 backdrop-blur-xl border border-white/20 shadow-2xl'
+						: 'bg-background/80 backdrop-blur-lg border border-white/10'
+				} rounded-2xl mx-auto max-w-7xl`}
+				
+			>
+				<div className="px-6 sm:px-8 lg:px-10">
+					<div className="flex items-center justify-between h-16">
+						{/* Logo */}
+						<div className="flex-shrink-0">
+							{/* <a href="/" className="flex items-center">
+								<img src={logo} alt="CashFlow Logo" className="h-8 w-auto" />
+							</a> */}
+						</div>
+
+						{/* Desktop Navigation */}
+						<div className="hidden md:flex items-center space-x-1">
+							<a
+								href="/"
+								className="px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-all duration-200 rounded-xl hover:bg-primary/5"
+							>
+								Home
+							</a>
+							<a
+								href="/dashboard"
+								className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200 rounded-xl hover:bg-primary/5"
+							>
+								Dashboard
+							</a>
+							<a
+								href="#features"
+								className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200 rounded-xl hover:bg-primary/5"
+							>
+								Features
+							</a>
+						</div>
+
+						{/* Desktop Auth Buttons */}
+						<div className="hidden md:flex items-center space-x-2">
+							<button
+								onClick={() => handleAuthClick('login')}
+								className="px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200 rounded-xl hover:bg-muted/50 border border-transparent hover:border-muted-foreground/20"
+							>
+								Login
+							</button>
+							<button
+								onClick={() => handleAuthClick('register')}
+								className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+							>
+								Register
+							</button>
+						</div>
+
+						{/* Mobile Menu Button */}
 						<button
-							className="navbar-hamburger"
-							aria-label="Open navigation menu"
+							className="md:hidden p-2.5 rounded-xl hover:bg-muted/50 transition-all duration-200 border border-transparent hover:border-muted-foreground/20"
+							aria-label="Toggle navigation menu"
 							aria-expanded={mobileMenuOpen}
-							aria-controls="navbar-mobile-menu"
-							onClick={() => setMobileMenuOpen((open) => !open)}
+							onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
 						>
-							&#9776;
-						</button>
-						<button
-							onClick={() => handleAuthClick('login')}
-							className="navbar-link navbar-auth"
-							style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-						>
-							Login
-						</button>
-						<button
-							onClick={() => handleAuthClick('register')}
-							className="navbar-link navbar-auth navbar-register"
-							style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-						>
-							Register
+							{mobileMenuOpen ? (
+								<X className="h-5 w-5" />
+							) : (
+								<Menu className="h-5 w-5" />
+							)}
 						</button>
 					</div>
 				</div>
-				{/* Mobile menu */}
+
+				{/* Mobile Menu */}
 				{mobileMenuOpen && (
 					<div
-						className="navbar-mobile-menu"
-						id="navbar-mobile-menu"
 						ref={menuRef}
-						role="menu"
-						aria-label="Mobile navigation menu"
+						className="md:hidden border-t bg-background/98 backdrop-blur-xl"
 					>
-						<button
-							className="navbar-mobile-close"
-							aria-label="Close navigation menu"
-							onClick={() => setMobileMenuOpen(false)}
-						>
-							&times;
-						</button>
-						<a
-							href="/"
-							className="navbar-link"
-							onClick={() => setMobileMenuOpen(false)}
-						>
-							Home
-						</a>
-						<a
-							href="/dashboard"
-							className="navbar-link"
-							onClick={() => setMobileMenuOpen(false)}
-						>
-							Dashboard
-						</a>
-						<a
-							href="#features"
-							className="navbar-link"
-							onClick={() => setMobileMenuOpen(false)}
-						>
-							Features
-						</a>
-						<button
-							onClick={() => {
-								handleAuthClick('login');
-								setMobileMenuOpen(false);
-							}}
-							className="navbar-link navbar-auth"
-							style={{
-								background: 'none',
-								border: 'none',
-								cursor: 'pointer',
-								width: '100%',
-								textAlign: 'center',
-							}}
-						>
-							Login
-						</button>
-						<button
-							onClick={() => {
-								handleAuthClick('register');
-								setMobileMenuOpen(false);
-							}}
-							className="navbar-link navbar-auth navbar-register"
-							style={{
-								background: 'none',
-								border: 'none',
-								cursor: 'pointer',
-								width: '100%',
-								textAlign: 'center',
-							}}
-						>
-							Register
-						</button>
+						<div className="px-6 py-4 space-y-1">
+							<a
+								href="/"
+								className="block px-4 py-3 text-sm font-medium rounded-xl hover:bg-muted/50 transition-all duration-200 border border-transparent hover:border-muted-foreground/10"
+								onClick={() => setMobileMenuOpen(false)}
+							>
+								Home
+							</a>
+							<a
+								href="/dashboard"
+								className="block px-4 py-3 text-sm font-medium rounded-xl hover:bg-muted/50 transition-all duration-200 border border-transparent hover:border-muted-foreground/10"
+								onClick={() => setMobileMenuOpen(false)}
+							>
+								Dashboard
+							</a>
+							<a
+								href="#features"
+								className="block px-4 py-3 text-sm font-medium rounded-xl hover:bg-muted/50 transition-all duration-200 border border-transparent hover:border-muted-foreground/10"
+								onClick={() => setMobileMenuOpen(false)}
+							>
+								Features
+							</a>
+							<div className="pt-2 space-y-1">
+								<button
+									onClick={() => {
+										handleAuthClick('login');
+										setMobileMenuOpen(false);
+									}}
+									className="w-full px-4 py-3 text-sm font-medium text-left rounded-xl hover:bg-muted/50 transition-all duration-200 border border-transparent hover:border-muted-foreground/10"
+								>
+									Login
+								</button>
+								<button
+									onClick={() => {
+										handleAuthClick('register');
+										setMobileMenuOpen(false);
+									}}
+									className="w-full px-3 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+								>
+									Register
+								</button>
+							</div>
+						</div>
 					</div>
 				)}
 			</nav>
 
 			{/* Hero Section */}
-			<section className="hero-section">
-				<div className="hero-container">
-					<div className="hero-content">
-						<div className="hero-text">
-							<h1>
+			<section className="relative flex flex-col justify-center items-center min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+				<div className="max-w-7xl mx-auto">
+					<div className="space-y-12">
+						<div className="max-w-5xl mx-auto text-center space-y-8">
+							<h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight">
 								Take Control of Your <br />
-								<span className="highlight">Personal Finances</span>
+								<span className="text-primary">Personal Finances</span>
 							</h1>
-							<p className="hero-description">
+							<p className="text-xl lg:text-3xl text-muted-foreground leading-relaxed">
 								Track income, monitor expenses, and achieve your financial goals
 								with CashFlow - the simple, fast, and secure budgeting app.
 							</p>
-							<div className="hero-buttons">
+							<div className="flex flex-col sm:flex-row gap-4 justify-center">
 								<button
 									onClick={() => handleAuthClick('register')}
-									className="btn-primary"
+									className="inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl"
 								>
-									Get Started <ArrowRight size={18} />
+									Get Started
+									<ArrowRight size={18} />
 								</button>
 								<button
 									onClick={() => handleAuthClick('login')}
-									className="btn-secondary"
+									className="px-6 py-3 text-base font-medium bg-muted hover:bg-muted/80 rounded-lg transition-colors"
 								>
 									Login
 								</button>
 							</div>
 						</div>
-						<div className="hero-image-container">
-							<img
-								src={preview}
-								alt="CashFlow App Dashboard"
-								className="hero-image"
-							/>
-							<div className="image-highlight"></div>
-						</div>
+						{/* <div className="relative max-w-5xl mx-auto">
+							<div className="relative rounded-2xl overflow-hidden border shadow-2xl">
+								<img
+									src={preview}
+									alt="CashFlow App Dashboard"
+									className="w-full h-auto"
+								/>
+							</div>
+						</div> */}
 					</div>
 				</div>
 			</section>
 
 			{/* Data Import/Export Section */}
-			<section className="date-filtering-section">
-				<div className="container">
-					<div className="section-header">
-						<span className="section-subtitle">New Feature</span>
-						<h2>Import and Export Transactions</h2>
-						<p>
+			{/* <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
+				<div className="max-w-7xl mx-auto">
+					<div className="text-center space-y-4 mb-12">
+						<span className="inline-block px-4 py-1.5 text-sm font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
+							New Feature
+						</span>
+						<h2 className="text-3xl md:text-4xl font-bold">
+							Import and Export Transactions
+						</h2>
+						<p className="text-lg text-muted-foreground max-w-3xl mx-auto">
 							Move your data in and out of CashFlow with CSV or JSON — with smart
 							validation and duplicate protection.
 						</p>
 					</div>
 
-					<div className="date-filtering-content">
-						<div className="date-filtering-text">
-							<h3>Simple Export</h3>
-							<p>
-								Download all your transactions as CSV or JSON directly from the
-								Settings modal.
-							</p>
+					<div className="grid md:grid-cols-2 gap-12 items-center">
+						<div className="space-y-8">
+							<div>
+								<h3 className="text-xl font-semibold mb-2">Simple Export</h3>
+								<p className="text-muted-foreground">
+									Download all your transactions as CSV or JSON directly from the
+									Settings modal.
+								</p>
+							</div>
 
-							<h3>Safe Import</h3>
-							<p>
-								Import CSV/JSON files and we automatically validate required fields
-								and skip duplicates.
-							</p>
+							<div>
+								<h3 className="text-xl font-semibold mb-2">Safe Import</h3>
+								<p className="text-muted-foreground">
+									Import CSV/JSON files and we automatically validate required
+									fields and skip duplicates.
+								</p>
+							</div>
 
-							<h3>Instant Feedback</h3>
-							<p>
-								Get success and error notifications after each import so you always
-								know what happened.
-							</p>
+							<div>
+								<h3 className="text-xl font-semibold mb-2">Instant Feedback</h3>
+								<p className="text-muted-foreground">
+									Get success and error notifications after each import so you
+									always know what happened.
+								</p>
+							</div>
 						</div>
 
-						<div className="date-filtering-visual">
-							<div className="filter-preview">
-								<div className="filter-header">
-									<PieChart size={24} />
-									<span>Settings → Data</span>
+						<div className="rounded-xl border bg-card shadow-lg p-6">
+							<div className="flex items-center gap-3 mb-6 pb-4 border-b">
+								<div className="p-2 rounded-lg bg-primary/10">
+									<PieChart size={24} className="text-primary" />
 								</div>
-								<div className="filter-options">
-									<div className="filter-option active">Import CSV/JSON</div>
-									<div className="filter-option">Export CSV</div>
-									<div className="filter-option">Export JSON</div>
+								<span className="font-medium">Settings → Data</span>
+							</div>
+							<div className="space-y-3">
+								<div className="px-4 py-3 bg-primary/10 text-primary rounded-lg font-medium border border-primary/20">
+									Import CSV/JSON
 								</div>
-								<div className="filter-result">
-									<span>Data tools available in</span>
-									<strong> Settings → Data</strong>
+								<div className="px-4 py-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors cursor-pointer">
+									Export CSV
 								</div>
+								<div className="px-4 py-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors cursor-pointer">
+									Export JSON
+								</div>
+							</div>
+							<div className="mt-6 pt-4 border-t text-sm text-muted-foreground">
+								<span>Data tools available in</span>
+								<strong className="text-foreground"> Settings → Data</strong>
 							</div>
 						</div>
 					</div>
 				</div>
-			</section>
+			</section> */}
 
 			{/* Date Range Filtering Section */}
-			<section className="date-filtering-section">
-				<div className="container">
-					<div className="section-header">
-						<span className="section-subtitle">New Feature</span>
-						<h2>Smart Date Range Filtering</h2>
-						<p>Analyze your finances with precision using advanced date filtering</p>
+			{/* <section className="py-20 px-4 sm:px-6 lg:px-8">
+				<div className="max-w-7xl mx-auto">
+					<div className="text-center space-y-4 mb-12">
+						<span className="inline-block px-4 py-1.5 text-sm font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
+							New Feature
+						</span>
+						<h2 className="text-3xl md:text-4xl font-bold">
+							Smart Date Range Filtering
+						</h2>
+						<p className="text-lg text-muted-foreground">
+							Analyze your finances with precision using advanced date filtering
+						</p>
 					</div>
 
-					<div className="date-filtering-content">
-						<div className="date-filtering-text">
-							<h3>Filter by Time Periods</h3>
-							<p>
-								Choose from preset ranges like last 7 days, 30 days, 3 months, or 6
-								months for quick analysis.
-							</p>
+					<div className="grid md:grid-cols-2 gap-12 items-center">
+						<div className="space-y-8">
+							<div>
+								<h3 className="text-xl font-semibold mb-2">
+									Filter by Time Periods
+								</h3>
+								<p className="text-muted-foreground">
+									Choose from preset ranges like last 7 days, 30 days, 3 months,
+									or 6 months for quick analysis.
+								</p>
+							</div>
 
-							<h3>Custom Date Ranges</h3>
-							<p>
-								Select specific start and end dates to analyze any time period that
-								matters to you.
-							</p>
+							<div>
+								<h3 className="text-xl font-semibold mb-2">Custom Date Ranges</h3>
+								<p className="text-muted-foreground">
+									Select specific start and end dates to analyze any time period
+									that matters to you.
+								</p>
+							</div>
 
-							<h3>Cross-Component Sync</h3>
-							<p>
-								Your date range applies to both the transaction table and pie chart,
-								ensuring consistent data across all views.
-							</p>
+							<div>
+								<h3 className="text-xl font-semibold mb-2">Cross-Component Sync</h3>
+								<p className="text-muted-foreground">
+									Your date range applies to both the transaction table and pie
+									chart, ensuring consistent data across all views.
+								</p>
+							</div>
 
-							<div className="date-filtering-benefits">
-								<div className="benefit-item">
-									<Calendar size={20} />
-									<span>Quick preset options</span>
+							<div className="flex flex-wrap gap-4">
+								<div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted">
+									<Calendar size={20} className="text-primary" />
+									<span className="text-sm font-medium">
+										Quick preset options
+									</span>
 								</div>
-								<div className="benefit-item">
-									<TrendingUp size={20} />
-									<span>Trend analysis</span>
+								<div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted">
+									<TrendingUp size={20} className="text-primary" />
+									<span className="text-sm font-medium">Trend analysis</span>
 								</div>
-								<div className="benefit-item">
-									<PieChart size={20} />
-									<span>Filtered charts</span>
+								<div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted">
+									<PieChart size={20} className="text-primary" />
+									<span className="text-sm font-medium">Filtered charts</span>
 								</div>
 							</div>
 						</div>
 
-						<div className="date-filtering-visual">
-							<div className="filter-preview">
-								<div className="filter-header">
-									<Calendar size={24} />
-									<span>Date Range Filter</span>
+						<div className="rounded-xl border bg-card shadow-lg p-6">
+							<div className="flex items-center gap-3 mb-6 pb-4 border-b">
+								<div className="p-2 rounded-lg bg-primary/10">
+									<Calendar size={24} className="text-primary" />
 								</div>
-								<div className="filter-options">
-									<div className="filter-option active">Last 7 days</div>
-									<div className="filter-option">Last 30 days</div>
-									<div className="filter-option">Custom range</div>
+								<span className="font-medium">Date Range Filter</span>
+							</div>
+							<div className="space-y-3">
+								<div className="px-4 py-3 bg-primary/10 text-primary rounded-lg font-medium border border-primary/20">
+									Last 7 days
 								</div>
-								<div className="filter-result">
-									<span>Showing transactions from</span>
-									<strong>Dec 15 - Dec 22, 2024</strong>
+								<div className="px-4 py-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors cursor-pointer">
+									Last 30 days
 								</div>
+								<div className="px-4 py-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors cursor-pointer">
+									Custom range
+								</div>
+							</div>
+							<div className="mt-6 pt-4 border-t text-sm text-muted-foreground">
+								<span>Showing transactions from</span>
+								<strong className="text-foreground"> Dec 15 - Dec 22, 2024</strong>
 							</div>
 						</div>
 					</div>
 				</div>
-			</section>
+			</section> */}
 
 			{/* Features Section */}
-			<section className="features-section" id="features">
-				<div className="container">
-					<div className="section-header">
-						<span className="section-subtitle">Features</span>
-						<h2>Powerful financial tools</h2>
-						<p>Everything you need to take control of your money</p>
+			<section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
+				<div className="max-w-7xl mx-auto">
+					<div className="text-center space-y-4 mb-12">
+						<span className="inline-block px-4 py-1.5 text-sm font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
+							Features
+						</span>
+						<h2 className="text-3xl md:text-4xl font-bold">Powerful Financial Tools</h2>
+						<p className="text-lg text-muted-foreground">
+							Everything you need to take control of your money
+						</p>
 					</div>
 
-					<div className="features-grid">
-						{features.map((f) => (
-							<div className={`feature-card ${f.color}`} key={f.title}>
-								<div className="feature-icon">{f.icon}</div>
-								<h3>{f.title}</h3>
-								<p>{f.desc}</p>
+					<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+						{features.map((feature) => (
+							<div
+								key={feature.title}
+								className="group rounded-xl border bg-card p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105"
+							>
+								<div
+									className={`inline-flex p-3 rounded-lg bg-gradient-to-br ${colorMap[feature.color]} mb-4`}
+								>
+									<div className="text-white">{feature.icon}</div>
+								</div>
+								<h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+								<p className="text-muted-foreground">{feature.desc}</p>
 							</div>
 						))}
 					</div>
@@ -460,21 +532,36 @@ const Home: React.FC = () => {
 			</section>
 
 			{/* How It Works Section */}
-			<section className="how-it-works-section">
-				<div className="container">
-					<div className="section-header">
-						<span className="section-subtitle">How it works</span>
-						<h2>Get started in 4 simple steps</h2>
-						<p>Your journey to financial freedom starts here</p>
+			<section className="py-20 px-4 sm:px-6 lg:px-8">
+				<div className="max-w-7xl mx-auto">
+					<div className="text-center space-y-4 mb-12">
+						<span className="inline-block px-4 py-1.5 text-sm font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
+							How It Works
+						</span>
+						<h2 className="text-3xl md:text-4xl font-bold">
+							Get Started in 4 Simple Steps
+						</h2>
+						<p className="text-lg text-muted-foreground">
+							Your journey to financial freedom starts here
+						</p>
 					</div>
 
-					<div className="how-it-works-grid">
+					<div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
 						{howItWorks.map((step) => (
-							<div className="how-it-works-card" key={step.step}>
-								<div className="step-number">{step.step}</div>
-								<div className="step-icon">{step.icon}</div>
-								<h3>{step.title}</h3>
-								<p>{step.desc}</p>
+							<div
+								key={step.step}
+								className="relative rounded-xl border bg-card p-6 shadow-sm hover:shadow-lg transition-all duration-300"
+							>
+								<div className="absolute -top-4 -left-4 h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg shadow-lg">
+									{step.step}
+								</div>
+								<div className="pt-4">
+									<div className="inline-flex p-3 rounded-lg bg-primary/10 mb-4">
+										<div className="text-primary">{step.icon}</div>
+									</div>
+									<h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+									<p className="text-muted-foreground">{step.desc}</p>
+								</div>
 							</div>
 						))}
 					</div>
@@ -482,17 +569,29 @@ const Home: React.FC = () => {
 			</section>
 
 			{/* Ideal For Section */}
-			<section className="audience-section">
-				<div className="container">
-					<div className="section-header">
-						<span className="section-subtitle">Who's it for</span>
-						<h2>Perfect for your financial journey</h2>
+			<section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
+				<div className="max-w-7xl mx-auto">
+					<div className="text-center space-y-4 mb-12">
+						<span className="inline-block px-4 py-1.5 text-sm font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
+							Who's It For
+						</span>
+						<h2 className="text-3xl md:text-4xl font-bold">
+							Perfect for Your Financial Journey
+						</h2>
 					</div>
-					<div className="audience-grid">
+
+					<div className="grid md:grid-cols-3 gap-6">
 						{idealFor.map((item) => (
-							<div className={`audience-card ${item.color}`} key={item.title}>
-								<div className="audience-icon">{item.icon}</div>
-								<h3>{item.title}</h3>
+							<div
+								key={item.title}
+								className="rounded-xl border bg-card p-8 shadow-sm hover:shadow-lg transition-all duration-300 text-center hover:scale-105"
+							>
+								<div
+									className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${colorMap[item.color]} mb-6`}
+								>
+									<div className="text-white">{item.icon}</div>
+								</div>
+								<h3 className="text-xl font-semibold">{item.title}</h3>
 							</div>
 						))}
 					</div>
@@ -500,102 +599,135 @@ const Home: React.FC = () => {
 			</section>
 
 			{/* Developer Contact */}
-			<section className="contact-section">
-				<div className="container">
-					<div className="section-header">
-						<span className="section-subtitle">Meet the Creator</span>
-						<h2>The Developer Behind CashFlow</h2>
+			{/* <section className="py-20 px-4 sm:px-6 lg:px-8">
+				<div className="max-w-5xl mx-auto">
+					<div className="text-center space-y-4 mb-12">
+						<span className="inline-block px-4 py-1.5 text-sm font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
+							Meet the Creator
+						</span>
+						<h2 className="text-3xl md:text-4xl font-bold">
+							The Developer Behind CashFlow
+						</h2>
 					</div>
-					<div className="developer-card">
-						<div className="developer-content">
-							<div className="developer-image">
-								<div className="avatar-container">
-									<img
-										src={profilePhoto}
-										alt="Meezaan Davids"
-										className="developer-avatar"
-									/>
-									<div className="avatar-glow"></div>
-								</div>
-							</div>
 
-							<div className="developer-details">
-								<div className="developer-info">
-									<h3 className="developer-name">Meezaan Davids</h3>
-									<p className="developer-title">Full Stack Developer</p>
-									<div className="developer-tags">
-										<span className="tag">React</span>
-										<span className="tag">TypeScript</span>
-										<span className="tag">Firebase</span>
-										<span className="tag">UI/UX</span>
+					<div className="rounded-2xl border bg-card shadow-xl overflow-hidden">
+						<div className="p-8 md:p-12">
+							<div className="grid md:grid-cols-3 gap-8 items-start">
+								<div className="flex justify-center md:justify-start">
+									<div className="relative">
+										<div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-cyan-500 rounded-full blur-xl opacity-50"></div>
+										<img
+											src={profilePhoto}
+											alt="Meezaan Davids"
+											className="relative h-40 w-40 rounded-full object-cover border-4 border-background shadow-xl"
+										/>
 									</div>
 								</div>
 
-								<div className="developer-description">
-									<p>
+								<div className="md:col-span-2 space-y-6">
+									<div>
+										<h3 className="text-2xl md:text-3xl font-bold mb-2">
+											Meezaan Davids
+										</h3>
+										<p className="text-lg text-muted-foreground mb-4">
+											Full Stack Developer
+										</p>
+										<div className="flex flex-wrap gap-2">
+											<span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
+												React
+											</span>
+											<span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
+												TypeScript
+											</span>
+											<span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
+												Firebase
+											</span>
+											<span className="px-3 py-1 text-sm font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
+												UI/UX
+											</span>
+										</div>
+									</div>
+
+									<p className="text-muted-foreground leading-relaxed">
 										Passionate about creating simple, effective solutions for
 										everyday problems with modern web technologies. I believe in
 										building applications that not only work flawlessly but also
 										provide an exceptional user experience.
 									</p>
-								</div>
 
-								<div className="contact-links">
-									<a
-										href="mailto:meezaandavids365@gmail.com"
-										className="contact-link email-link"
-									>
-										<Mail size={20} />
-										<span>Email</span>
-									</a>
-									<a
-										href="https://meezaand.github.io/"
-										className="contact-link portfolio-link"
-									>
-										<Globe size={20} />
-										<span>Portfolio</span>
-									</a>
-									<a
-										href="https://github.com/MeezaanD"
-										className="contact-link github-link"
-									>
-										<Github size={20} />
-										<span>GitHub</span>
-									</a>
-									<a
-										href="https://www.linkedin.com/in/meezaan-davids-4a7aa8265/"
-										className="contact-link linkedin-link"
-									>
-										<Linkedin size={20} />
-										<span>LinkedIn</span>
-									</a>
-								</div>
+									<div className="flex flex-wrap gap-3">
+										<a
+											href="mailto:meezaandavids365@gmail.com"
+											className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border bg-background hover:bg-muted transition-colors"
+										>
+											<Mail size={20} />
+											<span className="text-sm font-medium">Email</span>
+										</a>
+										<a
+											href="https://meezaand.github.io/"
+											target="_blank"
+											rel="noopener noreferrer"
+											className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border bg-background hover:bg-muted transition-colors"
+										>
+											<Globe size={20} />
+											<span className="text-sm font-medium">Portfolio</span>
+										</a>
+										<a
+											href="https://github.com/MeezaanD"
+											target="_blank"
+											rel="noopener noreferrer"
+											className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border bg-background hover:bg-muted transition-colors"
+										>
+											<Github size={20} />
+											<span className="text-sm font-medium">GitHub</span>
+										</a>
+										<a
+											href="https://www.linkedin.com/in/meezaan-davids-4a7aa8265/"
+											target="_blank"
+											rel="noopener noreferrer"
+											className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border bg-background hover:bg-muted transition-colors"
+										>
+											<Linkedin size={20} />
+											<span className="text-sm font-medium">LinkedIn</span>
+										</a>
+									</div>
 
-								<div className="developer-stats">
-									<div className="stat-item">
-										<span className="stat-number">100%</span>
-										<span className="stat-label">Passion</span>
-									</div>
-									<div className="stat-item">
-										<span className="stat-number">24/7</span>
-										<span className="stat-label">Learning</span>
-									</div>
-									<div className="stat-item">
-										<span className="stat-number">∞</span>
-										<span className="stat-label">Creativity</span>
+									<div className="grid grid-cols-3 gap-4 pt-4">
+										<div className="text-center p-4 rounded-lg bg-muted">
+											<div className="text-xl font-bold mb-1">100%</div>
+											<div className="text-sm text-muted-foreground">
+												Passion
+											</div>
+										</div>
+										<div className="text-center p-4 rounded-lg bg-muted">
+											<div className="text-xl font-bold mb-1">24/7</div>
+											<div className="text-sm text-muted-foreground">
+												Learning
+											</div>
+										</div>
+										<div className="text-center p-4 rounded-lg bg-muted">
+											<div className="text-xl font-bold mb-1">∞</div>
+											<div className="text-sm text-muted-foreground">
+												Creativity
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</section>
+			</section> */}
 
 			{/* Footer */}
-			<footer className="footer">
-				<div className="container">
-					<p>© 2025 CashFlow by Meezaan Davids</p>
-					<p className="tech-stack">Built with React, TypeScript & Firebase</p>
+			<footer className="py-12 px-4 sm:px-6 lg:px-8 border-t bg-muted/30">
+				<div className="max-w-7xl mx-auto text-center space-y-2">
+					<p className="text-sm text-muted-foreground">
+						© 2025 CashFlow by Meezaan Davids
+					</p>
+					<p className="text-sm text-muted-foreground">
+						Built with React, TypeScript & Firebase
+					</p>
 				</div>
 			</footer>
 

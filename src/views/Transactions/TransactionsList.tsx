@@ -1,30 +1,18 @@
 import React, { useMemo, useState } from 'react';
-import {
-	List,
-	ListItem,
-	ListItemAvatar,
-	Avatar,
-	ListItemText,
-	Typography,
-	Divider,
-	Box,
-	TextField,
-	ListItemButton,
-	InputAdornment,
-} from '@mui/material';
-import { FiArrowUp, FiArrowDown, FiSearch } from 'react-icons/fi';
+import { FiArrowUp, FiArrowDown, FiSearch, FiCalendar } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import { useTheme } from '../../context/ThemeContext';
-import { useThemeVariant } from '../../hooks/useThemeVariant';
 import { formatCurrency } from '../../utils/formatCurrency';
-import '../../styles/TransactionList.css';
+import { Input } from '../../components/ui/input';
+import { Badge } from '../../components/ui/badge';
+import { Avatar, AvatarFallback } from '../../components/ui/avatar';
+import { Card } from '../../components/ui/card';
 
 interface TransactionsListProps {
 	onSelect?: (tx: any) => void;
 	selectedId?: string | null;
 }
 
-// Category colors matching TransactionsTable
 const CATEGORY_COLORS: Record<string, string> = {
 	debit_order: '#FFBB28',
 	entertainment: '#FF6B6B',
@@ -37,7 +25,6 @@ const CATEGORY_COLORS: Record<string, string> = {
 const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedId }) => {
 	const { transactions } = useTransactionsContext();
 	const { currency } = useTheme();
-	const themeVariant = useThemeVariant();
 	const [search, setSearch] = useState('');
 
 	const sorted = useMemo(() => {
@@ -83,238 +70,155 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 	};
 
 	return (
-		<Box
-			sx={{
-				display: 'flex',
-				justifyContent: 'center',
-				alignItems: 'flex-start',
-				minHeight: '100%',
-				width: '100%',
-				p: { xs: 1, sm: 2 },
-			}}
-		>
-			<Box
-				className="transaction-list-container"
-				sx={{
-					p: 2,
-					borderRadius: 3,
-					bgcolor: themeVariant.cardBg,
-					border: `1px solid ${themeVariant.cardBorder}`,
-					color: themeVariant.textPrimary,
-					overflowY: 'auto',
-					maxHeight: 'calc(100vh - 150px)',
-					transition: 'background-color 0.3s ease, color 0.3s ease',
-					width: '100%',
-					maxWidth: { xs: '100%', sm: 600 },
-					scrollbarWidth: 'thin',
-					scrollbarColor: `${themeVariant.cardBorder} ${themeVariant.cardBg}`,
-					'&::-webkit-scrollbar': {
-						width: '8px',
-					},
-					'&::-webkit-scrollbar-track': {
-						background: themeVariant.cardBg,
-					},
-					'&::-webkit-scrollbar-thumb': {
-						backgroundColor: themeVariant.cardBorder,
-						borderRadius: '4px',
-					},
-				}}
-			>
+		<div className="flex min-h-full w-full items-start justify-center p-4 md:p-6">
+			<div className="w-full max-w-3xl space-y-6">
 				{/* Search Bar */}
-				<TextField
-					variant="outlined"
-					placeholder="Search transactions..."
-					value={search}
-					onChange={(e) => setSearch(e.target.value)}
-					fullWidth
-					size="small"
-					InputProps={{
-						startAdornment: (
-							<InputAdornment position="start">
-								<FiSearch
-									size={18}
-									style={{ opacity: 0.6, color: themeVariant.textSecondary }}
-								/>
-							</InputAdornment>
-						),
-					}}
-					sx={{
-						mb: 2,
-						'& .MuiOutlinedInput-root': {
-							borderRadius: 2,
-							backgroundColor: themeVariant.sidebarBg,
-							'& fieldset': { borderColor: themeVariant.sidebarBorder },
-							'&:hover fieldset': { borderColor: themeVariant.accentPrimary },
-						},
-						'& input': {
-							color: themeVariant.textPrimary,
-						},
-					}}
-				/>
+				<Card className="p-4">
+					<div className="relative">
+						<FiSearch className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+						<Input
+							placeholder="Search transactions..."
+							value={search}
+							onChange={(e) => setSearch(e.target.value)}
+							className="w-full pl-10 h-11 text-base"
+						/>
+					</div>
+				</Card>
 
-				{Object.entries(grouped).map(([date, txs], idx) => (
-					<Box key={date} sx={{ mb: 3 }}>
-						<Typography
-							variant="subtitle2"
-							sx={{
-								mb: 1,
-								color: themeVariant.textSecondary,
-								fontWeight: 600,
-								fontSize: '0.9rem',
-							}}
-						>
-							{date}
-						</Typography>
+				{/* Transactions List */}
+				<div className="max-h-[calc(100vh-200px)] space-y-6 overflow-y-auto scroll-smooth pr-2">
+					{Object.entries(grouped).map(([date, txs], idx) => (
+						<div key={date} className="space-y-3">
+							{/* Date Header */}
+							<div className="flex items-center gap-2 px-2">
+								<FiCalendar className="h-4 w-4 text-muted-foreground" />
+								<h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+									{date}
+								</h3>
+								<div className="flex-1 h-px bg-border"></div>
+								<span className="text-xs text-muted-foreground font-medium">
+									{txs.length} {txs.length === 1 ? 'transaction' : 'transactions'}
+								</span>
+							</div>
 
-						<List disablePadding>
-							{txs.map((tx, i) => (
-								<React.Fragment key={tx.id || i}>
-									<ListItem disablePadding sx={{ mb: 0.5 }}>
-										<ListItemButton
-											onClick={() => onSelect && onSelect(tx)}
-											selected={tx.id === selectedId}
-											sx={{
-												borderRadius: 2,
-												py: 1,
-												px: 1.5,
-												backgroundColor:
-													tx.id === selectedId
-														? themeVariant.activeBg
-														: 'transparent',
-												'&:hover': {
-													backgroundColor: themeVariant.hoverBg,
-												},
-												transition: 'all 0.2s ease-in-out',
-											}}
-										>
-											<ListItemAvatar>
+							{/* Transaction Cards */}
+							<div className="space-y-2">
+								{txs.map((tx, i) => (
+									<Card
+										key={tx.id || i}
+										className={`group cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/20 ${
+											tx.id === selectedId
+												? 'border-primary bg-accent shadow-sm'
+												: 'border-border bg-card'
+										}`}
+										onClick={() => onSelect && onSelect(tx)}
+									>
+										<div className="p-4">
+											<div className="flex items-start gap-4">
+												{/* Avatar */}
 												<Avatar
-													sx={{
-														bgcolor:
-															tx.type === 'income'
-																? themeVariant.incomeColor
-																: themeVariant.expenseColor,
-														fontSize: '0.8rem',
-														color: '#fff',
-													}}
+													className={`h-12 w-12 shrink-0 transition-transform group-hover:scale-105 ${
+														tx.type === 'income'
+															? 'bg-gradient-to-br from-green-500 to-green-600'
+															: 'bg-gradient-to-br from-red-500 to-red-600'
+													}`}
 												>
-													{getInitials(tx.title)}
+													<AvatarFallback className="text-white font-semibold text-sm">
+														{getInitials(tx.title)}
+													</AvatarFallback>
 												</Avatar>
-											</ListItemAvatar>
 
-											<ListItemText
-												primary={
-													<Box
-														display="flex"
-														justifyContent="space-between"
-														alignItems="center"
-													>
-														<Typography
-															sx={{
-																fontWeight: 600,
-																fontSize: '0.9rem',
-																color: themeVariant.textPrimary,
-															}}
-															component="span"
+												{/* Content */}
+												<div className="flex-1 min-w-0">
+													<div className="flex items-start justify-between gap-4">
+														<div className="flex-1 min-w-0">
+															<h4 className="font-semibold text-base mb-1.5 truncate">
+																{tx.title}
+															</h4>
+															<div className="flex items-center gap-2 flex-wrap">
+																<Badge
+																	variant="outline"
+																	className="text-xs font-medium border-2"
+																	style={{
+																		borderColor: CATEGORY_COLORS[tx.category] || '#9CA3AF',
+																		color: CATEGORY_COLORS[tx.category] || '#9CA3AF',
+																		backgroundColor: `${CATEGORY_COLORS[tx.category] || '#9CA3AF'}15`,
+																	}}
+																>
+																	{tx.category}
+																</Badge>
+																<span className="text-xs text-muted-foreground font-medium">
+																	{tx.type}
+																</span>
+															</div>
+														</div>
+
+														{/* Amount */}
+														<div
+															className={`flex items-center gap-1.5 font-bold text-lg shrink-0 ${
+																tx.type === 'income'
+																	? 'text-green-600 dark:text-green-400'
+																	: 'text-red-600 dark:text-red-400'
+															}`}
 														>
-															{tx.title}
-														</Typography>
-														<Box
-															sx={{
-																display: 'flex',
-																alignItems: 'center',
-																color:
+															<div
+																className={`p-1.5 rounded-full ${
 																	tx.type === 'income'
-																		? themeVariant.incomeColor
-																		: themeVariant.expenseColor,
-																fontWeight: 600,
-															}}
-														>
-															{tx.type === 'income' ? (
-																<FiArrowUp size={14} />
-															) : (
-																<FiArrowDown size={14} />
-															)}
-															<Typography
-																sx={{
-																	ml: 0.5,
-																	color: themeVariant.textPrimary,
-																}}
-																component="span"
+																		? 'bg-green-100 dark:bg-green-900/30'
+																		: 'bg-red-100 dark:bg-red-900/30'
+																}`}
 															>
-																{formatCurrency(
-																	tx.amount,
-																	currency
+																{tx.type === 'income' ? (
+																	<FiArrowUp className="h-4 w-4" />
+																) : (
+																	<FiArrowDown className="h-4 w-4" />
 																)}
-															</Typography>
-														</Box>
-													</Box>
-												}
-												secondary={
-													<Box
-														sx={{
-															display: 'flex',
-															alignItems: 'center',
-															gap: 0.5,
-															mt: 0.5,
-														}}
-													>
-														<Box
-															sx={{
-																backgroundColor:
-																	CATEGORY_COLORS[tx.category] ||
-																	'#9CA3AF',
-																color: 'white',
-																px: 1,
-																py: 0.25,
-																borderRadius: '12px',
-																fontSize: '0.7rem',
-																fontWeight: 500,
-																display: 'inline-block',
-															}}
-														>
-															{tx.category}
-														</Box>
-														<Typography
-															variant="body2"
-															sx={{
-																fontSize: '0.75rem',
-																color: themeVariant.textSecondary,
-															}}
-															component="span"
-														>
-															• {tx.type}
-														</Typography>
-													</Box>
-												}
-											/>
-										</ListItemButton>
-									</ListItem>
+															</div>
+															<span>{formatCurrency(tx.amount, currency)}</span>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</Card>
+								))}
+							</div>
+						</div>
+					))}
 
-									{i < txs.length - 1 && (
-										<Divider sx={{ borderColor: themeVariant.cardBorder }} />
-									)}
-								</React.Fragment>
-							))}
-						</List>
+					{/* Empty State */}
+					{transactions.length === 0 && (
+						<Card className="p-12">
+							<div className="text-center space-y-3">
+								<div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+									<FiSearch className="h-8 w-8 text-muted-foreground" />
+								</div>
+								<h3 className="text-lg font-semibold">No transactions found</h3>
+								<p className="text-sm text-muted-foreground max-w-sm mx-auto">
+									{search
+										? 'Try adjusting your search terms to find what you\'re looking for.'
+										: 'Start by adding your first transaction to track your finances.'}
+								</p>
+							</div>
+						</Card>
+					)}
 
-						{idx < Object.keys(grouped).length - 1 && (
-							<Divider sx={{ my: 1.5, borderColor: themeVariant.cardBorder }} />
-						)}
-					</Box>
-				))}
-
-				{transactions.length === 0 && (
-					<Typography
-						variant="body2"
-						align="center"
-						sx={{ py: 4, color: themeVariant.textSecondary }}
-					>
-						No transactions found
-					</Typography>
-				)}
-			</Box>
-		</Box>
+					{filtered.length === 0 && transactions.length > 0 && (
+						<Card className="p-12">
+							<div className="text-center space-y-3">
+								<div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+									<FiSearch className="h-8 w-8 text-muted-foreground" />
+								</div>
+								<h3 className="text-lg font-semibold">No matching transactions</h3>
+								<p className="text-sm text-muted-foreground max-w-sm mx-auto">
+									Try adjusting your search terms to find what you're looking for.
+								</p>
+							</div>
+						</Card>
+					)}
+				</div>
+			</div>
+		</div>
 	);
 };
 

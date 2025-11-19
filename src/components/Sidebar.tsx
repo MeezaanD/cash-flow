@@ -1,23 +1,22 @@
-import React, { useState } from 'react';
-import { FiPlus, FiPieChart, FiList, FiSettings } from 'react-icons/fi';
+import React, { useState, useEffect } from 'react';
+import { FiPlus, FiPieChart, FiList, FiSettings, FiSearch, FiX, FiArrowUp, FiArrowDown } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
-import {
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	DialogContentText,
-	DialogActions,
-	Button,
-	useMediaQuery,
-} from '@mui/material';
 import { Transaction } from '../types';
 import logoDark from '../assets/images/dark-transparent-image.png';
 import logoLight from '../assets/images/white-transparent-image.png';
-import { useThemeVariant } from '../hooks/useThemeVariant';
 import { useTheme } from '../context/ThemeContext';
 import { useTransactionsContext } from '../context/TransactionsContext';
-import { FiSearch, FiX, FiArrowUp, FiArrowDown } from 'react-icons/fi';
-import '../styles/Sidebar.css';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 interface SidebarProps {
 	onCreate: () => void;
@@ -48,13 +47,18 @@ const Sidebar = ({
 	const { currentUser } = useAuth();
 	const { theme } = useTheme();
 	const { transactions } = useTransactionsContext();
-	const styles = useThemeVariant();
-	const themeVariant = useThemeVariant();
-	const isMobile = useMediaQuery('(max-width:768px)');
 	const [searchTerm, setSearchTerm] = useState('');
 	const [dialogOpen, setDialogOpen] = useState(false);
-	const [dialogType, setDialogType] = useState<'delete'>('delete');
 	const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+	const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+	useEffect(() => {
+		const handleResize = () => {
+			setIsMobile(window.innerWidth < 768);
+		};
+		window.addEventListener('resize', handleResize);
+		return () => window.removeEventListener('resize', handleResize);
+	}, []);
 
 	const logo = theme === 'dark' ? logoLight : logoDark;
 
@@ -66,16 +70,16 @@ const Sidebar = ({
 	};
 
 	const handleDeleteClick = (id: string) => {
-		setDialogType('delete');
 		setTransactionToDelete(id);
 		setDialogOpen(true);
 	};
 
 	const handleConfirmAction = async () => {
-		if (dialogType === 'delete' && transactionToDelete) {
+		if (transactionToDelete) {
 			onDelete(transactionToDelete);
 		}
 		setDialogOpen(false);
+		setTransactionToDelete(null);
 	};
 
 	const handleCancelAction = () => {
@@ -119,265 +123,204 @@ const Sidebar = ({
 		tx.title.toLowerCase().includes(searchTerm.toLowerCase())
 	);
 
+	const views = ['dashboard', 'reports', 'list', ...(isMobile ? [] : ['table'])];
+
+	const iconMap: Record<string, React.ElementType> = {
+		dashboard: FiList,
+		reports: FiPieChart,
+		table: FiSearch,
+		list: FiList,
+	};
+
 	return (
-		<div
-			className={`sidebar ${collapsed ? 'collapsed' : ''}`}
-			style={{
-				background: styles.sidebarBg,
-				borderRight: `1px solid ${styles.sidebarBorder}`,
-				color: styles.textPrimary,
-			}}
-		>
-			{/* Dialog */}
-			<Dialog
-				open={dialogOpen}
-				onClose={handleCancelAction}
-				aria-labelledby="alert-dialog-title"
-				aria-describedby="alert-dialog-description"
-			>
-				<DialogTitle id="alert-dialog-title">Confirm Deletion</DialogTitle>
+		<>
+			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
 				<DialogContent>
-					<DialogContentText id="alert-dialog-description">
-						Are you sure you want to delete this transaction?
-					</DialogContentText>
+					<DialogHeader>
+						<DialogTitle>Confirm Deletion</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to delete this transaction?
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={handleCancelAction}>
+							Cancel
+						</Button>
+						<Button variant="destructive" onClick={handleConfirmAction}>
+							Delete
+						</Button>
+					</DialogFooter>
 				</DialogContent>
-				<DialogActions>
-					<Button onClick={handleCancelAction} color="primary">
-						Cancel
-					</Button>
-					<Button onClick={handleConfirmAction} color="error" autoFocus>
-						Delete
-					</Button>
-				</DialogActions>
 			</Dialog>
 
-			{/* Header */}
-			<div className="sidebar-header">
-				<img className="logo" src={logo} alt="CashFlow Logo" />
-				{!collapsed && (
-					<button className="sidebar-toggle-btn" onClick={toggleSidebar}>
-						{collapsed ? '☰' : '✕'}
-					</button>
-				)}
-			</div>
-
-			{/* Navigation & Search */}
-			{!collapsed && (
-				<>
-					<div className="sidebar-nav">
-						{['dashboard', 'reports', 'list', ...(isMobile ? [] : ['table'])].map(
-							(view) => {
-								const isActive = activeView === view;
-								const isDark = theme === 'dark';
-								const activeColor = isDark ? '#ffffff' : '#1a202c';
-								const inactiveColor = themeVariant.textSecondary;
-
-								const iconMap: Record<string, React.ElementType> = {
-									dashboard: FiList,
-									reports: FiPieChart,
-									table: FiSearch,
-									list: FiList,
-								};
-
-								const IconComponent = iconMap[view];
-
-								return (
-									<button
-										key={view}
-										className={`nav-btn ${isActive ? 'active' : ''}`}
-										onClick={() => onViewChange(view)}
-									>
-										<IconComponent
-											className="nav-icon"
-											style={{
-												color: isActive ? activeColor : inactiveColor,
-											}}
-										/>
-										<span
-											style={{
-												color: isActive ? activeColor : inactiveColor,
-											}}
-										>
-											{view.charAt(0).toUpperCase() + view.slice(1)}
-										</span>
-									</button>
-								);
-							}
+			<aside
+				className={`fixed left-0 top-0 z-40 h-screen border-r bg-card transition-all duration-300 ease-in-out ${
+					collapsed ? 'w-0 overflow-hidden opacity-0' : 'w-64 opacity-100'
+				}`}
+			>
+				<div
+					className={`flex h-full flex-col transition-all duration-300 ${
+						collapsed ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 scale-100'
+					}`}
+				>
+					{/* Header */}
+					<div className="flex items-center justify-between border-b p-4">
+						<img src={logo} alt="CashFlow Logo" className="h-8 transition-opacity duration-300" />
+						{!collapsed && (
+							<Button variant="ghost" size="icon" onClick={toggleSidebar}>
+								<FiX className="h-5 w-5" />
+							</Button>
 						)}
 					</div>
 
-					<div className="search-wrapper">
-						<FiSearch className="search-icon" />
-						<input
-							type="text"
-							placeholder="Search transactions..."
-							value={searchTerm}
-							onChange={(e) => setSearchTerm(e.target.value)}
-							className="search-input"
-							style={{
-								background: styles.cardBg,
-								color: styles.textPrimary,
-								border: `1px solid ${styles.cardBorder}`,
-							}}
-						/>
-						{searchTerm && (
-							<button
-								className="clear-search-btn"
-								onClick={() => setSearchTerm('')}
-								aria-label="Clear search"
-								style={{ color: styles.textSecondary }}
-							>
-								<FiX />
-							</button>
-						)}
-					</div>
-				</>
-			)}
+					{/* Navigation & Search */}
+					{!collapsed && (
+						<>
+							<div className="border-b p-2">
+								<div className="space-y-1">
+									{views.map((view) => {
+										const isActive = activeView === view;
+										const IconComponent = iconMap[view];
 
-			{/* Transactions */}
-			<div className="sidebar-content">
-				<div className="transactions-container">
-					{filteredTransactions.length > 0 ? (
-						<div className="transactions-list">
-							{filteredTransactions.map((tx) => (
-								<div
-									key={tx.id}
-									className={`transaction-card ${selectedId === tx.id ? 'selected' : ''}`}
-									onClick={() => onSelect(tx)}
-									style={{
-										background:
-											selectedId === tx.id ? styles.activeBg : 'transparent',
-										borderColor:
-											selectedId === tx.id
-												? styles.accentPrimary
-												: 'transparent',
-									}}
-								>
-									<div className="transaction-content">
-										<h4
-											className="transaction-title"
-											style={{ color: styles.textPrimary }}
-										>
-											{tx.title}
-										</h4>
-										<div className="transaction-details">
-											<span
-												className="amount"
-												style={{
-													color:
-														tx.type === 'income'
-															? styles.incomeColor
-															: styles.expenseColor,
-												}}
+										return (
+											<button
+												key={view}
+												onClick={() => onViewChange(view)}
+												className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+													isActive
+														? 'bg-accent text-accent-foreground'
+														: 'text-muted-foreground hover:bg-muted hover:text-foreground'
+												}`}
 											>
-												{tx.type === 'income' ? (
-													<FiArrowUp className="amount-icon" />
-												) : (
-													<FiArrowDown className="amount-icon" />
-												)}
-												R{tx.amount.toFixed(2)}
-											</span>
-											<span
-												className="transaction-date"
-												style={{ color: styles.textSecondary }}
-											>
-												{formatDisplayDate(tx.date ?? tx.createdAt)}
-											</span>
-										</div>
-									</div>
-									<button
-										className="delete-btn"
-										onClick={(e) => {
-											e.stopPropagation();
-											if (tx.id) handleDeleteClick(tx.id);
-										}}
-										aria-label="Delete transaction"
-										style={{ color: styles.textSecondary }}
-									>
-										✕
-									</button>
+												<IconComponent className="h-4 w-4" />
+												<span>{view.charAt(0).toUpperCase() + view.slice(1)}</span>
+											</button>
+										);
+									})}
 								</div>
-							))}
-						</div>
-					) : (
-						<div className="empty-state" style={{ color: styles.textSecondary }}>
-							{searchTerm ? 'No matching transactions' : 'No transactions yet'}
+							</div>
+
+							<div className="border-b p-2">
+								<div className="relative">
+									<FiSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+									<Input
+										type="text"
+										placeholder="Search transactions..."
+										value={searchTerm}
+										onChange={(e) => setSearchTerm(e.target.value)}
+										className="pl-9 pr-9"
+									/>
+									{searchTerm && (
+										<button
+											onClick={() => setSearchTerm('')}
+											className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+											aria-label="Clear search"
+										>
+											<FiX className="h-4 w-4" />
+										</button>
+									)}
+								</div>
+							</div>
+						</>
+					)}
+
+					{/* Transactions */}
+					<div className="flex-1 overflow-y-auto p-2 scroll-smooth">
+						{filteredTransactions.length > 0 ? (
+							<div className="space-y-2">
+								{filteredTransactions.map((tx) => (
+									<div
+										key={tx.id}
+										onClick={() => onSelect(tx)}
+										className={`group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors ${
+											selectedId === tx.id
+												? 'border-primary bg-accent'
+												: 'border-border bg-background hover:bg-muted'
+										}`}
+									>
+										<div className="flex-1 min-w-0">
+											<h4 className="truncate font-medium">{tx.title}</h4>
+											<div className="mt-1 flex items-center gap-2 text-xs">
+												<span
+													className={`font-medium ${
+														tx.type === 'income'
+															? 'text-green-600 dark:text-green-400'
+															: 'text-red-600 dark:text-red-400'
+													}`}
+												>
+													{tx.type === 'income' ? (
+														<FiArrowUp className="inline h-3 w-3" />
+													) : (
+														<FiArrowDown className="inline h-3 w-3" />
+													)}
+													R{tx.amount.toFixed(2)}
+												</span>
+												<span className="text-muted-foreground">
+													{formatDisplayDate(tx.date ?? tx.createdAt)}
+												</span>
+											</div>
+										</div>
+										<button
+											onClick={(e) => {
+												e.stopPropagation();
+												if (tx.id) handleDeleteClick(tx.id);
+											}}
+											className="ml-2 opacity-0 transition-opacity group-hover:opacity-100"
+											aria-label="Delete transaction"
+										>
+											<FiX className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+										</button>
+									</div>
+								))}
+							</div>
+						) : (
+							<div className="py-8 text-center text-sm text-muted-foreground">
+								{searchTerm ? 'No matching transactions' : 'No transactions yet'}
+							</div>
+						)}
+					</div>
+
+					{/* New Transaction Button */}
+					{!collapsed && (
+						<div className="border-t p-2">
+							<Button onClick={handleCreateTransaction} className="w-full">
+								<FiPlus className="mr-2 h-4 w-4" />
+								New Transaction
+							</Button>
 						</div>
 					)}
+
+					{/* User Section */}
+					<div className="border-t p-2">
+						{currentUser ? (
+							<button
+								onClick={() => onOpenSettings?.()}
+								className="flex w-full items-center gap-3 rounded-lg border bg-background p-2 text-left transition-colors hover:bg-muted"
+							>
+								<Avatar className="h-8 w-8">
+									{currentUser.photoURL && (
+										<AvatarImage src={currentUser.photoURL} alt="User" />
+									)}
+									<AvatarFallback className="bg-primary text-primary-foreground">
+										{currentUser.email?.[0]?.toUpperCase() ?? '?'}
+									</AvatarFallback>
+								</Avatar>
+								<div className="flex-1 min-w-0">
+									<p className="truncate text-sm font-medium">
+										{currentUser.displayName || currentUser.email || 'User'}
+									</p>
+								</div>
+								<FiSettings className="h-4 w-4 text-muted-foreground" />
+							</button>
+						) : (
+							<Button onClick={() => onOpenLogin?.()} className="w-full">
+								Login
+							</Button>
+						)}
+					</div>
 				</div>
-
-				{!collapsed && (
-					<button
-						className="new-transaction-btn"
-						onClick={handleCreateTransaction}
-						style={{
-							background: styles.accentPrimary,
-							color: '#fff',
-						}}
-					>
-						<FiPlus className="btn-icon" />
-						New Transaction
-					</button>
-				)}
-			</div>
-
-			{/* User */}
-			<div className="user-section" style={{ borderTopColor: styles.sidebarBorder }}>
-				{currentUser ? (
-					<button
-						className="user-info"
-						onClick={() => onOpenSettings?.()}
-						style={{
-							display: 'flex',
-							alignItems: 'center',
-							gap: 12,
-							width: '100%',
-							padding: '8px 10px',
-							borderRadius: 8,
-							background: styles.cardBg,
-							textAlign: 'left',
-							border: `1px solid ${styles.sidebarBorder}`,
-							transition: 'background 0.2s ease,border-color 0.2s ease',
-						}}
-					>
-						<div className="user-avatar" style={{ background: styles.accentPrimary }}>
-							{currentUser.photoURL ? (
-								<img src={currentUser.photoURL} alt="User" />
-							) : (
-								<span>{currentUser.email?.[0]?.toUpperCase() ?? '?'}</span>
-							)}
-						</div>
-						<div className="user-details">
-							<p className="user-email" style={{ color: styles.textPrimary }}>
-								{currentUser.displayName || currentUser.email || 'User'}
-							</p>
-							<FiSettings
-								style={{ color: styles.textSecondary, fontSize: 18 }}
-								title="Settings"
-							/>
-						</div>
-					</button>
-				) : (
-					<button
-						className="login-btn"
-						onClick={() => onOpenLogin?.()}
-						style={{
-							background: styles.accentPrimary,
-							color: '#fff',
-							width: '100%',
-							display: 'flex',
-							alignItems: 'center',
-							justifyContent: 'center',
-							gap: 8,
-							padding: '10px 12px',
-							borderRadius: 8,
-						}}
-					>
-						<span>Login</span>
-					</button>
-				)}
-			</div>
-		</div>
+			</aside>
+		</>
 	);
 };
 

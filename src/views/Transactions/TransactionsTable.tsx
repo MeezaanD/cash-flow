@@ -1,29 +1,28 @@
 import React, { useState, useMemo } from 'react';
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-	Paper,
-	IconButton,
-	Typography,
-	TextField,
-	Select,
-	MenuItem,
-	FormControl,
-	InputLabel,
-	Box,
-	Chip,
-} from '@mui/material';
 import { FiArrowUp, FiArrowDown, FiTrash2 } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import DateRangeFilter, { DateRange } from '../../components/DateRangeFilter';
 import { filterTransactionsByDateRangeObject } from '../../utils/dateRangeFilter';
 import { useTheme } from '../../context/ThemeContext';
 import { formatCurrency } from '../../utils/formatCurrency';
-import '../../styles/TransactionsTable.css';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '../../components/ui/table';
+import { Input } from '../../components/ui/input';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '../../components/ui/select';
+import { Button } from '../../components/ui/button';
+import { Badge } from '../../components/ui/badge';
 
 interface TransactionsTableProps {
 	onDelete: (id: string) => void;
@@ -142,239 +141,205 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 				: `Amount (Total Expense: ${formatCurrency(totals.totalExpense, currency)})`;
 
 	return (
-		<Box className="transactions-wrapper">
-			<Box
-				className="transactions-controls"
-				sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
-			>
-				<TextField
-					label="Search transactions"
-					variant="outlined"
+		<div className="w-full space-y-4 p-4">
+			<div className="flex flex-wrap items-center gap-2">
+				<Input
+					placeholder="Search transactions"
 					value={search}
 					onChange={(e) => {
 						setSearch(e.target.value);
 						resetVisibleCount();
 					}}
-					size="small"
-					fullWidth
-					sx={{ flex: 1 }}
+					className="flex-1 min-w-[200px]"
 				/>
 
-				<FormControl size="small" sx={{ minWidth: 120 }}>
-					<InputLabel>Type</InputLabel>
-					<Select
-						value={filterType}
-						label="Type"
-						onChange={(e) => {
-							setFilterType(e.target.value as any);
-							resetVisibleCount();
-						}}
-					>
-						<MenuItem value="all">All Types</MenuItem>
-						<MenuItem value="income">Income</MenuItem>
-						<MenuItem value="expense">Expense</MenuItem>
-					</Select>
-				</FormControl>
+				<Select
+					value={filterType}
+					onValueChange={(value: string) => {
+						setFilterType(value as 'all' | 'income' | 'expense');
+						resetVisibleCount();
+					}}
+				>
+					<SelectTrigger className="w-[120px]">
+						<SelectValue placeholder="Type" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Types</SelectItem>
+						<SelectItem value="income">Income</SelectItem>
+						<SelectItem value="expense">Expense</SelectItem>
+					</SelectContent>
+				</Select>
 
-				<FormControl size="small" sx={{ minWidth: 120 }}>
-					<InputLabel>Category</InputLabel>
-					<Select
-						value={filterCategory}
-						label="Category"
-						onChange={(e) => {
-							setFilterCategory(e.target.value as string);
-							resetVisibleCount();
-						}}
-					>
-						<MenuItem value="all">All Categories</MenuItem>
+				<Select
+					value={filterCategory}
+					onValueChange={(value: string) => {
+						setFilterCategory(value);
+						resetVisibleCount();
+					}}
+				>
+					<SelectTrigger className="w-[140px]">
+						<SelectValue placeholder="Category" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Categories</SelectItem>
 						{allCategories.map((category) => (
-							<MenuItem key={category} value={category}>
-								<Box display="flex" alignItems="center" gap={1}>
-									<Chip
-										size="small"
-										sx={{
+							<SelectItem key={category} value={category}>
+								<div className="flex items-center gap-2">
+									<div
+										className="h-3 w-3 rounded-full"
+										style={{
 											backgroundColor: CATEGORY_COLORS[category] || '#9CA3AF',
-											width: 12,
-											height: 12,
 										}}
 									/>
 									{category}
-								</Box>
-							</MenuItem>
+								</div>
+							</SelectItem>
 						))}
-					</Select>
-				</FormControl>
+					</SelectContent>
+				</Select>
 
-				<FormControl size="small" sx={{ minWidth: 120 }}>
-					<InputLabel>Month</InputLabel>
-					<Select
-						value={filterMonth}
-						label="Month"
-						onChange={(e) => {
-							setFilterMonth(e.target.value as string);
-							resetVisibleCount();
-						}}
-					>
+				<Select
+					value={filterMonth}
+					onValueChange={(value: string) => {
+						setFilterMonth(value);
+						resetVisibleCount();
+					}}
+				>
+					<SelectTrigger className="w-[140px]">
+						<SelectValue placeholder="Month" />
+					</SelectTrigger>
+					<SelectContent>
 						{MONTHS.map((month) => (
-							<MenuItem key={month.value} value={month.value}>
+							<SelectItem key={month.value} value={month.value}>
 								{month.label}
-							</MenuItem>
+							</SelectItem>
 						))}
-					</Select>
-				</FormControl>
+					</SelectContent>
+				</Select>
 
-				<Box>
-					<DateRangeFilter
-						dateRange={dateRange}
-						onDateRangeChange={(newRange) => {
-							setDateRange(newRange);
-							resetVisibleCount();
-						}}
-						onClear={() => {
-							setDateRange({ startDate: '', endDate: '' });
-							resetVisibleCount();
-						}}
-					/>
-				</Box>
-			</Box>
+				<DateRangeFilter
+					dateRange={dateRange}
+					onDateRangeChange={(newRange) => {
+						setDateRange(newRange);
+						resetVisibleCount();
+					}}
+					onClear={() => {
+						setDateRange({ startDate: '', endDate: '' });
+						resetVisibleCount();
+					}}
+				/>
+			</div>
 
-			<TableContainer
-				component={Paper}
-				onScroll={handleScroll}
-				sx={{
-					position: 'relative',
-					maxHeight: 'calc(100vh - 180px)',
-					overflow: 'auto',
-					'&::after': {
-						content: '""',
-						position: 'absolute',
-						bottom: 0,
-						left: 0,
-						right: 0,
-						height: '30px',
-						background:
-							'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.9) 100%)',
-						pointerEvents: 'none',
-						display: visibleCount < filtered.length ? 'block' : 'none',
-						zIndex: 1,
-					},
-					'.theme-dark &::after': {
-						background:
-							'linear-gradient(to bottom, rgba(31,41,55,0) 0%, rgba(31,41,55,0.9) 100%)',
-					},
-				}}
-			>
-				<Table stickyHeader aria-label="transactions table">
-					<TableHead>
-						<TableRow>
-							<TableCell>Description</TableCell>
-							<TableCell align="right">{amountHeader}</TableCell>
-							<TableCell align="right">Date</TableCell>
-							<TableCell align="right">Category</TableCell>
-							<TableCell align="right">Actions</TableCell>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{visibleTransactions.map((tx) => (
-							<TableRow
-								key={tx.id}
-								hover
-								selected={tx.id === selectedId}
-								onClick={() => onSelect(tx)}
-								sx={{ '&:last-child td': { borderBottom: 0 } }}
-							>
-								<TableCell component="th" scope="row">
-									<Box sx={{ fontWeight: 500 }}>{tx.title}</Box>
-									<Box
-										sx={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}
-									>
-										{tx.type}
-									</Box>
-								</TableCell>
-								<TableCell
-									align="right"
-									sx={{
-										color: tx.type === 'income' ? '#10B981' : '#EF4444',
-										fontWeight: 500,
-									}}
+			<div className="rounded-md border bg-card">
+				<div
+					className="relative max-h-[calc(100vh-180px)] w-full overflow-auto scroll-smooth"
+					onScroll={handleScroll}
+				>
+					<Table>
+						<TableHeader className="sticky top-0 z-10 bg-muted/50 backdrop-blur-sm">
+							<TableRow className="hover:bg-transparent">
+								<TableHead className="font-semibold">Description</TableHead>
+								<TableHead className="text-right font-semibold">
+									{amountHeader}
+								</TableHead>
+								<TableHead className="text-right font-semibold">Date</TableHead>
+								<TableHead className="text-right font-semibold">Category</TableHead>
+								<TableHead className="text-right font-semibold">Actions</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{visibleTransactions.map((tx) => (
+								<TableRow
+									key={tx.id}
+									className={`cursor-pointer transition-colors ${
+										tx.id === selectedId ? 'bg-accent' : 'hover:bg-muted/50'
+									}`}
+									onClick={() => onSelect(tx)}
 								>
-									<Box className="amount-cell">
-										{tx.type === 'income' ? (
-											<FiArrowUp size={14} />
-										) : (
-											<FiArrowDown size={14} />
-										)}
-										<span className="amount-value">
-											{formatCurrency(tx.amount, currency)}
-										</span>
-									</Box>
-								</TableCell>
-								<TableCell align="right">
-									{(() => {
-										const dateValue = tx.date ?? tx.createdAt;
-										let dateObj: Date;
-										if (!dateValue) {
-											dateObj = new Date(0);
-										} else if (
-											typeof dateValue === 'object' &&
-											'toDate' in dateValue
-										) {
-											dateObj = dateValue.toDate();
-										} else {
-											dateObj = new Date(dateValue);
-										}
-										return dateObj.toLocaleDateString('en-US', {
-											month: 'short',
-											day: 'numeric',
-											year: 'numeric',
-										});
-									})()}
-								</TableCell>
-								<TableCell align="right">
-									<Box
-										className="category-badge"
-										sx={{
-											backgroundColor:
-												CATEGORY_COLORS[tx.category] || '#9CA3AF',
-											padding: '4px 10px',
-											borderRadius: '12px',
-											fontSize: '0.75rem',
-											display: 'inline-block',
-											color: 'white',
-											fontWeight: 500,
-										}}
+									<TableCell>
+										<div className="font-medium">{tx.title}</div>
+										<div className="text-xs text-muted-foreground">
+											{tx.type}
+										</div>
+									</TableCell>
+									<TableCell
+										className={`text-right font-medium ${
+											tx.type === 'income'
+												? 'text-green-600 dark:text-green-400'
+												: 'text-red-600 dark:text-red-400'
+										}`}
 									>
-										{tx.category}
-									</Box>
-								</TableCell>
-								<TableCell align="right">
-									<IconButton
-										onClick={(e) => {
-											e.stopPropagation();
-											tx.id && onDelete(tx.id);
-										}}
-										size="small"
-									>
-										<FiTrash2 size={16} />
-									</IconButton>
-								</TableCell>
-							</TableRow>
-						))}
-						{filtered.length === 0 && (
-							<TableRow>
-								<TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-									<Typography variant="body2" color="textSecondary">
-										{search
-											? 'No matching transactions found'
-											: 'No transactions available'}
-									</Typography>
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</Table>
-			</TableContainer>
-		</Box>
+										<div className="flex items-center justify-end gap-1">
+											{tx.type === 'income' ? (
+												<FiArrowUp className="h-3.5 w-3.5" />
+											) : (
+												<FiArrowDown className="h-3.5 w-3.5" />
+											)}
+											<span>{formatCurrency(tx.amount, currency)}</span>
+										</div>
+									</TableCell>
+									<TableCell className="text-right">
+										{(() => {
+											const dateValue = tx.date ?? tx.createdAt;
+											let dateObj: Date;
+											if (!dateValue) {
+												dateObj = new Date(0);
+											} else if (
+												typeof dateValue === 'object' &&
+												'toDate' in dateValue
+											) {
+												dateObj = dateValue.toDate();
+											} else {
+												dateObj = new Date(dateValue);
+											}
+											return dateObj.toLocaleDateString('en-US', {
+												month: 'short',
+												day: 'numeric',
+												year: 'numeric',
+											});
+										})()}
+									</TableCell>
+									<TableCell className="text-right">
+										<Badge
+											className="text-white"
+											style={{
+												backgroundColor:
+													CATEGORY_COLORS[tx.category] || '#9CA3AF',
+											}}
+										>
+											{tx.category}
+										</Badge>
+									</TableCell>
+									<TableCell className="text-right">
+										<Button
+											variant="ghost"
+											size="icon"
+											onClick={(e) => {
+												e.stopPropagation();
+												tx.id && onDelete(tx.id);
+											}}
+										>
+											<FiTrash2 className="h-4 w-4" />
+										</Button>
+									</TableCell>
+								</TableRow>
+							))}
+							{filtered.length === 0 && (
+								<TableRow>
+									<TableCell colSpan={5} className="text-center py-12">
+										<div className="text-sm text-muted-foreground">
+											{search
+												? 'No matching transactions found'
+												: 'No transactions available'}
+										</div>
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
+				</div>
+			</div>
+		</div>
 	);
 };
 

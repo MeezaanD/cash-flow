@@ -1,20 +1,5 @@
 import React, { useState } from 'react';
-import {
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	DialogActions,
-	TextField,
-	Button,
-	Typography,
-	Box,
-	IconButton,
-	InputAdornment,
-	Alert,
-	Divider,
-	CircularProgress,
-} from '@mui/material';
-import { Visibility, VisibilityOff, Close } from '@mui/icons-material';
+import { Eye, EyeOff } from 'lucide-react';
 import { auth } from '../services/firebase';
 import {
 	createUserWithEmailAndPassword,
@@ -24,6 +9,19 @@ import {
 } from 'firebase/auth';
 import { FcGoogle } from 'react-icons/fc';
 import { useNavigate } from 'react-router-dom';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from './ui/dialog';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Alert, AlertDescription } from './ui/alert';
+import { Separator } from './ui/separator';
+import { Loader2 } from 'lucide-react';
 
 interface AuthModalsProps {
 	open: boolean;
@@ -42,7 +40,6 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, mode, onModeChan
 	const [googleLoading, setGoogleLoading] = useState(false);
 
 	const handleSuccessfulAuth = () => {
-		// Close modal and navigate immediately
 		onClose();
 		navigate('/dashboard');
 	};
@@ -59,7 +56,6 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, mode, onModeChan
 				await signInWithEmailAndPassword(auth, email, password);
 			}
 			handleSuccessfulAuth();
-			// Reset form
 			setEmail('');
 			setPassword('');
 		} catch (error: any) {
@@ -99,176 +95,118 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, mode, onModeChan
 	};
 
 	return (
-		<Dialog
-			open={open}
-			onClose={handleClose}
-			maxWidth="sm"
-			fullWidth
-			PaperProps={{
-				style: {
-					borderRadius: '16px',
-					background: 'linear-gradient(135deg, #ffffff 0%, #fafbfc 100%)',
-				},
-			}}
-		>
-			<DialogTitle
-				sx={{
-					display: 'flex',
-					justifyContent: 'space-between',
-					alignItems: 'center',
-					pb: 1,
-				}}
-			>
-				<Typography variant="h5" component="span" fontWeight="600">
-					{mode === 'login' ? 'Welcome Back' : 'Create Account'}
-				</Typography>
-				<IconButton onClick={handleClose} size="small">
-					<Close />
-				</IconButton>
-			</DialogTitle>
+		<Dialog open={open} onOpenChange={handleClose}>
+			<DialogContent className="sm:max-w-md">
+				<DialogHeader>
+					<DialogTitle className="text-2xl font-semibold">
+						{mode === 'login' ? 'Welcome Back' : 'Create Account'}
+					</DialogTitle>
+					<DialogDescription>
+						{mode === 'login'
+							? 'Sign in to your account to continue'
+							: 'Create a new account to get started'}
+					</DialogDescription>
+				</DialogHeader>
 
-			<DialogContent>
-				<Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+				<form onSubmit={handleSubmit} className="space-y-4">
 					{error && (
-						<Alert severity="error" sx={{ mb: 2 }}>
-							{error}
+						<Alert variant="destructive">
+							<AlertDescription>{error}</AlertDescription>
 						</Alert>
 					)}
 
-					{/* Google Sign In Button */}
 					<Button
-						fullWidth
-						variant="outlined"
+						type="button"
+						variant="outline"
+						className="w-full"
 						onClick={handleGoogleSignIn}
 						disabled={googleLoading || loading}
-						startIcon={
-							googleLoading ? <CircularProgress size={20} /> : <FcGoogle size={20} />
-						}
-						sx={{
-							py: 1.5,
-							mb: 2,
-							borderRadius: '12px',
-							borderColor: '#e2e8f0',
-							color: '#374151',
-							textTransform: 'none',
-							fontSize: '1rem',
-							fontWeight: '600',
-							'&:hover': {
-								borderColor: '#6366f1',
-								backgroundColor: '#f8fafc',
-							},
-						}}
 					>
+						{googleLoading ? (
+							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+						) : (
+							<FcGoogle className="mr-2 h-5 w-5" />
+						)}
 						{googleLoading ? 'Signing in...' : 'Continue with Google'}
 					</Button>
 
-					<Divider sx={{ my: 2 }}>
-						<Typography variant="body2" color="text.secondary">
-							or continue with email
-						</Typography>
-					</Divider>
+					<div className="relative">
+						<div className="absolute inset-0 flex items-center">
+							<Separator />
+						</div>
+						<div className="relative flex justify-center text-xs uppercase">
+							<span className="bg-background px-2 text-muted-foreground">
+								or continue with email
+							</span>
+						</div>
+					</div>
 
-					<TextField
-						margin="normal"
-						required
-						fullWidth
-						id="email"
-						label="Email Address"
-						name="email"
-						autoComplete="email"
-						autoFocus
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						disabled={loading || googleLoading}
-						sx={{
-							'& .MuiOutlinedInput-root': {
-								borderRadius: '12px',
-							},
-						}}
-					/>
-
-					<TextField
-						margin="normal"
-						required
-						fullWidth
-						name="password"
-						label="Password"
-						type={showPassword ? 'text' : 'password'}
-						id="password"
-						autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-						disabled={loading || googleLoading}
-						InputProps={{
-							endAdornment: (
-								<InputAdornment position="end">
-									<IconButton
-										aria-label="toggle password visibility"
-										onClick={() => setShowPassword(!showPassword)}
-										edge="end"
-										disabled={loading || googleLoading}
-									>
-										{showPassword ? <VisibilityOff /> : <Visibility />}
-									</IconButton>
-								</InputAdornment>
-							),
-						}}
-						sx={{
-							'& .MuiOutlinedInput-root': {
-								borderRadius: '12px',
-							},
-						}}
-					/>
-
-					<DialogActions sx={{ px: 0, pt: 2 }}>
-						<Button
-							type="submit"
-							fullWidth
-							variant="contained"
+					<div className="space-y-2">
+						<Label htmlFor="email">Email Address</Label>
+						<Input
+							id="email"
+							type="email"
+							placeholder="name@example.com"
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
 							disabled={loading || googleLoading}
-							startIcon={loading ? <CircularProgress size={20} /> : null}
-							sx={{
-								py: 1.5,
-								borderRadius: '12px',
-								background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-								textTransform: 'none',
-								fontSize: '1rem',
-								fontWeight: '600',
-								'&:hover': {
-									background: 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)',
-								},
-							}}
-						>
-							{loading
-								? 'Signing in...'
-								: mode === 'login'
-									? 'Sign In'
-									: 'Create Account'}
-						</Button>
-					</DialogActions>
+							required
+							autoFocus
+						/>
+					</div>
 
-					<Box sx={{ textAlign: 'center', mt: 2 }}>
-						<Typography variant="body2" color="text.secondary">
-							{mode === 'login'
-								? "Don't have an account? "
-								: 'Already have an account? '}
-							<Button
-								onClick={handleModeToggle}
+					<div className="space-y-2">
+						<Label htmlFor="password">Password</Label>
+						<div className="relative">
+							<Input
+								id="password"
+								type={showPassword ? 'text' : 'password'}
+								placeholder="Enter your password"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
 								disabled={loading || googleLoading}
-								sx={{
-									textTransform: 'none',
-									color: '#6366f1',
-									fontWeight: '600',
-									'&:hover': {
-										color: '#4f46e5',
-									},
-								}}
+								required
+								autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+								className="pr-10"
+							/>
+							<button
+								type="button"
+								onClick={() => setShowPassword(!showPassword)}
+								disabled={loading || googleLoading}
+								className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground disabled:opacity-50"
 							>
-								{mode === 'login' ? 'Sign up' : 'Sign in'}
-							</Button>
-						</Typography>
-					</Box>
-				</Box>
+							{showPassword ? (
+								<EyeOff className="h-4 w-4" />
+							) : (
+								<Eye className="h-4 w-4" />
+							)}
+							</button>
+						</div>
+					</div>
+
+					<Button type="submit" className="w-full" disabled={loading || googleLoading}>
+						{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+						{loading
+							? 'Signing in...'
+							: mode === 'login'
+								? 'Sign In'
+								: 'Create Account'}
+					</Button>
+
+					<div className="text-center text-sm">
+						<span className="text-muted-foreground">
+							{mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+						</span>
+						<button
+							type="button"
+							onClick={handleModeToggle}
+							disabled={loading || googleLoading}
+							className="font-semibold text-primary hover:underline disabled:opacity-50"
+						>
+							{mode === 'login' ? 'Sign up' : 'Sign in'}
+						</button>
+					</div>
+				</form>
 			</DialogContent>
 		</Dialog>
 	);

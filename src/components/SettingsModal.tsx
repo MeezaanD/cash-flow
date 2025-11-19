@@ -1,24 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import {
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	DialogActions,
-	Button,
-	FormControlLabel,
-	Switch,
-	FormControl,
-	InputLabel,
-	Select,
-	MenuItem,
-	Box,
-	Typography,
-	Paper,
-	List,
-	ListItemButton,
-	ListItemIcon,
-	ListItemText,
-} from '@mui/material';
 import { FiSettings, FiDatabase } from 'react-icons/fi';
 import { useTheme } from '../context/ThemeContext';
 import { CurrencyCode } from '../types';
@@ -26,12 +6,23 @@ import { useAuth } from '../hooks/useAuth';
 import { signOut } from 'firebase/auth';
 import { auth } from '../services/firebase';
 import {
-	Dialog as ConfirmDialog,
-	DialogTitle as ConfirmDialogTitle,
-	DialogContent as ConfirmDialogContent,
-	DialogContentText as ConfirmDialogContentText,
-	DialogActions as ConfirmDialogActions,
-} from '@mui/material';
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from './ui/dialog';
+import { Button } from './ui/button';
+import { Switch } from './ui/switch';
+import { Label } from './ui/label';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from './ui/select';
 
 interface SettingsModalProps {
 	open: boolean;
@@ -83,243 +74,180 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	};
 
 	return (
-		<Dialog
-			open={open}
-			onClose={onClose}
-			fullWidth
-			maxWidth="md"
-			PaperProps={{
-				sx: {
-					maxHeight: { xs: '90vh', sm: '80vh' },
-					margin: { xs: 1 },
-				},
-			}}
-		>
-			<DialogTitle>Settings</DialogTitle>
-			<DialogContent
-				sx={{
-					overflow: 'auto',
-					px: { xs: 1, sm: 3 },
-					pb: { xs: 1, sm: 3 },
-				}}
-			>
-				<Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} gap={2} mt={1}>
-					<Paper
-						variant="outlined"
-						sx={{
-							width: { xs: '100%', sm: 220 },
-							flexShrink: 0,
-							borderRadius: 2,
-						}}
-					>
-						<List component="nav" disablePadding>
-							<ListItemButton
-								selected={activeTab === 'general'}
-								onClick={() => setActiveTab('general')}
-							>
-								<ListItemIcon sx={{ minWidth: 32 }}>
-									<FiSettings size={16} />
-								</ListItemIcon>
-								<ListItemText
-									primary={<Typography variant="body2">General</Typography>}
-								/>
-							</ListItemButton>
-							<ListItemButton
-								selected={activeTab === 'data'}
-								onClick={() => setActiveTab('data')}
-							>
-								<ListItemIcon sx={{ minWidth: 32 }}>
-									<FiDatabase size={16} />
-								</ListItemIcon>
-								<ListItemText
-									primary={<Typography variant="body2">Data</Typography>}
-								/>
-							</ListItemButton>
-						</List>
-					</Paper>
+		<>
+			<Dialog open={open} onOpenChange={onClose}>
+				<DialogContent className="sm:max-w-2xl">
+					<DialogHeader>
+						<DialogTitle>Settings</DialogTitle>
+						<DialogDescription>Manage your app preferences and data</DialogDescription>
+					</DialogHeader>
 
-					<Box flex={1} sx={{ minWidth: 0 }}>
-						{activeTab === 'general' && (
-							<Box>
-								<Typography
-									variant="overline"
-									sx={{ color: 'text.secondary', letterSpacing: 0.6 }}
+					<div className="flex flex-col gap-4 sm:flex-row">
+						<div className="w-full sm:w-56">
+							<div className="space-y-1 rounded-lg border p-1">
+								<button
+									onClick={() => setActiveTab('general')}
+									className={`w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+										activeTab === 'general'
+											? 'bg-accent text-accent-foreground'
+											: 'text-muted-foreground hover:bg-muted'
+									}`}
 								>
+									<FiSettings className="h-4 w-4" />
 									General
-								</Typography>
-								<Paper variant="outlined" sx={{ mt: 1, p: 2, borderRadius: 2 }}>
-									<Box display="flex" flexDirection="column" gap={2}>
-										<FormControlLabel
-											control={
+								</button>
+								<button
+									onClick={() => setActiveTab('data')}
+									className={`w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+										activeTab === 'data'
+											? 'bg-accent text-accent-foreground'
+											: 'text-muted-foreground hover:bg-muted'
+									}`}
+								>
+									<FiDatabase className="h-4 w-4" />
+									Data
+								</button>
+							</div>
+						</div>
+
+						<div className="flex-1 space-y-4">
+							{activeTab === 'general' && (
+								<div className="space-y-4">
+									<div>
+										<h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+											General
+										</h3>
+										<div className="space-y-4 rounded-lg border p-4">
+											<div className="flex items-center justify-between">
+												<Label htmlFor="dark-mode" className="cursor-pointer">
+													Dark Mode
+												</Label>
 												<Switch
+													id="dark-mode"
 													checked={localTheme === 'dark'}
-													onChange={(e) =>
-														setLocalTheme(
-															e.target.checked ? 'dark' : 'light'
-														)
+													onCheckedChange={(checked: boolean) =>
+														setLocalTheme(checked ? 'dark' : 'light')
 													}
 												/>
-											}
-											label="Dark Mode"
-										/>
-										<FormControl size="small" fullWidth>
-											<InputLabel id="currency-label">Currency</InputLabel>
-											<Select
-												labelId="currency-label"
-												value={localCurrency}
-												label="Currency"
-												onChange={(e) =>
-													setLocalCurrency(e.target.value as CurrencyCode)
-												}
-											>
-												{currencyOptions.map((c) => (
-													<MenuItem key={c} value={c}>
-														{c}
-													</MenuItem>
-												))}
-											</Select>
-										</FormControl>
-									</Box>
-								</Paper>
-							</Box>
-						)}
+											</div>
+											<div className="space-y-2">
+												<Label htmlFor="currency">Currency</Label>
+												<Select
+													value={localCurrency}
+													onValueChange={(value: string) => setLocalCurrency(value as CurrencyCode)}
+												>
+													<SelectTrigger id="currency">
+														<SelectValue />
+													</SelectTrigger>
+													<SelectContent>
+														{currencyOptions.map((c) => (
+															<SelectItem key={c} value={c}>
+																{c}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											</div>
+										</div>
+									</div>
+								</div>
+							)}
 
-						{activeTab === 'data' && (
-							<Box>
-								<Typography
-									variant="overline"
-									sx={{ color: 'text.secondary', letterSpacing: 0.6 }}
-								>
-									Data
-								</Typography>
-								<Paper variant="outlined" sx={{ mt: 1, p: 2, borderRadius: 2 }}>
-									<Box display="flex" flexDirection="column" gap={1.5}>
-										<Typography
-											variant="body2"
-											sx={{ color: 'text.secondary' }}
-										>
-											Import transactions from CSV/JSON. Duplicates are
-											automatically skipped.
-										</Typography>
-										<Box
-											display="flex"
-											flexDirection={{ xs: 'column', sm: 'row' }}
-											gap={1}
-										>
-											<input
-												type="file"
-												accept=".csv,.json,application/json,text/csv"
-												id="settings-import-input"
-												style={{ display: 'none' }}
-												onChange={async (e) => {
-													const file = e.target.files?.[0];
-													if (file && onImport) await onImport(file);
-													e.currentTarget.value = '';
-												}}
-											/>
-											<Button
-												variant="outlined"
-												size="small"
-												onClick={() =>
-													document
-														.getElementById('settings-import-input')
-														?.click()
-												}
-												sx={{ width: { xs: '100%', sm: 'auto' } }}
-											>
-												Import
-											</Button>
-											<Button
-												variant="outlined"
-												size="small"
-												onClick={onExportCSV}
-												sx={{ width: { xs: '100%', sm: 'auto' } }}
-											>
-												Export CSV
-											</Button>
-											<Button
-												variant="outlined"
-												size="small"
-												onClick={onExportJSON}
-												sx={{ width: { xs: '100%', sm: 'auto' } }}
-											>
-												Export JSON
-											</Button>
-										</Box>
-									</Box>
-								</Paper>
-							</Box>
-						)}
-					</Box>
-				</Box>
-			</DialogContent>
-			<DialogActions
-				sx={{
-					flexDirection: { xs: 'column-reverse', sm: 'row' },
-					gap: { xs: 1, sm: 0 },
-					px: { xs: 2, sm: 3 },
-					pb: { xs: 2, sm: 2 },
-				}}
-			>
-				<Box
-					sx={{
-						width: { xs: '100%', sm: 'auto' },
-						display: 'flex',
-						gap: 1,
-						flexDirection: { xs: 'column', sm: 'row' },
-					}}
-				>
-					{currentUser ? (
-						<Button
-							color="error"
-							variant="outlined"
-							onClick={handleSignOut}
-							sx={{
-								mr: { sm: 'auto' },
-								width: { xs: '100%', sm: 'auto' },
-							}}
-						>
-							Sign Out
+							{activeTab === 'data' && (
+								<div className="space-y-4">
+									<div>
+										<h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+											Data
+										</h3>
+										<div className="space-y-4 rounded-lg border p-4">
+											<p className="text-sm text-muted-foreground">
+												Import transactions from CSV/JSON. Duplicates are automatically skipped.
+											</p>
+											<div className="flex flex-col gap-2 sm:flex-row">
+												<input
+													type="file"
+													accept=".csv,.json,application/json,text/csv"
+													id="settings-import-input"
+													className="hidden"
+													onChange={async (e) => {
+														const file = e.target.files?.[0];
+														if (file && onImport) await onImport(file);
+														e.currentTarget.value = '';
+													}}
+												/>
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() =>
+														document.getElementById('settings-import-input')?.click()
+													}
+													className="w-full sm:w-auto"
+												>
+													Import
+												</Button>
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={onExportCSV}
+													className="w-full sm:w-auto"
+												>
+													Export CSV
+												</Button>
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={onExportJSON}
+													className="w-full sm:w-auto"
+												>
+													Export JSON
+												</Button>
+											</div>
+										</div>
+									</div>
+								</div>
+							)}
+						</div>
+					</div>
+
+					<DialogFooter className="flex-col gap-2 sm:flex-row">
+						<div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+							{currentUser ? (
+								<Button variant="outline" onClick={handleSignOut} className="w-full sm:w-auto">
+									Sign Out
+								</Button>
+							) : (
+								<Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
+									Sign In
+								</Button>
+							)}
+							<Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
+								Close
+							</Button>
+						</div>
+						<Button onClick={handleApply} className="w-full sm:w-auto">
+							Apply
 						</Button>
-					) : (
-						<Button
-							variant="outlined"
-							onClick={onClose}
-							sx={{
-								mr: { sm: 'auto' },
-								width: { xs: '100%', sm: 'auto' },
-							}}
-						>
-							Sign In
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Confirm Logout</DialogTitle>
+						<DialogDescription>Are you sure you want to log out?</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setConfirmOpen(false)}>
+							Cancel
 						</Button>
-					)}
-					<Button onClick={onClose} sx={{ width: { xs: '100%', sm: 'auto' } }}>
-						Close
-					</Button>
-				</Box>
-				<Button
-					onClick={handleApply}
-					variant="contained"
-					sx={{ width: { xs: '100%', sm: 'auto' } }}
-				>
-					Apply
-				</Button>
-			</DialogActions>
-			<ConfirmDialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-				<ConfirmDialogTitle>Confirm Logout</ConfirmDialogTitle>
-				<ConfirmDialogContent>
-					<ConfirmDialogContentText>
-						Are you sure you want to log out?
-					</ConfirmDialogContentText>
-				</ConfirmDialogContent>
-				<ConfirmDialogActions>
-					<Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
-					<Button color="error" onClick={confirmLogout} autoFocus>
-						Logout
-					</Button>
-				</ConfirmDialogActions>
-			</ConfirmDialog>
-		</Dialog>
+						<Button variant="destructive" onClick={confirmLogout}>
+							Logout
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		</>
 	);
 };
 
