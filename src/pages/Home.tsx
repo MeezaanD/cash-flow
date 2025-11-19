@@ -3,8 +3,6 @@ import {
 	Shield,
 	Clock,
 	Cloud,
-	Mail,
-	Globe,
 	DollarSign,
 	GraduationCap,
 	User,
@@ -12,8 +10,6 @@ import {
 	TrendingUp,
 	PieChart,
 	Calendar,
-	Github,
-	Linkedin,
 	UserPlus,
 	Plus,
 	BarChart3,
@@ -22,8 +18,8 @@ import {
 	X,
 } from 'lucide-react';
 // import preview from '../assets/images/cashflow.png';
-import logo from '../assets/images/dark-transparent-image.png';
-import profilePhoto from '../assets/images/profile-photo.jpeg';
+// import logo from '../assets/images/white-transparent-image.png';
+// import profilePhoto from '../assets/images/profile-photo.jpeg';
 import AuthModals from '../components/AuthModals';
 
 const features = [
@@ -180,48 +176,49 @@ const Home: React.FC = () => {
 		<div className="min-h-screen bg-background">
 			{/* Sticky Navbar */}
 			<nav
-				className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+				className={`fixed top-4 left-4 right-4 z-50 transition-all duration-300 ${
 					scrolled
-						? 'bg-background/95 backdrop-blur-md border-b shadow-sm'
-						: 'bg-background/80 backdrop-blur-sm'
-				}`}
+						? 'bg-background/95 backdrop-blur-xl border border-white/20 shadow-2xl'
+						: 'bg-background/80 backdrop-blur-lg border border-white/10'
+				} rounded-2xl mx-auto max-w-7xl`}
+				
 			>
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+				<div className="px-6 sm:px-8 lg:px-10">
 					<div className="flex items-center justify-between h-16">
 						{/* Logo */}
 						<div className="flex-shrink-0">
-							<a href="/" className="flex items-center">
-								<img src={logo} alt="CashFlow Logo" className="h-10 w-auto" />
-							</a>
+							{/* <a href="/" className="flex items-center">
+								<img src={logo} alt="CashFlow Logo" className="h-8 w-auto" />
+							</a> */}
 						</div>
 
 						{/* Desktop Navigation */}
-						<div className="hidden md:flex items-center space-x-8">
+						<div className="hidden md:flex items-center space-x-1">
 							<a
 								href="/"
-								className="text-sm font-medium text-foreground hover:text-primary transition-colors"
+								className="px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-all duration-200 rounded-xl hover:bg-primary/5"
 							>
 								Home
 							</a>
 							<a
 								href="/dashboard"
-								className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+								className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200 rounded-xl hover:bg-primary/5"
 							>
 								Dashboard
 							</a>
 							<a
 								href="#features"
-								className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+								className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200 rounded-xl hover:bg-primary/5"
 							>
 								Features
 							</a>
 						</div>
 
 						{/* Desktop Auth Buttons */}
-						<div className="hidden md:flex items-center space-x-3">
+						<div className="hidden md:flex items-center space-x-2">
 							<button
 								onClick={() => handleAuthClick('login')}
-								className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+								className="px-5 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200 rounded-xl hover:bg-muted/50 border border-transparent hover:border-muted-foreground/20"
 							>
 								Login
 							</button>
@@ -235,7 +232,7 @@ const Home: React.FC = () => {
 
 						{/* Mobile Menu Button */}
 						<button
-							className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+							className="md:hidden p-2.5 rounded-xl hover:bg-muted/50 transition-all duration-200 border border-transparent hover:border-muted-foreground/20"
 							aria-label="Toggle navigation menu"
 							aria-expanded={mobileMenuOpen}
 							onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -255,35 +252,35 @@ const Home: React.FC = () => {
 						ref={menuRef}
 						className="md:hidden border-t bg-background/98 backdrop-blur-xl"
 					>
-						<div className="px-4 py-6 space-y-3">
+						<div className="px-6 py-4 space-y-1">
 							<a
 								href="/"
-								className="block px-3 py-2 text-sm font-medium rounded-lg hover:bg-muted transition-colors"
+								className="block px-4 py-3 text-sm font-medium rounded-xl hover:bg-muted/50 transition-all duration-200 border border-transparent hover:border-muted-foreground/10"
 								onClick={() => setMobileMenuOpen(false)}
 							>
 								Home
 							</a>
 							<a
 								href="/dashboard"
-								className="block px-3 py-2 text-sm font-medium rounded-lg hover:bg-muted transition-colors"
+								className="block px-4 py-3 text-sm font-medium rounded-xl hover:bg-muted/50 transition-all duration-200 border border-transparent hover:border-muted-foreground/10"
 								onClick={() => setMobileMenuOpen(false)}
 							>
 								Dashboard
 							</a>
 							<a
 								href="#features"
-								className="block px-3 py-2 text-sm font-medium rounded-lg hover:bg-muted transition-colors"
+								className="block px-4 py-3 text-sm font-medium rounded-xl hover:bg-muted/50 transition-all duration-200 border border-transparent hover:border-muted-foreground/10"
 								onClick={() => setMobileMenuOpen(false)}
 							>
 								Features
 							</a>
-							<div className="pt-3 space-y-2">
+							<div className="pt-2 space-y-1">
 								<button
 									onClick={() => {
 										handleAuthClick('login');
 										setMobileMenuOpen(false);
 									}}
-									className="w-full px-3 py-2 text-sm font-medium text-left rounded-lg hover:bg-muted transition-colors"
+									className="w-full px-4 py-3 text-sm font-medium text-left rounded-xl hover:bg-muted/50 transition-all duration-200 border border-transparent hover:border-muted-foreground/10"
 								>
 									Login
 								</button>
@@ -307,7 +304,7 @@ const Home: React.FC = () => {
 				<div className="max-w-7xl mx-auto">
 					<div className="space-y-12">
 						<div className="max-w-5xl mx-auto text-center space-y-8">
-							<h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight">
+							<h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight">
 								Take Control of Your <br />
 								<span className="text-primary">Personal Finances</span>
 							</h1>
@@ -345,7 +342,7 @@ const Home: React.FC = () => {
 			</section>
 
 			{/* Data Import/Export Section */}
-			<section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
+			{/* <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
 				<div className="max-w-7xl mx-auto">
 					<div className="text-center space-y-4 mb-12">
 						<span className="inline-block px-4 py-1.5 text-sm font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
@@ -412,10 +409,10 @@ const Home: React.FC = () => {
 						</div>
 					</div>
 				</div>
-			</section>
+			</section> */}
 
 			{/* Date Range Filtering Section */}
-			<section className="py-20 px-4 sm:px-6 lg:px-8">
+			{/* <section className="py-20 px-4 sm:px-6 lg:px-8">
 				<div className="max-w-7xl mx-auto">
 					<div className="text-center space-y-4 mb-12">
 						<span className="inline-block px-4 py-1.5 text-sm font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
@@ -500,7 +497,7 @@ const Home: React.FC = () => {
 						</div>
 					</div>
 				</div>
-			</section>
+			</section> */}
 
 			{/* Features Section */}
 			<section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
@@ -602,7 +599,7 @@ const Home: React.FC = () => {
 			</section>
 
 			{/* Developer Contact */}
-			<section className="py-20 px-4 sm:px-6 lg:px-8">
+			{/* <section className="py-20 px-4 sm:px-6 lg:px-8">
 				<div className="max-w-5xl mx-auto">
 					<div className="text-center space-y-4 mb-12">
 						<span className="inline-block px-4 py-1.5 text-sm font-medium bg-primary/10 text-primary rounded-full border border-primary/20">
@@ -697,19 +694,19 @@ const Home: React.FC = () => {
 
 									<div className="grid grid-cols-3 gap-4 pt-4">
 										<div className="text-center p-4 rounded-lg bg-muted">
-											<div className="text-3xl font-bold mb-1">100%</div>
+											<div className="text-xl font-bold mb-1">100%</div>
 											<div className="text-sm text-muted-foreground">
 												Passion
 											</div>
 										</div>
 										<div className="text-center p-4 rounded-lg bg-muted">
-											<div className="text-3xl font-bold mb-1">24/7</div>
+											<div className="text-xl font-bold mb-1">24/7</div>
 											<div className="text-sm text-muted-foreground">
 												Learning
 											</div>
 										</div>
 										<div className="text-center p-4 rounded-lg bg-muted">
-											<div className="text-3xl font-bold mb-1">∞</div>
+											<div className="text-xl font-bold mb-1">∞</div>
 											<div className="text-sm text-muted-foreground">
 												Creativity
 											</div>
@@ -720,7 +717,7 @@ const Home: React.FC = () => {
 						</div>
 					</div>
 				</div>
-			</section>
+			</section> */}
 
 			{/* Footer */}
 			<footer className="py-12 px-4 sm:px-6 lg:px-8 border-t bg-muted/30">
