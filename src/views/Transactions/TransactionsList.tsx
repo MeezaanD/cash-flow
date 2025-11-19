@@ -87,7 +87,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 
 				{/* Transactions List */}
 				<div className="max-h-[calc(100vh-200px)] space-y-6 overflow-y-auto scroll-smooth pr-2">
-					{Object.entries(grouped).map(([date, txs], idx) => (
+					{Object.entries(grouped).map(([date, txs]) => (
 						<div key={date} className="space-y-3">
 							{/* Date Header */}
 							<div className="flex items-center gap-2 px-2">
