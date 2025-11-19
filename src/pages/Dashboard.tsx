@@ -1,18 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { FiDollarSign, FiPieChart, FiPlusCircle } from 'react-icons/fi';
-import {
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	DialogContentText,
-	DialogActions,
-	Button,
-	Alert,
-	Snackbar,
-} from '@mui/material';
 import { useTransactionsContext } from '../context/TransactionsContext';
 import { ViewType, DateRange } from '../types';
-import { useThemeVariant } from '@/hooks/useThemeVariant';
 import { filterTransactionsByDateRangeObject } from '../utils/dateRangeFilter';
 import PieChart from '../components/PieChart';
 import Sidebar from '../components/Sidebar';
@@ -21,11 +10,21 @@ import TransactionForm from '../views/Transactions/TransactionForm';
 import TransactionsTable from '../views/Transactions/TransactionsTable';
 import TransactionsList from '../views/Transactions/TransactionsList';
 import AuthModals from '../components/AuthModals';
-import '../styles/Dashboard.css';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '../components/ui/dialog';
+import { Button } from '../components/ui/button';
+import { useToast } from '../components/ui/use-toast';
+import { Toaster } from '../components/ui/toaster';
 
 const Dashboard: React.FC = () => {
-	const styles = useThemeVariant();
 	const { transactions, addTransaction, deleteTransaction } = useTransactionsContext();
+	const { toast } = useToast();
 
 	const [selectedTx, setSelectedTx] = useState<any | null>(null);
 	const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
@@ -40,12 +39,7 @@ const Dashboard: React.FC = () => {
 	const [authModalOpen, setAuthModalOpen] = useState(false);
 	const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 	const [settingsOpen, setSettingsOpen] = useState(false);
-	const [importSuccess, setImportSuccess] = useState<string | null>(null);
 
-	const [error, setError] = useState<string | null>(null);
-	const [showError, setShowError] = useState(false);
-
-	// Filter transactions by date range
 	const filteredTransactions = useMemo(() => {
 		return filterTransactionsByDateRangeObject(transactions, dateRange);
 	}, [transactions, dateRange]);
@@ -81,9 +75,16 @@ const Dashboard: React.FC = () => {
 					setSelectedTx(null);
 					setSelectedTransactionId(null);
 				}
+				toast({
+					title: 'Success',
+					description: 'Transaction deleted successfully',
+				});
 			} catch (err: any) {
-				setError('Failed to delete transaction. Please try again.');
-				setShowError(true);
+				toast({
+					title: 'Error',
+					description: 'Failed to delete transaction. Please try again.',
+					variant: 'destructive',
+				});
 			}
 		}
 		setDeleteDialogOpen(false);
@@ -110,13 +111,6 @@ const Dashboard: React.FC = () => {
 			setActiveView('dashboard');
 		}
 	};
-
-	const handleCloseError = () => {
-		setShowError(false);
-		setError(null);
-	};
-
-	// Auth modal opener passed directly via onOpenLogin from Sidebar
 
 	const handleAuthClose = () => {
 		setAuthModalOpen(false);
@@ -159,25 +153,9 @@ const Dashboard: React.FC = () => {
 		setDateRange(newRange);
 	};
 
-	// kept helper removed (handled inline in SettingsModal props)
-
-	// Export helpers provided inline to SettingsModal props below
-
-	// Removed unused local import helper (handled inline in SettingsModal props)
-
 	return (
-		<div
-			className="dashboard-wrapper"
-			style={{ background: styles.cardBg, color: styles.textPrimary }}
-		>
-			<div
-				style={{
-					display: 'flex',
-					alignItems: 'center',
-					gap: 8,
-					justifyContent: 'flex-end',
-				}}
-			></div>
+		<div className="flex h-screen bg-background">
+			<Toaster />
 			<Sidebar
 				collapsed={!sidebarVisible}
 				toggleSidebar={toggleSidebar}
@@ -191,53 +169,23 @@ const Dashboard: React.FC = () => {
 				onOpenSettings={() => setSettingsOpen(true)}
 			/>
 
-			<Snackbar
-				open={showError}
-				autoHideDuration={6000}
-				onClose={handleCloseError}
-				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-			>
-				<Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
-					{error}
-				</Alert>
-			</Snackbar>
-
-			<Snackbar
-				open={!!importSuccess}
-				autoHideDuration={4000}
-				onClose={() => setImportSuccess(null)}
-				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-			>
-				<Alert
-					onClose={() => setImportSuccess(null)}
-					severity="success"
-					sx={{ width: '100%' }}
-				>
-					{importSuccess}
-				</Alert>
-			</Snackbar>
-
-			<Dialog
-				open={deleteDialogOpen}
-				onClose={handleCancelDelete}
-				aria-labelledby="alert-dialog-title"
-				aria-describedby="alert-dialog-description"
-			>
-				<DialogTitle id="alert-dialog-title">Confirm Deletion</DialogTitle>
+			<Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
 				<DialogContent>
-					<DialogContentText id="alert-dialog-description">
-						Are you sure you want to delete this transaction? This action cannot be
-						undone.
-					</DialogContentText>
+					<DialogHeader>
+						<DialogTitle>Confirm Deletion</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to delete this transaction? This action cannot be undone.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={handleCancelDelete}>
+							Cancel
+						</Button>
+						<Button variant="destructive" onClick={handleConfirmDelete}>
+							Delete
+						</Button>
+					</DialogFooter>
 				</DialogContent>
-				<DialogActions>
-					<Button onClick={handleCancelDelete} color="primary">
-						Cancel
-					</Button>
-					<Button onClick={handleConfirmDelete} color="error" autoFocus>
-						Delete
-					</Button>
-				</DialogActions>
 			</Dialog>
 
 			<SettingsModal
@@ -320,16 +268,23 @@ const Dashboard: React.FC = () => {
 						}
 
 						if (errors.length) {
-							setError(
-								`Imported ${imported}, skipped ${skippedDuplicates}. Errors: ${errors.slice(0, 3).join('; ')}${errors.length > 3 ? '...' : ''}`
-							);
-							setShowError(true);
+							toast({
+								title: 'Import completed with errors',
+								description: `Imported ${imported}, skipped ${skippedDuplicates}. Errors: ${errors.slice(0, 3).join('; ')}${errors.length > 3 ? '...' : ''}`,
+								variant: 'destructive',
+							});
 						} else {
-							setImportSuccess(`Imported ${imported}, skipped ${skippedDuplicates}.`);
+							toast({
+								title: 'Import successful',
+								description: `Imported ${imported}, skipped ${skippedDuplicates}.`,
+							});
 						}
 					} catch (e: any) {
-						setError(e.message || 'Failed to import file.');
-						setShowError(true);
+						toast({
+							title: 'Import failed',
+							description: e.message || 'Failed to import file.',
+							variant: 'destructive',
+						});
 					}
 				}}
 				onExportCSV={() => {
@@ -357,8 +312,8 @@ const Dashboard: React.FC = () => {
 									: '';
 						const createdAt =
 							t.createdAt &&
-							typeof t.createdAt === 'object' &&
-							'toDate' in t.createdAt
+								typeof t.createdAt === 'object' &&
+								'toDate' in t.createdAt
 								? t.createdAt.toDate().toISOString()
 								: t.createdAt
 									? new Date(t.createdAt as any).toISOString()
@@ -386,6 +341,10 @@ const Dashboard: React.FC = () => {
 					a.click();
 					a.remove();
 					URL.revokeObjectURL(url);
+					toast({
+						title: 'Export successful',
+						description: 'Transactions exported to CSV',
+					});
 				}}
 				onExportJSON={() => {
 					const json = JSON.stringify(transactions, null, 2);
@@ -400,6 +359,10 @@ const Dashboard: React.FC = () => {
 					a.click();
 					a.remove();
 					URL.revokeObjectURL(url);
+					toast({
+						title: 'Export successful',
+						description: 'Transactions exported to JSON',
+					});
 				}}
 			/>
 
@@ -411,30 +374,22 @@ const Dashboard: React.FC = () => {
 			/>
 
 			<div
-				className={`dashboard-content ${sidebarVisible ? '' : 'full-width'}`}
-				style={{
-					background: styles.cardBg,
-					transition: 'all 0.3s ease',
-				}}
+				className={`flex-1 transition-all duration-300 ease-in-out ${sidebarVisible ? 'ml-64' : 'ml-0'
+					}`}
 			>
 				{!sidebarVisible && (
-					<button
-						className="sidebar-toggle"
+					<Button
+						variant="outline"
+						className="absolute left-4 top-4 z-10"
 						onClick={toggleSidebar}
-						style={{
-							color: '#ffffff',
-							borderColor: styles.cardBorder,
-						}}
 					>
-						☰ Open Sidebar
-					</button>
+						<FiPlusCircle className="mr-2 h-4 w-4 rotate-45" />
+						Open Sidebar
+					</Button>
 				)}
 
 				{activeView === 'transaction' ? (
-					<TransactionForm
-						transaction={selectedTx || undefined}
-						onClose={handleCloseForm}
-					/>
+					<TransactionForm transaction={selectedTx || undefined} onClose={handleCloseForm} />
 				) : activeView === 'reports' ? (
 					<PieChart
 						data={pieChartData}
@@ -451,70 +406,52 @@ const Dashboard: React.FC = () => {
 						selectedId={selectedTransactionId}
 					/>
 				) : (
-					<div className="empty-state" style={{ color: styles.textPrimary }}>
-						<div
-							className="welcome-card"
-							style={{
-								background: styles.cardBg,
-								borderColor: styles.cardBorder,
-							}}
-						>
-							<div className="welcome-header">
-								<h2>Welcome to CashFlow</h2>
-								<p className="subtitle" style={{ color: styles.textSecondary }}>
-									Your personal finance companion
-								</p>
+					<div className="flex h-full items-center justify-center p-8">
+						<div className="w-full max-w-2xl rounded-lg border bg-card p-8 shadow-lg">
+							<div className="mb-8 text-center">
+								<h2 className="mb-2 text-3xl font-bold">Welcome to CashFlow</h2>
+								<p className="text-muted-foreground">Your personal finance companion</p>
 							</div>
 
-							<div className="feature-grid">
-								<div className="feature-card">
-									<div className="feature-icon-container">
-										<FiDollarSign className="feature-icon" />
+							<div className="mb-8 grid gap-4 md:grid-cols-2">
+								<div className="rounded-lg border p-6">
+									<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+										<FiDollarSign className="h-6 w-6 text-primary" />
 									</div>
-									<div className="feature-content">
-										<h4>Track Expenses</h4>
-										<p>Log and categorize your spending</p>
-									</div>
+									<h4 className="mb-2 font-semibold">Track Expenses</h4>
+									<p className="text-sm text-muted-foreground">
+										Log and categorize your spending
+									</p>
 								</div>
-								<div
-									className="feature-card clickable-feature"
-									onClick={() => handleShowPieChart(true)}
-								>
-									<div className="feature-icon-container">
-										<FiPieChart className="feature-icon" />
-									</div>
-									<div className="feature-content">
-										<h4>Visual Reports</h4>
-										<p>Beautiful charts of your data</p>
-									</div>
-								</div>
-							</div>
-
-							<div className="cTa-section">
 								<button
-									className="cTa-button primary"
-									onClick={handleCreate}
-									style={{
-										background: styles.accentPrimary,
-										color: '#fff',
-									}}
+									onClick={() => handleShowPieChart(true)}
+									className="rounded-lg border p-6 text-left transition-colors hover:bg-muted"
 								>
-									<FiPlusCircle className="button-icon" />
-									Create Your First Transaction
+									<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+										<FiPieChart className="h-6 w-6 text-primary" />
+									</div>
+									<h4 className="mb-2 font-semibold">Visual Reports</h4>
+									<p className="text-sm text-muted-foreground">
+										Beautiful charts of your data
+									</p>
 								</button>
+							</div>
+
+							<div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+								<Button onClick={handleCreate} size="lg">
+									<FiPlusCircle className="mr-2 h-5 w-5" />
+									Create Your First Transaction
+								</Button>
 
 								{transactions.length > 0 && (
-									<button
-										className="cTa-button secondary"
+									<Button
+										variant="outline"
+										size="lg"
 										onClick={() => handleShowPieChart(true)}
-										style={{
-											border: `1px solid ${styles.accentPrimary}`,
-											color: styles.accentPrimary,
-										}}
 									>
-										<FiPieChart className="button-icon" />
+										<FiPieChart className="mr-2 h-5 w-5" />
 										View Expense Distribution
-									</button>
+									</Button>
 								)}
 							</div>
 						</div>

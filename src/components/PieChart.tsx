@@ -2,7 +2,8 @@ import React from 'react';
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { PieChartComponentProps } from '../types';
 import DateRangeFilter, { DateRange } from './DateRangeFilter';
-import '../styles/PieChart.css';
+import { Button } from './ui/button';
+import { X } from 'lucide-react';
 
 const PieChartComponent: React.FC<PieChartComponentProps> = ({
 	data,
@@ -23,39 +24,22 @@ const PieChartComponent: React.FC<PieChartComponentProps> = ({
 	};
 
 	return (
-		<div className="pie-chart-component">
-			<div className="chart-container enhanced">
-				<div className="chart-header">
-					<div className="chart-title-group">
-						<h2>Expense Breakdown</h2>
-						<p className="chart-subtitle">Visualization of your spending categories</p>
+		<div className="flex min-h-screen items-center justify-center bg-background p-4">
+			<div className="w-full max-w-4xl rounded-lg border bg-card p-6 shadow-lg">
+				<div className="mb-6 flex items-center justify-between">
+					<div>
+						<h2 className="text-2xl font-semibold">Expense Breakdown</h2>
+						<p className="text-sm text-muted-foreground">
+							Visualization of your spending categories
+						</p>
 					</div>
-					<button onClick={onClose} className="close-button" aria-label="Close chart">
-						<svg
-							width="24"
-							height="24"
-							viewBox="0 0 24 24"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								d="M18 6L6 18"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-							/>
-							<path
-								d="M6 6L18 18"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-							/>
-						</svg>
-					</button>
+					<Button variant="ghost" size="icon" onClick={onClose} aria-label="Close chart">
+						<X className="h-5 w-5" />
+					</Button>
 				</div>
 
 				{onDateRangeChange && (
-					<div className="chart-filters">
+					<div className="mb-6">
 						<DateRangeFilter
 							dateRange={dateRange || { startDate: '', endDate: '' }}
 							onDateRangeChange={handleDateRangeChange}
@@ -64,7 +48,7 @@ const PieChartComponent: React.FC<PieChartComponentProps> = ({
 					</div>
 				)}
 
-				<div className="chart-wrapper">
+				<div className="mb-6">
 					<ResponsiveContainer width="100%" height={300}>
 						<RechartsPieChart>
 							<Pie
@@ -82,7 +66,7 @@ const PieChartComponent: React.FC<PieChartComponentProps> = ({
 									<Cell
 										key={`cell-${index}`}
 										fill={entry.color}
-										stroke="var(--card-bg)"
+										stroke="hsl(var(--card))"
 										strokeWidth={2}
 									/>
 								))}
@@ -90,36 +74,36 @@ const PieChartComponent: React.FC<PieChartComponentProps> = ({
 							<Tooltip
 								formatter={(value: number) => [`R ${value.toFixed(2)}`, 'Amount']}
 								contentStyle={{
-									background: 'var(--card-bg)',
-									border: '1px solid var(--border-color)',
+									background: 'hsl(var(--card))',
+									border: '1px solid hsl(var(--border))',
 									borderRadius: '8px',
 									boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-									color: 'var(--text-color)',
+									color: 'hsl(var(--foreground))',
 								}}
 								labelStyle={{
-									color: 'var(--text-color)',
+									color: 'hsl(var(--foreground))',
 								}}
 								itemStyle={{
-									color: 'var(--text-color)',
+									color: 'hsl(var(--foreground))',
 								}}
 							/>
 						</RechartsPieChart>
 					</ResponsiveContainer>
 				</div>
 
-				<div className="chart-footer">
-					<div className="color-legend">
-						{data.map((item, index) => (
-							<div key={index} className="legend-item">
-								<span
-									className="legend-color"
+				<div className="space-y-2">
+					{data.map((item, index) => (
+						<div key={index} className="flex items-center justify-between rounded-lg border p-3">
+							<div className="flex items-center gap-3">
+								<div
+									className="h-4 w-4 rounded-full"
 									style={{ backgroundColor: item.color }}
-								></span>
-								<span className="legend-label">{item.name}</span>
-								<span className="legend-value">R {item.value.toFixed(2)}</span>
+								/>
+								<span className="font-medium">{item.name}</span>
 							</div>
-						))}
-					</div>
+							<span className="font-semibold">R {item.value.toFixed(2)}</span>
+						</div>
+					))}
 				</div>
 			</div>
 		</div>

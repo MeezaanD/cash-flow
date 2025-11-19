@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
-import { Box, TextField, FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
 import { FiX } from 'react-icons/fi';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from './ui/select';
+import { Badge } from './ui/badge';
 
 export interface DateRange {
 	startDate: string;
@@ -95,58 +104,65 @@ const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
 	const isRangeActive = dateRange.startDate && dateRange.endDate;
 
 	return (
-		<Box className="date-range-filter">
-			<Box className="date-range-controls">
-				<FormControl size="small" sx={{ minWidth: 150 }}>
-					<InputLabel>Date Range</InputLabel>
-					<Select
-						value={isCustomRange ? 'custom' : '7days'}
-						label="Date Range"
-						onChange={(e) => handlePresetChange(e.target.value as string)}
-					>
-						{presetRanges.map((preset) => (
-							<MenuItem key={preset.value} value={preset.value}>
-								{preset.label}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
+		<div className="flex flex-wrap items-center gap-2">
+			<Select
+				value={isCustomRange ? 'custom' : '7days'}
+				onValueChange={handlePresetChange}
+			>
+				<SelectTrigger className="w-[150px]">
+					<SelectValue placeholder="Date Range" />
+				</SelectTrigger>
+				<SelectContent>
+					{presetRanges.map((preset) => (
+						<SelectItem key={preset.value} value={preset.value}>
+							{preset.label}
+						</SelectItem>
+					))}
+				</SelectContent>
+			</Select>
 
-				{isCustomRange && (
-					<>
-						<TextField
-							label="Start Date"
+			{isCustomRange && (
+				<>
+					<div className="flex items-center gap-2">
+						<Label htmlFor="start-date" className="sr-only">
+							Start Date
+						</Label>
+						<Input
+							id="start-date"
 							type="date"
 							value={dateRange.startDate}
 							onChange={(e) => handleCustomDateChange('startDate', e.target.value)}
-							size="small"
-							InputLabelProps={{ shrink: true }}
-							sx={{ minWidth: 140 }}
+							className="w-[140px]"
 						/>
-						<TextField
-							label="End Date"
+					</div>
+					<div className="flex items-center gap-2">
+						<Label htmlFor="end-date" className="sr-only">
+							End Date
+						</Label>
+						<Input
+							id="end-date"
 							type="date"
 							value={dateRange.endDate}
 							onChange={(e) => handleCustomDateChange('endDate', e.target.value)}
-							size="small"
-							InputLabelProps={{ shrink: true }}
-							sx={{ minWidth: 140 }}
+							className="w-[140px]"
 						/>
-					</>
-				)}
+					</div>
+				</>
+			)}
 
-				{isRangeActive && (
-					<Chip
-						label={formatDateRange(dateRange)}
-						onDelete={onClear}
-						deleteIcon={<FiX />}
-						color="primary"
-						variant="outlined"
-						sx={{ maxWidth: 200 }}
-					/>
-				)}
-			</Box>
-		</Box>
+			{isRangeActive && (
+				<Badge variant="outline" className="flex items-center gap-1 px-2 py-1">
+					<span className="text-xs">{formatDateRange(dateRange)}</span>
+					<button
+						onClick={onClear}
+						className="ml-1 rounded-full hover:bg-muted"
+						aria-label="Clear date range"
+					>
+						<FiX className="h-3 w-3" />
+					</button>
+				</Badge>
+			)}
+		</div>
 	);
 };
 
