@@ -51,32 +51,32 @@ npm run test:coverage
 #### Hooks Testing
 
 - **useAuth**: Tests authentication state management
-  - User authentication state changes
-  - Firebase auth integration
-  - Error handling
-  - Token management
+    - User authentication state changes
+    - Firebase auth integration
+    - Error handling
+    - Token management
 
 #### Component Testing
 
 - **AuthModals**: Tests authentication UI
-  - Login/Register form validation
-  - Google sign-in integration
-  - Error message display
-  - Loading states
-  - Form reset functionality
+    - Login/Register form validation
+    - Google sign-in integration
+    - Error message display
+    - Loading states
+    - Form reset functionality
 
 ### 2. Currency Formatting Tests
 
 #### Utility Testing
 
 - **formatCurrency**: Tests ZAR currency formatting
-  - Positive and negative amounts
-  - Zero amounts (including negative zero)
-  - String input handling
-  - Invalid input handling (NaN, Infinity)
-  - Decimal precision and rounding
-  - Large numbers with proper grouping
-  - Very small amounts
+    - Positive and negative amounts
+    - Zero amounts (including negative zero)
+    - String input handling
+    - Invalid input handling (NaN, Infinity)
+    - Decimal precision and rounding
+    - Large numbers with proper grouping
+    - Very small amounts
 
 ## Test Coverage
 

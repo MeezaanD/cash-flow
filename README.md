@@ -31,8 +31,8 @@
 - Click the Settings button (bottom-left in the sidebar).
 - Navigate to the "Data" tab inside the Settings modal.
 - Use:
-  - Import: upload a `.csv` or `.json` file. Required fields: `title`, `amount`, `type`, `category`. Duplicates are skipped using a signature of title+amount+type+category+date.
-  - Export CSV / Export JSON: downloads all your transactions.
+    - Import: upload a `.csv` or `.json` file. Required fields: `title`, `amount`, `type`, `category`. Duplicates are skipped using a signature of title+amount+type+category+date.
+    - Export CSV / Export JSON: downloads all your transactions.
 
 Feedback is shown after import indicating how many records were imported, skipped, or errored.
 

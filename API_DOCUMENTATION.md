@@ -21,8 +21,8 @@ Authorization: Bearer <firebase_id_token>
 In the application, you can get the current user's ID token:
 
 ```typescript
-import { getIdToken } from "firebase/auth";
-import { auth } from "./services/firebase";
+import { getIdToken } from 'firebase/auth';
+import { auth } from './services/firebase';
 
 const token = await getIdToken(auth.currentUser, true);
 ```
@@ -45,9 +45,9 @@ GET /healthCheck
 
 ```json
 {
-  "success": true,
-  "message": "API is running",
-  "timestamp": "2024-01-15T10:30:00.000Z"
+	"success": true,
+	"message": "API is running",
+	"timestamp": "2024-01-15T10:30:00.000Z"
 }
 ```
 
@@ -73,21 +73,21 @@ Authorization: Bearer <firebase_id_token>
 
 ```json
 {
-  "success": true,
-  "data": [
-    {
-      "id": "transaction_id",
-      "userId": "user_uid",
-      "amount": 100.5,
-      "description": "Grocery shopping",
-      "category": "Food",
-      "type": "expense",
-      "date": "2024-01-15",
-      "createdAt": "2024-01-15T10:30:00.000Z",
-      "updatedAt": "2024-01-15T10:30:00.000Z"
-    }
-  ],
-  "message": "Successfully retrieved 1 transactions"
+	"success": true,
+	"data": [
+		{
+			"id": "transaction_id",
+			"userId": "user_uid",
+			"amount": 100.5,
+			"description": "Grocery shopping",
+			"category": "Food",
+			"type": "expense",
+			"date": "2024-01-15",
+			"createdAt": "2024-01-15T10:30:00.000Z",
+			"updatedAt": "2024-01-15T10:30:00.000Z"
+		}
+	],
+	"message": "Successfully retrieved 1 transactions"
 }
 ```
 
@@ -102,8 +102,8 @@ Authorization: Bearer <firebase_id_token>
 
 ```json
 {
-  "success": false,
-  "error": "Invalid or expired token"
+	"success": false,
+	"error": "Invalid or expired token"
 }
 ```
 
@@ -113,15 +113,15 @@ Authorization: Bearer <firebase_id_token>
 
 ```typescript
 interface Transaction {
-  id: string;
-  userId: string;
-  amount: number;
-  description: string;
-  category: string;
-  type: "income" | "expense";
-  date: string;
-  createdAt: string;
-  updatedAt: string;
+	id: string;
+	userId: string;
+	amount: number;
+	description: string;
+	category: string;
+	type: 'income' | 'expense';
+	date: string;
+	createdAt: string;
+	updatedAt: string;
 }
 ```
 
@@ -129,10 +129,10 @@ interface Transaction {
 
 ```typescript
 interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
+	success: boolean;
+	data?: T;
+	error?: string;
+	message?: string;
 }
 ```
 
@@ -189,14 +189,13 @@ curl -X GET \
 ### Using Postman
 
 1. **Health Check:**
-
-   - Method: `GET`
-   - URL: `https://us-central1-cash-flow-eb5bd.cloudfunctions.net/healthCheck`
+    - Method: `GET`
+    - URL: `https://us-central1-cash-flow-eb5bd.cloudfunctions.net/healthCheck`
 
 2. **Get User Transactions:**
-   - Method: `GET`
-   - URL: `https://us-central1-cash-flow-eb5bd.cloudfunctions.net/getUserTransactions`
-   - Headers: `Authorization: Bearer YOUR_FIREBASE_ID_TOKEN`
+    - Method: `GET`
+    - URL: `https://us-central1-cash-flow-eb5bd.cloudfunctions.net/getUserTransactions`
+    - Headers: `Authorization: Bearer YOUR_FIREBASE_ID_TOKEN`
 
 ## Monitoring
 
@@ -224,55 +223,51 @@ firebase functions:list
 ### Common Issues
 
 1. **CORS Errors**
-
-   - Ensure your domain is allowed in Firebase Console
-   - Check that CORS headers are being sent
+    - Ensure your domain is allowed in Firebase Console
+    - Check that CORS headers are being sent
 
 2. **Authentication Errors**
-
-   - Verify the user is logged in
-   - Check that the token is valid and not expired
-   - Ensure the token is being sent in the correct format
+    - Verify the user is logged in
+    - Check that the token is valid and not expired
+    - Ensure the token is being sent in the correct format
 
 3. **Function Not Found**
-   - Verify the function is deployed
-   - Check the function URL is correct
-   - Ensure the function name matches the deployment
+    - Verify the function is deployed
+    - Check the function URL is correct
+    - Ensure the function name matches the deployment
 
 ### Debugging
 
 1. **Check Function Logs:**
 
-   ```bash
-   firebase functions:log --only getUserTransactions
-   ```
+    ```bash
+    firebase functions:log --only getUserTransactions
+    ```
 
 2. **Test Locally:**
 
-   ```bash
-   firebase emulators:start --only functions
-   ```
+    ```bash
+    firebase emulators:start --only functions
+    ```
 
 3. **Verify Deployment:**
-   ```bash
-   firebase functions:list
-   ```
+    ```bash
+    firebase functions:list
+    ```
 
 ## Future Enhancements
 
 1. **Additional Endpoints:**
-
-   - `POST /transactions` - Create new transaction
-   - `PUT /transactions/{id}` - Update transaction
-   - `DELETE /transactions/{id}` - Delete transaction
+    - `POST /transactions` - Create new transaction
+    - `PUT /transactions/{id}` - Update transaction
+    - `DELETE /transactions/{id}` - Delete transaction
 
 2. **Query Parameters:**
-
-   - Date range filtering
-   - Category filtering
-   - Pagination support
+    - Date range filtering
+    - Category filtering
+    - Pagination support
 
 3. **Advanced Features:**
-   - Bulk operations
-   - Client-side import/export (Implemented in app UI: Settings → Data)
-   - Analytics endpoints
+    - Bulk operations
+    - Client-side import/export (Implemented in app UI: Settings → Data)
+    - Analytics endpoints

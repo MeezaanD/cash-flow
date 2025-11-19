@@ -6,16 +6,16 @@ This guide provides step-by-step instructions for deploying the Firebase Cloud F
 
 1. **Firebase CLI**: Install Firebase CLI globally
 
-   ```bash
-   npm install -g firebase-tools
-   ```
+    ```bash
+    npm install -g firebase-tools
+    ```
 
 2. **Firebase Project**: Make sure you have a Firebase project set up
 
-   ```bash
-   firebase login
-   firebase projects:list
-   ```
+    ```bash
+    firebase login
+    firebase projects:list
+    ```
 
 3. **Node.js**: Ensure you have Node.js 18+ installed
 
@@ -23,75 +23,75 @@ This guide provides step-by-step instructions for deploying the Firebase Cloud F
 
 1. **Navigate to your project root**:
 
-   ```bash
-   cd /path/to/your/cash-flow/project
-   ```
+    ```bash
+    cd /path/to/your/cash-flow/project
+    ```
 
 2. **Install Firebase Functions dependencies**:
 
-   ```bash
-   cd functions
-   npm install
-   ```
+    ```bash
+    cd functions
+    npm install
+    ```
 
 3. **Build the functions**:
-   ```bash
-   npm run build
-   ```
+    ```bash
+    npm run build
+    ```
 
 ## Step 2: Configure Firebase Project
 
 1. **Initialize Firebase in your project** (if not already done):
 
-   ```bash
-   firebase init
-   ```
+    ```bash
+    firebase init
+    ```
 
-   - Select "Functions" when prompted
-   - Choose your Firebase project
-   - Select TypeScript
-   - Use ESLint
-   - Install dependencies with npm
+    - Select "Functions" when prompted
+    - Choose your Firebase project
+    - Select TypeScript
+    - Use ESLint
+    - Install dependencies with npm
 
 2. **Update firebase.json** (already created):
-   ```json
-   {
-     "functions": {
-       "source": "functions",
-       "predeploy": [
-         "npm --prefix \"$RESOURCE_DIR\" run lint",
-         "npm --prefix \"$RESOURCE_DIR\" run build"
-       ]
-     }
-   }
-   ```
+    ```json
+    {
+    	"functions": {
+    		"source": "functions",
+    		"predeploy": [
+    			"npm --prefix \"$RESOURCE_DIR\" run lint",
+    			"npm --prefix \"$RESOURCE_DIR\" run build"
+    		]
+    	}
+    }
+    ```
 
 ## Step 3: Deploy Cloud Functions
 
 1. **Deploy the functions**:
 
-   ```bash
-   firebase deploy --only functions
-   ```
+    ```bash
+    firebase deploy --only functions
+    ```
 
 2. **Note the function URLs** from the deployment output:
 
-   ```
-   ✔  functions[getUserTransactions(us-central1)] Successful create operation.
-   ✔  functions[healthCheck(us-central1)] Successful create operation.
+    ```
+    ✔  functions[getUserTransactions(us-central1)] Successful create operation.
+    ✔  functions[healthCheck(us-central1)] Successful create operation.
 
-   Function URL (getUserTransactions): https://us-central1-YOUR-PROJECT-ID.cloudfunctions.net/getUserTransactions
-   Function URL (healthCheck): https://us-central1-YOUR-PROJECT-ID.cloudfunctions.net/healthCheck
-   ```
+    Function URL (getUserTransactions): https://us-central1-YOUR-PROJECT-ID.cloudfunctions.net/getUserTransactions
+    Function URL (healthCheck): https://us-central1-YOUR-PROJECT-ID.cloudfunctions.net/healthCheck
+    ```
 
 ## Step 4: Configure React App
 
 1. **Create environment variables**:
    Create a `.env` file in your project root:
 
-   ```env
-   VITE_API_BASE_URL=https://us-central1-YOUR-PROJECT-ID.cloudfunctions.net
-   ```
+    ```env
+    VITE_API_BASE_URL=https://us-central1-YOUR-PROJECT-ID.cloudfunctions.net
+    ```
 
 2. **Update the API service** (if needed):
    The API service is already configured to use the environment variable. Make sure your `.env` file contains the correct URL.
@@ -100,72 +100,70 @@ This guide provides step-by-step instructions for deploying the Firebase Cloud F
 
 1. **Start your React app**:
 
-   ```bash
-   npm run dev
-   ```
+    ```bash
+    npm run dev
+    ```
 
 2. **Navigate to the API test page**:
-   - Log in to your app
-   - Click on the "API" option in the sidebar
-   - Test the health check and transactions endpoints
+    - Log in to your app
+    - Click on the "API" option in the sidebar
+    - Test the health check and transactions endpoints
 
 ## Step 6: Security Rules (Optional)
 
 1. **Update Firestore security rules** to ensure only authenticated users can access their data:
 
-   ```javascript
-   rules_version = '2';
-   service cloud.firestore {
-     match /databases/{database}/documents {
-       match /transactions/{document} {
-         allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-       }
-     }
-   }
-   ```
+    ```javascript
+    rules_version = '2';
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        match /transactions/{document} {
+          allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+        }
+      }
+    }
+    ```
 
 2. **Deploy security rules**:
-   ```bash
-   firebase deploy --only firestore:rules
-   ```
+    ```bash
+    firebase deploy --only firestore:rules
+    ```
 
 ## Troubleshooting
 
 ### Common Issues
 
 1. **CORS Errors**:
-
-   - The functions already include CORS headers
-   - Make sure your domain is allowed in Firebase Console
+    - The functions already include CORS headers
+    - Make sure your domain is allowed in Firebase Console
 
 2. **Authentication Errors**:
-
-   - Ensure users are properly authenticated
-   - Check that the JWT token is being sent correctly
+    - Ensure users are properly authenticated
+    - Check that the JWT token is being sent correctly
 
 3. **Function Deployment Errors**:
-   - Check that all dependencies are installed
-   - Ensure TypeScript compilation succeeds
-   - Verify Firebase project configuration
+    - Check that all dependencies are installed
+    - Ensure TypeScript compilation succeeds
+    - Verify Firebase project configuration
 
 ### Debugging
 
 1. **View function logs**:
 
-   ```bash
-   firebase functions:log
-   ```
+    ```bash
+    firebase functions:log
+    ```
 
 2. **Test functions locally**:
 
-   ```bash
-   firebase emulators:start --only functions
-   ```
+    ```bash
+    firebase emulators:start --only functions
+    ```
 
 3. **Check function status**:
-   ```bash
-   firebase functions:list
-   ```
+    ```bash
+    firebase functions:list
+    ```
 
 ## API Endpoints
 
