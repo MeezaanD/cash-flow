@@ -37,6 +37,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 	other: '#FF8042',
 	personal: '#00C49F',
 	travel: '#0088FE',
+	uncategorized: '#9CA3AF',
 };
 
 const MONTHS = [
@@ -118,7 +119,10 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 	}, [transactions, dateRange, search, filterType, filterCategory, filterMonth]);
 
 	const allCategories = useMemo(
-		() => Array.from(new Set(transactions.map((tx) => tx.category))).sort(),
+		() =>
+			Array.from(
+				new Set(transactions.map((tx) => tx.category?.trim() || 'Uncategorized'))
+			).sort(),
 		[transactions]
 	);
 

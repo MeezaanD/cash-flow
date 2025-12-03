@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { FiPlus, FiPieChart, FiList, FiSettings, FiSearch, FiX, FiArrowUp, FiArrowDown } from 'react-icons/fi';
+import {
+	FiPlus,
+	FiPieChart,
+	FiList,
+	FiSettings,
+	FiSearch,
+	FiX,
+	FiArrowUp,
+	FiArrowDown,
+} from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
 import { Transaction } from '../types';
 import logoDark from '../assets/images/dark-transparent-image.png';
@@ -154,18 +163,22 @@ const Sidebar = ({
 			</Dialog>
 
 			<aside
-				className={`fixed left-0 top-0 z-40 h-screen border-r bg-card transition-all duration-300 ease-in-out ${
-					collapsed ? 'w-0 overflow-hidden opacity-0' : 'w-64 opacity-100'
-				}`}
+				className={`fixed left-0 top-0 z-40 h-screen border-r bg-card transition-all duration-300 ease-in-out ${collapsed ? 'w-0 overflow-hidden opacity-0' : 'w-64 opacity-100'
+					}`}
 			>
 				<div
-					className={`flex h-full flex-col transition-all duration-300 ${
-						collapsed ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 scale-100'
-					}`}
+					className={`flex h-full flex-col transition-all duration-300 ${collapsed
+							? 'opacity-0 pointer-events-none scale-95'
+							: 'opacity-100 scale-100'
+						}`}
 				>
 					{/* Header */}
 					<div className="flex items-center justify-between border-b p-4">
-						<img src={logo} alt="CashFlow Logo" className="h-8 transition-opacity duration-300" />
+						<img
+							src={logo}
+							alt="CashFlow Logo"
+							className="h-8 transition-opacity duration-300"
+						/>
 						{!collapsed && (
 							<Button variant="ghost" size="icon" onClick={toggleSidebar}>
 								<FiX className="h-5 w-5" />
@@ -186,14 +199,15 @@ const Sidebar = ({
 											<button
 												key={view}
 												onClick={() => onViewChange(view)}
-												className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-													isActive
+												className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive
 														? 'bg-accent text-accent-foreground'
 														: 'text-muted-foreground hover:bg-muted hover:text-foreground'
-												}`}
+													}`}
 											>
 												<IconComponent className="h-4 w-4" />
-												<span>{view.charAt(0).toUpperCase() + view.slice(1)}</span>
+												<span>
+													{view.charAt(0).toUpperCase() + view.slice(1)}
+												</span>
 											</button>
 										);
 									})}
@@ -232,21 +246,19 @@ const Sidebar = ({
 									<div
 										key={tx.id}
 										onClick={() => onSelect(tx)}
-										className={`group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors ${
-											selectedId === tx.id
+										className={`group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors ${selectedId === tx.id
 												? 'border-primary bg-accent'
 												: 'border-border bg-background hover:bg-muted'
-										}`}
+											}`}
 									>
 										<div className="flex-1 min-w-0">
 											<h4 className="truncate font-medium">{tx.title}</h4>
 											<div className="mt-1 flex items-center gap-2 text-xs">
 												<span
-													className={`font-medium ${
-														tx.type === 'income'
+													className={`font-medium ${tx.type === 'income'
 															? 'text-green-600 dark:text-green-400'
 															: 'text-red-600 dark:text-red-400'
-													}`}
+														}`}
 												>
 													{tx.type === 'income' ? (
 														<FiArrowUp className="inline h-3 w-3" />
