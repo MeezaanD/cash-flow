@@ -18,7 +18,9 @@ import {
 	X,
 } from 'lucide-react';
 // import preview from '../assets/images/cashflow.png';
-// import logo from '../assets/images/white-transparent-image.png';
+import logoDark from '../assets/images/dark-transparent-image.png';
+import logoLight from '../assets/images/white-transparent-image.png';
+import { useTheme } from '../context/ThemeContext';
 // import profilePhoto from '../assets/images/profile-photo.jpeg';
 import AuthModals from '../components/AuthModals';
 
@@ -116,6 +118,7 @@ const colorMap: Record<string, string> = {
 };
 
 const Home: React.FC = () => {
+	const { theme } = useTheme();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [authModalOpen, setAuthModalOpen] = useState(false);
 	const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -159,6 +162,8 @@ const Home: React.FC = () => {
 		};
 	}, [mobileMenuOpen]);
 
+	const logo = theme === 'dark' ? logoLight : logoDark;
+
 	const handleAuthClick = (mode: 'login' | 'register') => {
 		setAuthMode(mode);
 		setAuthModalOpen(true);
@@ -181,15 +186,14 @@ const Home: React.FC = () => {
 						? 'bg-background/95 backdrop-blur-xl border border-white/20 shadow-2xl'
 						: 'bg-background/80 backdrop-blur-lg border border-white/10'
 				} rounded-2xl mx-auto max-w-7xl`}
-				
 			>
 				<div className="px-6 sm:px-8 lg:px-10">
 					<div className="flex items-center justify-between h-16">
 						{/* Logo */}
 						<div className="flex-shrink-0">
-							{/* <a href="/" className="flex items-center">
-								<img src={logo} alt="CashFlow Logo" className="h-8 w-auto" />
-							</a> */}
+							<a href="/" className="flex items-center">
+								<img src={logo} alt="CashFlow Logo" className="h-11 w-auto" />
+							</a>
 						</div>
 
 						{/* Desktop Navigation */}
