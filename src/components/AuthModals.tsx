@@ -9,13 +9,7 @@ import {
 } from 'firebase/auth';
 import { FcGoogle } from 'react-icons/fc';
 import { useNavigate } from 'react-router-dom';
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from './ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -63,6 +57,12 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, mode, onModeChan
 		} finally {
 			setLoading(false);
 		}
+	};
+
+	const handleDemoAutofill = () => {
+		setEmail('demo@demo.com');
+		setPassword('demo123');
+		setError('');
 	};
 
 	const handleGoogleSignIn = async () => {
@@ -166,7 +166,9 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, mode, onModeChan
 								onChange={(e) => setPassword(e.target.value)}
 								disabled={loading || googleLoading}
 								required
-								autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+								autoComplete={
+									mode === 'login' ? 'current-password' : 'new-password'
+								}
 								className="pr-10"
 							/>
 							<button
@@ -175,14 +177,26 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, mode, onModeChan
 								disabled={loading || googleLoading}
 								className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground disabled:opacity-50"
 							>
-							{showPassword ? (
-								<EyeOff className="h-4 w-4" />
-							) : (
-								<Eye className="h-4 w-4" />
-							)}
+								{showPassword ? (
+									<EyeOff className="h-4 w-4" />
+								) : (
+									<Eye className="h-4 w-4" />
+								)}
 							</button>
 						</div>
 					</div>
+
+					{mode === 'login' && (
+						<Button
+							type="button"
+							variant="secondary"
+							className="w-full"
+							onClick={handleDemoAutofill}
+							disabled={loading || googleLoading}
+						>
+							Use demo account
+						</Button>
+					)}
 
 					<Button type="submit" className="w-full" disabled={loading || googleLoading}>
 						{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -195,7 +209,9 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, mode, onModeChan
 
 					<div className="text-center text-sm">
 						<span className="text-muted-foreground">
-							{mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+							{mode === 'login'
+								? "Don't have an account? "
+								: 'Already have an account? '}
 						</span>
 						<button
 							type="button"
