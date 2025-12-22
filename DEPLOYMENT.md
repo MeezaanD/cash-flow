@@ -109,16 +109,32 @@ This guide provides step-by-step instructions for deploying the Firebase Cloud F
     - Click on the "API" option in the sidebar
     - Test the health check and transactions endpoints
 
-## Step 6: Security Rules (Optional)
+## Step 6: Security Rules (Required)
 
 1. **Update Firestore security rules** to ensure only authenticated users can access their data:
+
+    The `firestore.rules` file should contain:
 
     ```javascript
     rules_version = '2';
     service cloud.firestore {
       match /databases/{database}/documents {
+        // Transactions collection
         match /transactions/{document} {
+          // Allow read and write only if the user is authenticated and owns the document
           allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+          
+          // Allow create only if the user is authenticated and sets their own userId
+          allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+        }
+        
+        // Recurring Expenses collection
+        match /recurringExpenses/{document} {
+          // Allow read and write only if the user is authenticated and owns the document
+          allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+          
+          // Allow create only if the user is authenticated and sets their own userId
+          allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
         }
       }
     }
@@ -128,6 +144,8 @@ This guide provides step-by-step instructions for deploying the Firebase Cloud F
     ```bash
     firebase deploy --only firestore:rules
     ```
+
+**Note:** Security rules are required for the app to function properly. Without them, users will get permission errors when trying to access their data.
 
 ## Troubleshooting
 

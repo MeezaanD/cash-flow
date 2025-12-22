@@ -6,12 +6,15 @@
 
 - **Secure Login:** User authentication with Firebase.
 - **Real-Time Tracking:** Instantly log and update income and expenses.
+- **Recurring Expenses:** Create templates for frequently used expenses and quickly fill transaction forms.
+- **Quick Fill:** One-click form pre-filling from recurring expenses to save time.
 - **Date Selection:** Choose custom dates for transactions (defaults to current date).
-- **Clean Interface:** Simple, user-friendly design.
-- **Cloud Sync:** Data stored and synced via Firebase.
+- **Clean Interface:** Modern, minimalist design with smooth user experience.
+- **Cloud Sync:** Data stored and synced via Firebase with real-time updates.
 - **Fast Hosting:** Deployed on Vercel for quick load times.
 - **Import/Export:** Import transactions from CSV/JSON with validation and deduping, export all data as CSV/JSON from the Settings modal.
 - **MVC Architecture:** Clean separation of concerns with Model-View-Controller pattern.
+- **Theme Support:** Dark and light mode with proper theming throughout the app.
 
 ## Tech Stack
 
@@ -24,6 +27,26 @@
 - Help users stay on top of their finances.
 - Make budgeting easy and accessible.
 - Keep data secure and always up to date.
+
+## Recurring Expenses Usage
+
+1. **Creating a Recurring Expense:**
+   - Open Settings (bottom-left in the sidebar)
+   - Navigate to the "Recurring Expenses" tab
+   - Click "Add New"
+   - Fill in title, amount, category, frequency (daily/weekly/monthly/yearly), and optional description
+   - Click "Add Expense"
+
+2. **Using Quick Fill:**
+   - Click "New Transaction" or "Create Transaction"
+   - In the "Quick Fill" section at the top of the form, select a recurring expense
+   - The form automatically fills with the expense details
+   - Adjust any fields as needed (you can still edit everything)
+   - Submit the transaction
+
+3. **Managing Recurring Expenses:**
+   - Edit: Click the edit icon next to any recurring expense
+   - Delete: Click the delete icon (confirmation required)
 
 ## Import/Export Usage
 

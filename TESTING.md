@@ -97,13 +97,31 @@ npm run test:coverage
 - ✅ Decimal and thousands separators
 - ✅ Edge case handling (invalid inputs, negative zero)
 
+### Recurring Expenses Features (Manual Testing Required)
+
+- ✅ Create recurring expense
+- ✅ Edit recurring expense
+- ✅ Delete recurring expense
+- ✅ Quick Fill feature in transaction form
+- ✅ Real-time updates via Firestore subscriptions
+- ✅ User data isolation (users can only see their own expenses)
+- ✅ Form validation (required fields, amount > 0)
+- ✅ Frequency selection (daily/weekly/monthly/yearly)
+
 ## Test Results
 
 Current test suite includes:
 
 - **20 authentication tests** (useAuth + AuthModals)
 - **8 currency formatting tests** (formatCurrency)
-- **Total: 28 tests passing**
+- **Total: 28 automated tests passing**
+
+**Manual Testing Checklist:**
+- Recurring expenses CRUD operations
+- Quick Fill functionality
+- Firestore security rules
+- Theme switching (dark/light mode)
+- Responsive design
 
 ## Configuration
 
