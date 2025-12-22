@@ -2,13 +2,7 @@ import React, { useState } from 'react';
 import { FiX } from 'react-icons/fi';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from './ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
 
 export interface DateRange {
@@ -68,6 +62,40 @@ const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
 		};
 	};
 
+	const detectActivePreset = (): string => {
+		if (!dateRange.startDate || !dateRange.endDate) {
+			return 'all';
+		}
+
+		if (isCustomRange) {
+			return 'custom';
+		}
+
+		// Check which preset matches the current date range
+		const today = new Date();
+		const currentStart = new Date(dateRange.startDate);
+		const daysDiff = Math.floor(
+			(today.getTime() - currentStart.getTime()) / (1000 * 60 * 60 * 24)
+		);
+
+		if (daysDiff >= 6 && daysDiff <= 8) return '7days';
+		if (daysDiff >= 29 && daysDiff <= 31) return '30days';
+		if (
+			Math.abs(today.getMonth() - currentStart.getMonth()) === 3 ||
+			Math.abs(today.getMonth() - currentStart.getMonth()) === 9
+		)
+			return '3months';
+		if (Math.abs(today.getMonth() - currentStart.getMonth()) === 6) return '6months';
+		if (
+			currentStart.getMonth() === 0 &&
+			currentStart.getDate() === 1 &&
+			currentStart.getFullYear() === today.getFullYear()
+		)
+			return 'thisYear';
+
+		return 'custom';
+	};
+
 	const handlePresetChange = (preset: string) => {
 		if (preset === 'custom') {
 			setIsCustomRange(true);
@@ -102,65 +130,86 @@ const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
 	};
 
 	const isRangeActive = dateRange.startDate && dateRange.endDate;
+	const activePreset = detectActivePreset();
 
 	return (
-		<div className="flex flex-wrap items-center gap-2">
-			<Select
-				value={isCustomRange ? 'custom' : '7days'}
-				onValueChange={handlePresetChange}
-			>
-				<SelectTrigger className="w-[150px]">
-					<SelectValue placeholder="Date Range" />
-				</SelectTrigger>
-				<SelectContent>
-					{presetRanges.map((preset) => (
-						<SelectItem key={preset.value} value={preset.value}>
-							{preset.label}
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
+		<div className="space-y-3">
+			<div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
+				<div className="flex-1 sm:flex-initial">
+					<Label
+						htmlFor="preset-select"
+						className="text-xs md:text-sm font-medium mb-2 block"
+					>
+						Filter by Preset
+					</Label>
+					<Select value={activePreset} onValueChange={handlePresetChange}>
+						<SelectTrigger id="preset-select" className="w-full sm:w-[180px]">
+							<SelectValue placeholder="Date Range" />
+						</SelectTrigger>
+						<SelectContent>
+							{presetRanges.map((preset) => (
+								<SelectItem key={preset.value} value={preset.value}>
+									{preset.label}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
 
-			{isCustomRange && (
-				<>
-					<div className="flex items-center gap-2">
-						<Label htmlFor="start-date" className="sr-only">
-							Start Date
-						</Label>
-						<Input
-							id="start-date"
-							type="date"
-							value={dateRange.startDate}
-							onChange={(e) => handleCustomDateChange('startDate', e.target.value)}
-							className="w-[140px]"
-						/>
+				{isCustomRange && (
+					<div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+						<div className="flex-1 sm:flex-initial">
+							<Label
+								htmlFor="start-date"
+								className="text-xs md:text-sm font-medium mb-2 block"
+							>
+								Start Date
+							</Label>
+							<Input
+								id="start-date"
+								type="date"
+								value={dateRange.startDate}
+								onChange={(e) =>
+									handleCustomDateChange('startDate', e.target.value)
+								}
+								className="w-full sm:w-[140px]"
+							/>
+						</div>
+						<div className="flex-1 sm:flex-initial">
+							<Label
+								htmlFor="end-date"
+								className="text-xs md:text-sm font-medium mb-2 block"
+							>
+								End Date
+							</Label>
+							<Input
+								id="end-date"
+								type="date"
+								value={dateRange.endDate}
+								onChange={(e) => handleCustomDateChange('endDate', e.target.value)}
+								className="w-full sm:w-[140px]"
+							/>
+						</div>
 					</div>
-					<div className="flex items-center gap-2">
-						<Label htmlFor="end-date" className="sr-only">
-							End Date
-						</Label>
-						<Input
-							id="end-date"
-							type="date"
-							value={dateRange.endDate}
-							onChange={(e) => handleCustomDateChange('endDate', e.target.value)}
-							className="w-[140px]"
-						/>
-					</div>
-				</>
-			)}
+				)}
+			</div>
 
 			{isRangeActive && (
-				<Badge variant="outline" className="flex items-center gap-1 px-2 py-1">
-					<span className="text-xs">{formatDateRange(dateRange)}</span>
-					<button
-						onClick={onClear}
-						className="ml-1 rounded-full hover:bg-muted"
-						aria-label="Clear date range"
+				<div className="flex items-center gap-2">
+					<Badge
+						variant="outline"
+						className="flex items-center gap-2 px-3 py-1.5 text-xs md:text-sm"
 					>
-						<FiX className="h-3 w-3" />
-					</button>
-				</Badge>
+						<span>{formatDateRange(dateRange)}</span>
+						<button
+							onClick={onClear}
+							className="rounded-full hover:bg-muted transition-colors"
+							aria-label="Clear date range"
+						>
+							<FiX className="h-4 w-4" />
+						</button>
+					</Badge>
+				</div>
 			)}
 		</div>
 	);
