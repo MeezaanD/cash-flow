@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiSettings, FiDatabase } from 'react-icons/fi';
+import { FiSettings, FiDatabase, FiRefreshCw } from 'react-icons/fi';
 import { useTheme } from '../context/ThemeContext';
 import { CurrencyCode } from '../types';
 import { useAuth } from '../hooks/useAuth';
@@ -16,13 +16,8 @@ import {
 import { Button } from './ui/button';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from './ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import RecurringExpensesList from '../views/RecurringExpenses/RecurringExpensesList';
 
 interface SettingsModalProps {
 	open: boolean;
@@ -46,7 +41,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	const [localCurrency, setLocalCurrency] = useState<CurrencyCode>(currency);
 	const { currentUser } = useAuth();
 	const [confirmOpen, setConfirmOpen] = useState(false);
-	const [activeTab, setActiveTab] = useState<'general' | 'data'>('general');
+	const [activeTab, setActiveTab] = useState<'general' | 'data' | 'recurring'>('general');
 
 	useEffect(() => {
 		setLocalTheme(theme);
@@ -76,7 +71,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	return (
 		<>
 			<Dialog open={open} onOpenChange={onClose}>
-				<DialogContent className="sm:max-w-2xl">
+				<DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
 					<DialogHeader>
 						<DialogTitle>Settings</DialogTitle>
 						<DialogDescription>Manage your app preferences and data</DialogDescription>
@@ -107,6 +102,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 									<FiDatabase className="h-4 w-4" />
 									Data
 								</button>
+								<button
+									onClick={() => setActiveTab('recurring')}
+									className={`w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+										activeTab === 'recurring'
+											? 'bg-accent text-accent-foreground'
+											: 'text-muted-foreground hover:bg-muted'
+									}`}
+								>
+									<FiRefreshCw className="h-4 w-4" />
+									Recurring Expenses
+								</button>
 							</div>
 						</div>
 
@@ -119,7 +125,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 										</h3>
 										<div className="space-y-4 rounded-lg border p-4">
 											<div className="flex items-center justify-between">
-												<Label htmlFor="dark-mode" className="cursor-pointer">
+												<Label
+													htmlFor="dark-mode"
+													className="cursor-pointer"
+												>
 													Dark Mode
 												</Label>
 												<Switch
@@ -134,7 +143,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 												<Label htmlFor="currency">Currency</Label>
 												<Select
 													value={localCurrency}
-													onValueChange={(value: string) => setLocalCurrency(value as CurrencyCode)}
+													onValueChange={(value: string) =>
+														setLocalCurrency(value as CurrencyCode)
+													}
 												>
 													<SelectTrigger id="currency">
 														<SelectValue />
@@ -161,7 +172,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 										</h3>
 										<div className="space-y-4 rounded-lg border p-4">
 											<p className="text-sm text-muted-foreground">
-												Import transactions from CSV/JSON. Duplicates are automatically skipped.
+												Import transactions from CSV/JSON. Duplicates are
+												automatically skipped.
 											</p>
 											<div className="flex flex-col gap-2 sm:flex-row">
 												<input
@@ -179,7 +191,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 													variant="outline"
 													size="sm"
 													onClick={() =>
-														document.getElementById('settings-import-input')?.click()
+														document
+															.getElementById('settings-import-input')
+															?.click()
 													}
 													className="w-full sm:w-auto"
 												>
@@ -206,21 +220,46 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 									</div>
 								</div>
 							)}
+
+							{activeTab === 'recurring' && (
+								<div className="space-y-4">
+									<div>
+										<h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+											Recurring Expenses
+										</h3>
+										<div className="rounded-lg border bg-card p-6">
+											<RecurringExpensesList />
+										</div>
+									</div>
+								</div>
+							)}
 						</div>
 					</div>
 
 					<DialogFooter className="flex-col gap-2 sm:flex-row">
 						<div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
 							{currentUser ? (
-								<Button variant="outline" onClick={handleSignOut} className="w-full sm:w-auto">
+								<Button
+									variant="outline"
+									onClick={handleSignOut}
+									className="w-full sm:w-auto"
+								>
 									Sign Out
 								</Button>
 							) : (
-								<Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
+								<Button
+									variant="outline"
+									onClick={onClose}
+									className="w-full sm:w-auto"
+								>
 									Sign In
 								</Button>
 							)}
-							<Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
+							<Button
+								variant="outline"
+								onClick={onClose}
+								className="w-full sm:w-auto"
+							>
 								Close
 							</Button>
 						</div>

@@ -1,6 +1,8 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useTransactionsController } from '../controllers/TransactionsController';
+import { useRecurringExpensesController } from '../controllers/RecurringExpensesController';
 import { Transaction } from '../models/TransactionModel';
+import { RecurringExpense } from '../models/RecurringExpenseModel';
 
 interface TransactionsContextValue {
 	// Data
@@ -28,6 +30,13 @@ interface TransactionsContextValue {
 	};
 	groupByCategory: () => Record<string, Transaction[]>;
 	sortByDateDesc: () => Transaction[];
+
+	// Recurring Expenses
+	recurringExpenses: RecurringExpense[];
+	recurringExpensesLoading: boolean;
+	addRecurringExpense: (expense: Omit<RecurringExpense, 'id' | 'createdAt' | 'userId'>) => Promise<void>;
+	updateRecurringExpense: (id: string, updates: Partial<RecurringExpense>) => Promise<void>;
+	deleteRecurringExpense: (id: string) => Promise<void>;
 }
 
 const TransactionsContext = createContext<TransactionsContextValue | undefined>(undefined);
@@ -37,10 +46,19 @@ interface TransactionsProviderProps {
 }
 
 export const TransactionsProvider: React.FC<TransactionsProviderProps> = ({ children }) => {
-	const controller = useTransactionsController();
+	const transactionsController = useTransactionsController();
+	const recurringExpensesController = useRecurringExpensesController();
 
 	return (
-		<TransactionsContext.Provider value={controller}>{children}</TransactionsContext.Provider>
+		<TransactionsContext.Provider
+			value={{
+				...transactionsController,
+				...recurringExpensesController,
+				recurringExpensesLoading: recurringExpensesController.loading,
+			}}
+		>
+			{children}
+		</TransactionsContext.Provider>
 	);
 };
 

@@ -23,7 +23,8 @@ import { useToast } from '../components/ui/use-toast';
 import { Toaster } from '../components/ui/toaster';
 
 const Dashboard: React.FC = () => {
-	const { transactions, addTransaction, deleteTransaction } = useTransactionsContext();
+	const { transactions, addTransaction, deleteTransaction } =
+		useTransactionsContext();
 	const { toast } = useToast();
 
 	const [selectedTx, setSelectedTx] = useState<any | null>(null);
@@ -174,7 +175,8 @@ const Dashboard: React.FC = () => {
 					<DialogHeader>
 						<DialogTitle>Confirm Deletion</DialogTitle>
 						<DialogDescription>
-							Are you sure you want to delete this transaction? This action cannot be undone.
+							Are you sure you want to delete this transaction? This action cannot be
+							undone.
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>
@@ -312,8 +314,8 @@ const Dashboard: React.FC = () => {
 									: '';
 						const createdAt =
 							t.createdAt &&
-								typeof t.createdAt === 'object' &&
-								'toDate' in t.createdAt
+							typeof t.createdAt === 'object' &&
+							'toDate' in t.createdAt
 								? t.createdAt.toDate().toISOString()
 								: t.createdAt
 									? new Date(t.createdAt as any).toISOString()
@@ -374,8 +376,9 @@ const Dashboard: React.FC = () => {
 			/>
 
 			<div
-				className={`flex-1 transition-all duration-300 ease-in-out ${sidebarVisible ? 'ml-64' : 'ml-0'
-					}`}
+				className={`flex-1 transition-all duration-300 ease-in-out ${
+					sidebarVisible ? 'ml-64' : 'ml-0'
+				}`}
 			>
 				{!sidebarVisible && (
 					<Button
@@ -389,7 +392,10 @@ const Dashboard: React.FC = () => {
 				)}
 
 				{activeView === 'transaction' ? (
-					<TransactionForm transaction={selectedTx || undefined} onClose={handleCloseForm} />
+					<TransactionForm
+						transaction={selectedTx || undefined}
+						onClose={handleCloseForm}
+					/>
 				) : activeView === 'reports' ? (
 					<PieChart
 						data={pieChartData}
@@ -407,38 +413,49 @@ const Dashboard: React.FC = () => {
 					/>
 				) : (
 					<div className="flex h-full items-center justify-center p-8">
-						<div className="w-full max-w-2xl rounded-lg border bg-card p-8 shadow-lg">
-							<div className="mb-8 text-center">
-								<h2 className="mb-2 text-3xl font-bold">Welcome to CashFlow</h2>
-								<p className="text-muted-foreground">Your personal finance companion</p>
+						<div className="w-full max-w-3xl">
+							<div className="mb-10 text-center">
+								<div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/25">
+									<FiDollarSign className="h-8 w-8 text-primary-foreground" />
+								</div>
+								<h2 className="mb-3 text-4xl font-bold tracking-tight">
+									Welcome to CashFlow
+								</h2>
+								<p className="text-lg text-muted-foreground">
+									Your personal finance companion
+								</p>
 							</div>
 
-							<div className="mb-8 grid gap-4 md:grid-cols-2">
-								<div className="rounded-lg border p-6">
-									<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-										<FiDollarSign className="h-6 w-6 text-primary" />
+							<div className="mb-10 grid gap-5 md:grid-cols-2">
+								<div className="group rounded-xl border-2 bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg">
+									<div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/10 to-emerald-500/10 transition-transform group-hover:scale-110">
+										<FiDollarSign className="h-7 w-7 text-green-600 dark:text-green-500" />
 									</div>
-									<h4 className="mb-2 font-semibold">Track Expenses</h4>
+									<h4 className="mb-2 text-lg font-semibold">Track Expenses</h4>
 									<p className="text-sm text-muted-foreground">
-										Log and categorize your spending
+										Log and categorize your spending with ease
 									</p>
 								</div>
 								<button
 									onClick={() => handleShowPieChart(true)}
-									className="rounded-lg border p-6 text-left transition-colors hover:bg-muted"
+									className="group rounded-xl border-2 bg-card p-6 text-left transition-all hover:border-primary/50 hover:shadow-lg"
 								>
-									<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-										<FiPieChart className="h-6 w-6 text-primary" />
+									<div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 transition-transform group-hover:scale-110">
+										<FiPieChart className="h-7 w-7 text-blue-600 dark:text-blue-500" />
 									</div>
-									<h4 className="mb-2 font-semibold">Visual Reports</h4>
+									<h4 className="mb-2 text-lg font-semibold">Visual Reports</h4>
 									<p className="text-sm text-muted-foreground">
-										Beautiful charts of your data
+										Beautiful charts and insights from your data
 									</p>
 								</button>
 							</div>
 
-							<div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-								<Button onClick={handleCreate} size="lg">
+							<div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+								<Button
+									onClick={handleCreate}
+									size="lg"
+									className="h-14 rounded-xl bg-gradient-to-r from-primary to-primary/90 px-8 text-base font-semibold shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
+								>
 									<FiPlusCircle className="mr-2 h-5 w-5" />
 									Create Your First Transaction
 								</Button>
@@ -448,6 +465,7 @@ const Dashboard: React.FC = () => {
 										variant="outline"
 										size="lg"
 										onClick={() => handleShowPieChart(true)}
+										className="h-14 rounded-xl border-2 px-8 text-base font-semibold transition-all hover:bg-muted/50"
 									>
 										<FiPieChart className="mr-2 h-5 w-5" />
 										View Expense Distribution
