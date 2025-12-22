@@ -144,7 +144,7 @@ const Sidebar = ({
 	return (
 		<>
 			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-				<DialogContent>
+				<DialogContent className="w-[90vw] md:w-full rounded-lg">
 					<DialogHeader>
 						<DialogTitle>Confirm Deletion</DialogTitle>
 						<DialogDescription>
@@ -163,24 +163,33 @@ const Sidebar = ({
 			</Dialog>
 
 			<aside
-				className={`fixed left-0 top-0 z-40 h-screen border-r bg-card transition-all duration-300 ease-in-out ${collapsed ? 'w-0 overflow-hidden opacity-0' : 'w-64 opacity-100'
-					}`}
+				className={`fixed left-0 top-0 z-40 h-screen w-64 md:w-64 border-r bg-card transition-all duration-300 ease-in-out ${
+					collapsed
+						? 'w-0 overflow-hidden opacity-0 md:relative md:w-0 md:opacity-0'
+						: 'opacity-100 md:relative md:w-64'
+				}`}
 			>
 				<div
-					className={`flex h-full flex-col transition-all duration-300 ${collapsed
+					className={`flex h-full flex-col transition-all duration-300 ${
+						collapsed
 							? 'opacity-0 pointer-events-none scale-95'
 							: 'opacity-100 scale-100'
-						}`}
+					}`}
 				>
 					{/* Header */}
-					<div className="flex items-center justify-between border-b p-4">
+					<div className="flex items-center justify-between border-b p-3 md:p-4">
 						<img
 							src={logo}
 							alt="CashFlow Logo"
-							className="h-8 transition-opacity duration-300"
+							className="h-7 md:h-8 transition-opacity duration-300"
 						/>
 						{!collapsed && (
-							<Button variant="ghost" size="icon" onClick={toggleSidebar}>
+							<Button
+								variant="ghost"
+								size="icon"
+								onClick={toggleSidebar}
+								className="md:hidden"
+							>
 								<FiX className="h-5 w-5" />
 							</Button>
 						)}
@@ -198,14 +207,20 @@ const Sidebar = ({
 										return (
 											<button
 												key={view}
-												onClick={() => onViewChange(view)}
-												className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive
+												onClick={() => {
+													onViewChange(view);
+													if (window.innerWidth < 768) {
+														toggleSidebar();
+													}
+												}}
+												className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+													isActive
 														? 'bg-accent text-accent-foreground'
 														: 'text-muted-foreground hover:bg-muted hover:text-foreground'
-													}`}
+												}`}
 											>
 												<IconComponent className="h-4 w-4" />
-												<span>
+												<span className="hidden sm:inline">
 													{view.charAt(0).toUpperCase() + view.slice(1)}
 												</span>
 											</button>
@@ -219,10 +234,10 @@ const Sidebar = ({
 									<FiSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 									<Input
 										type="text"
-										placeholder="Search transactions..."
+										placeholder="Search..."
 										value={searchTerm}
 										onChange={(e) => setSearchTerm(e.target.value)}
-										className="pl-9 pr-9"
+										className="pl-9 pr-9 text-sm"
 									/>
 									{searchTerm && (
 										<button
@@ -245,20 +260,29 @@ const Sidebar = ({
 								{filteredTransactions.map((tx) => (
 									<div
 										key={tx.id}
-										onClick={() => onSelect(tx)}
-										className={`group flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors ${selectedId === tx.id
+										onClick={() => {
+											onSelect(tx);
+											if (window.innerWidth < 768) {
+												toggleSidebar();
+											}
+										}}
+										className={`group flex cursor-pointer items-center justify-between rounded-lg border p-2 md:p-3 transition-colors ${
+											selectedId === tx.id
 												? 'border-primary bg-accent'
 												: 'border-border bg-background hover:bg-muted'
-											}`}
+										}`}
 									>
 										<div className="flex-1 min-w-0">
-											<h4 className="truncate font-medium">{tx.title}</h4>
+											<h4 className="truncate font-medium text-sm md:text-base">
+												{tx.title}
+											</h4>
 											<div className="mt-1 flex items-center gap-2 text-xs">
 												<span
-													className={`font-medium ${tx.type === 'income'
+													className={`font-medium ${
+														tx.type === 'income'
 															? 'text-green-600 dark:text-green-400'
 															: 'text-red-600 dark:text-red-400'
-														}`}
+													}`}
 												>
 													{tx.type === 'income' ? (
 														<FiArrowUp className="inline h-3 w-3" />
@@ -267,7 +291,7 @@ const Sidebar = ({
 													)}
 													R{tx.amount.toFixed(2)}
 												</span>
-												<span className="text-muted-foreground">
+												<span className="text-muted-foreground hidden sm:inline">
 													{formatDisplayDate(tx.date ?? tx.createdAt)}
 												</span>
 											</div>
@@ -286,7 +310,7 @@ const Sidebar = ({
 								))}
 							</div>
 						) : (
-							<div className="py-8 text-center text-sm text-muted-foreground">
+							<div className="py-8 text-center text-xs md:text-sm text-muted-foreground">
 								{searchTerm ? 'No matching transactions' : 'No transactions yet'}
 							</div>
 						)}
@@ -295,9 +319,12 @@ const Sidebar = ({
 					{/* New Transaction Button */}
 					{!collapsed && (
 						<div className="border-t p-2">
-							<Button onClick={handleCreateTransaction} className="w-full">
+							<Button
+								onClick={handleCreateTransaction}
+								className="w-full text-sm md:text-base h-9 md:h-10"
+							>
 								<FiPlus className="mr-2 h-4 w-4" />
-								New Transaction
+								New
 							</Button>
 						</div>
 					)}
@@ -306,26 +333,34 @@ const Sidebar = ({
 					<div className="border-t p-2">
 						{currentUser ? (
 							<button
-								onClick={() => onOpenSettings?.()}
+								onClick={() => {
+									onOpenSettings?.();
+									if (window.innerWidth < 768) {
+										toggleSidebar();
+									}
+								}}
 								className="flex w-full items-center gap-3 rounded-lg border bg-background p-2 text-left transition-colors hover:bg-muted"
 							>
-								<Avatar className="h-8 w-8">
+								<Avatar className="h-8 w-8 flex-shrink-0">
 									{currentUser.photoURL && (
 										<AvatarImage src={currentUser.photoURL} alt="User" />
 									)}
-									<AvatarFallback className="bg-primary text-primary-foreground">
+									<AvatarFallback className="bg-primary text-primary-foreground text-xs">
 										{currentUser.email?.[0]?.toUpperCase() ?? '?'}
 									</AvatarFallback>
 								</Avatar>
-								<div className="flex-1 min-w-0">
+								<div className="flex-1 min-w-0 hidden sm:block">
 									<p className="truncate text-sm font-medium">
 										{currentUser.displayName || currentUser.email || 'User'}
 									</p>
 								</div>
-								<FiSettings className="h-4 w-4 text-muted-foreground" />
+								<FiSettings className="h-4 w-4 text-muted-foreground flex-shrink-0" />
 							</button>
 						) : (
-							<Button onClick={() => onOpenLogin?.()} className="w-full">
+							<Button
+								onClick={() => onOpenLogin?.()}
+								className="w-full text-sm md:text-base h-9 md:h-10"
+							>
 								Login
 							</Button>
 						)}
