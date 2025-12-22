@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Transactions collection
+    match /transactions/{document} {
+      // Allow read and write only if the user is authenticated and owns the document
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      
+      // Allow create only if the user is authenticated and sets their own userId
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // Recurring Expenses collection
+    match /recurringExpenses/{document} {
+      // Allow read and write only if the user is authenticated and owns the document
+      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      
+      // Allow create only if the user is authenticated and sets their own userId
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+  }
+}
+
