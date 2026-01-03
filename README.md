@@ -18,7 +18,7 @@
 
 ## Tech Stack
 
-- **Frontend:** React, TypeScript, CSS
+- **Frontend:** React, TypeScript, Tailwind CSS, Shadcn
 - **Backend:** Firebase Auth & Firestore
 - **Hosting:** Vercel
 

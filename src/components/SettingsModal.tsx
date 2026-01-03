@@ -17,6 +17,7 @@ import { Button } from './ui/button';
 import { Switch } from './ui/switch';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { useTransactionsContext } from '@/context/TransactionsContext';
 import RecurringExpensesList from '../views/RecurringExpenses/RecurringExpensesList';
 
 interface SettingsModalProps {
@@ -36,11 +37,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	onExportCSV,
 	onExportJSON,
 }) => {
+	const { deleteAllTransactions } = useTransactionsContext();
 	const { theme, setTheme, currency, setCurrency } = useTheme();
 	const [localTheme, setLocalTheme] = useState(theme);
 	const [localCurrency, setLocalCurrency] = useState<CurrencyCode>(currency);
 	const { currentUser } = useAuth();
-	const [confirmOpen, setConfirmOpen] = useState(false);
+	const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+	const [deleteAllConfirmOpen, setDeleteAllConfirmOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState<'general' | 'data' | 'recurring'>('general');
 
 	useEffect(() => {
@@ -58,13 +61,23 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	};
 
 	const handleSignOut = async () => {
-		setConfirmOpen(true);
+		setLogoutConfirmOpen(true);
 	};
 
 	const confirmLogout = async () => {
 		await signOut(auth);
 		localStorage.removeItem('token');
-		setConfirmOpen(false);
+		setLogoutConfirmOpen(false);
+		onClose();
+	};
+
+	const handleDeleteAllClick = () => {
+		setDeleteAllConfirmOpen(true);
+	};
+
+	const confirmDeleteAllTransactions = async () => {
+		await deleteAllTransactions();
+		setDeleteAllConfirmOpen(false);
 		onClose();
 	};
 
@@ -216,6 +229,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 													Export JSON
 												</Button>
 											</div>
+											<p className="text-sm text-muted-foreground">
+												Delete all transactions from your account. This action cannot be
+												undone.
+											</p>
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={handleDeleteAllClick}
+												className="w-full sm:w-auto"
+											>
+												Delete All Transactions
+											</Button>
 										</div>
 									</div>
 								</div>
@@ -270,18 +295,38 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 				</DialogContent>
 			</Dialog>
 
-			<Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+			<Dialog open={logoutConfirmOpen} onOpenChange={setLogoutConfirmOpen}>
 				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>Confirm Logout</DialogTitle>
 						<DialogDescription>Are you sure you want to log out?</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>
-						<Button variant="outline" onClick={() => setConfirmOpen(false)}>
+						<Button variant="outline" onClick={() => setLogoutConfirmOpen(false)}>
 							Cancel
 						</Button>
 						<Button variant="destructive" onClick={confirmLogout}>
 							Logout
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog open={deleteAllConfirmOpen} onOpenChange={setDeleteAllConfirmOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Confirm Delete All Transactions</DialogTitle>
+						<DialogDescription>
+							Are you sure you want to delete all transactions? This action cannot be
+							undone.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setDeleteAllConfirmOpen(false)}>
+							Cancel
+						</Button>
+						<Button variant="destructive" onClick={confirmDeleteAllTransactions}>
+							Delete All
 						</Button>
 					</DialogFooter>
 				</DialogContent>

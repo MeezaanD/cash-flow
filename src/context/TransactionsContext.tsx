@@ -13,6 +13,7 @@ interface TransactionsContextValue {
 	addTransaction: (transaction: Omit<Transaction, 'id' | 'date' | 'createdAt'>) => Promise<void>;
 	updateTransaction: (id: string, updates: Partial<Transaction>) => Promise<void>;
 	deleteTransaction: (id: string) => Promise<void>;
+	deleteAllTransactions: () => Promise<void>;
 
 	// Query methods
 	getExpenses: () => Transaction[];
