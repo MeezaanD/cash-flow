@@ -3,13 +3,13 @@ import { FiPlusCircle } from 'react-icons/fi';
 import { useTransactionsContext } from '../context/TransactionsContext';
 import { ViewType, DateRange } from '../types';
 import { filterTransactionsByDateRangeObject } from '../utils/dateRangeFilter';
-import PieChart from '../components/PieChart';
-import Sidebar from '../components/Sidebar';
-import SettingsModal from '../components/SettingsModal';
+import PieChart from '../components/app/PieChart';
+import Sidebar from '../components/app/Sidebar';
+import SettingsModal from '../components/app/SettingsModal';
 import TransactionForm from '../views/Transactions/TransactionForm';
 import TransactionsTable from '../views/Transactions/TransactionsTable';
 import TransactionsList from '../views/Transactions/TransactionsList';
-import AuthModals from '../components/AuthModals';
+import AuthModals from '../components/app/AuthModals';
 import {
 	Dialog,
 	DialogContent,
@@ -17,10 +17,10 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from '../components/ui/dialog';
-import { Button } from '../components/ui/button';
-import { useToast } from '../components/ui/use-toast';
-import { Toaster } from '../components/ui/toaster';
+} from '../components/app/ui/dialog';
+import { Button } from '../components/app/ui/button';
+import { useToast } from '../components/app/ui/use-toast';
+import { Toaster } from '../components/app/ui/toaster';
 
 const Dashboard: React.FC = () => {
 	const { transactions, addTransaction, deleteTransaction } = useTransactionsContext();

@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { TransactionsProvider } from './context/TransactionsContext';
-import ProtectedRoute from './components/ProtectedRoute';
+import ProtectedRoute from './components/app/ProtectedRoute';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 

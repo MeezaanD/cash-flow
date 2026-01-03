@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import AuthModals from '../AuthModals';
+import AuthModals from '../app/AuthModals';
 import { clearAllMocks } from '../../utils/test-utils';
 
 // Mock Material-UI icons

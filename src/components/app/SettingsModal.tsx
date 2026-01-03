@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FiSettings, FiDatabase, FiRefreshCw } from 'react-icons/fi';
-import { useTheme } from '../context/ThemeContext';
-import { CurrencyCode } from '../types';
-import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../../context/ThemeContext';
+import { CurrencyCode } from '../../types';
+import { useAuth } from '../../hooks/useAuth';
 import { signOut } from 'firebase/auth';
-import { auth } from '../services/firebase';
+import { auth } from '../../services/firebase';
 import {
 	Dialog,
 	DialogContent,
@@ -12,13 +12,13 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from './ui/dialog';
-import { Button } from './ui/button';
-import { Switch } from './ui/switch';
-import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+} from '../app/ui/dialog';
+import { Button } from '../app/ui/button';
+import { Switch } from '../app/ui/switch';
+import { Label } from '../app/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../app/ui/select';
 import { useTransactionsContext } from '@/context/TransactionsContext';
-import RecurringExpensesList from '../views/RecurringExpenses/RecurringExpensesList';
+import RecurringExpensesList from '../../views/RecurringExpenses/RecurringExpensesList';
 
 interface SettingsModalProps {
 	open: boolean;
@@ -230,8 +230,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 												</Button>
 											</div>
 											<p className="text-sm text-muted-foreground">
-												Delete all transactions from your account. This action cannot be
-												undone.
+												Delete all transactions from your account. This
+												action cannot be undone.
 											</p>
 											<Button
 												variant="outline"

@@ -4,16 +4,16 @@ import { useTransactionsContext } from '../../context/TransactionsContext';
 import { Transaction } from '../../models/TransactionModel';
 import { RecurringExpense } from '../../models/RecurringExpenseModel';
 import { Category } from '../../types';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Textarea } from '../../components/ui/textarea';
+import { Button } from '../../components/app/ui/button';
+import { Input } from '../../components/app/ui/input';
+import { Textarea } from '../../components/app/ui/textarea';
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from '../../components/ui/select';
+} from '../../components/app/ui/select';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { useTheme } from '../../context/ThemeContext';
 

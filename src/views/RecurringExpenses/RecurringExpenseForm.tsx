@@ -3,17 +3,17 @@ import { FiDollarSign, FiTag, FiInfo, FiSave, FiX, FiRefreshCw } from 'react-ico
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import { RecurringExpense } from '../../models/RecurringExpenseModel';
 import { Category } from '../../types';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
-import { Label } from '../../components/ui/label';
-import { Textarea } from '../../components/ui/textarea';
+import { Button } from '../../components/app/ui/button';
+import { Input } from '../../components/app/ui/input';
+import { Label } from '../../components/app/ui/label';
+import { Textarea } from '../../components/app/ui/textarea';
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from '../../components/ui/select';
+} from '../../components/app/ui/select';
 import { Loader2 } from 'lucide-react';
 
 interface RecurringExpenseFormProps {
