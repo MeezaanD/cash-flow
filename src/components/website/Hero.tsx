@@ -1,123 +1,168 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight, X, Check, CodeXml } from 'lucide-react';
 import dashboard from '@/assets/images/previews/dashboard.png';
-
-const steps = [
-	{
-		step: 1,
-		title: 'The Problem',
-		description: 'Manual tracking is slow, messy, and error-prone.',
-		icon: <X size={20} />,
-		color: 'bg-red-100 text-red-600',
-	},
-	{
-		step: 2,
-		title: 'The Solution',
-		description: 'Clean workflows with real-time sync and insights.',
-		icon: <Check size={20} />,
-		color: 'bg-green-100 text-green-600',
-	},
-	{
-		step: 3,
-		title: 'The Tech',
-		description: 'Built with React, TypeScript, and Firebase.',
-		icon: <CodeXml size={20} />,
-		color: 'bg-blue-100 text-blue-700',
-	},
-];
 
 interface HeroProps {
 	onAuthClick: (mode: 'login' | 'register') => void;
 }
 
-const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
-	return (
-		<section className="relative px-4 sm:px-6 lg:px-8 min-h-screen flex flex-col justify-center pt-28 lg:pt-0">
-			<div className="max-w-7xl mx-auto w-full py-6 lg:py-10 relative">
-				{/* Easter Egg Badge */}
-				<span className="absolute -top-8 left-1/2 transform -translate-x-1/2 inline-block px-4 py-1.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full border border-yellow-200 select-none opacity-70 hover:opacity-100 transition-all shadow-sm">
-					Tip: Click Login for a free test account!
-				</span>
+const steps = [
+	{
+		step: 1,
+		title: 'The Problem',
+		description: 'Manual tracking is slow and error-prone',
+		icon: <X size={20} />,
+		color: 'bg-red-500/10 text-red-400',
+		iconColor: 'text-red-400',
+	},
+	{
+		step: 2,
+		title: 'The Solution',
+		description: 'Real-time sync with insights',
+		icon: <Check size={20} />,
+		color: 'bg-green-500/10 text-green-400',
+		iconColor: 'text-green-400',
+	},
+	{
+		step: 3,
+		title: 'The Tech',
+		description: 'React, TypeScript & Firebase',
+		icon: <CodeXml size={20} />,
+		color: 'bg-blue-500/10 text-blue-400',
+		iconColor: 'text-blue-400',
+	},
+];
 
-				{/* Hero Row */}
-				<div className="grid lg:grid-cols-2 gap-6 lg:gap-10 items-center mb-12">
-					{/* Text */}
-					<div className="space-y-5 lg:space-y-6">
-						<div className="space-y-3 lg:space-y-4">
-							<h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight text-gray-900">
-								Take Control of Your Personal Finances
+const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
+	const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+	useEffect(() => {
+		const handleMouseMove = (e: MouseEvent) => {
+			setMousePos({ x: e.clientX, y: e.clientY });
+		};
+		window.addEventListener('mousemove', handleMouseMove);
+		return () => window.removeEventListener('mousemove', handleMouseMove);
+	}, []);
+
+	return (
+		<section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+			{/* Animated gradient background */}
+			<div className="absolute inset-0 bg-gray-950">
+				<div className="absolute inset-0 opacity-20">
+					<div
+						className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl animate-blob"
+						style={{
+							transform: `translate(${mousePos.x * 0.02}px, ${mousePos.y * 0.02}px)`,
+							transition: 'transform 0.3s ease-out',
+						}}
+					></div>
+					<div
+						className="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"
+						style={{
+							transform: `translate(${-mousePos.x * 0.015}px, ${
+								mousePos.y * 0.015
+							}px)`,
+							transition: 'transform 0.3s ease-out',
+						}}
+					></div>
+					<div
+						className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000"
+						style={{
+							transform: `translate(${mousePos.x * 0.01}px, ${-mousePos.y * 0.01}px)`,
+							transition: 'transform 0.3s ease-out',
+						}}
+					></div>
+				</div>
+			</div>
+
+			<div className="relative max-w-7xl mx-auto w-full">
+				{/* Easter egg badge */}
+				<div className="text-center mb-8">
+					<span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900/80 backdrop-blur-xl border border-gray-800 rounded-full text-sm font-medium text-gray-300 transition-all duration-300 hover:scale-105">
+						<span className="relative flex h-2 w-2">
+							<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+							<span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+						</span>
+						Click Login for a free test account!
+					</span>
+				</div>
+
+				<div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
+					<div className="space-y-8">
+						<div className="space-y-6">
+							<h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight">
+								<span className="block text-white">Take Control of</span>
+								<span className="block text-blue-500">Your Finances</span>
 							</h1>
-							<p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-xl">
+							<p className="text-xl text-gray-400 leading-relaxed max-w-xl">
 								Track income, monitor expenses, and achieve your financial goals
 								with CashFlow - the simple, fast, and secure budgeting app.
 							</p>
 						</div>
 
-						{/* Buttons */}
-						<div className="flex flex-col sm:flex-row gap-3 pt-1">
+						<div className="flex flex-wrap gap-4">
 							<button
 								onClick={() => onAuthClick('register')}
-								className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition-all shadow-md"
+								className="group px-8 py-4 text-base font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-300"
 							>
-								Get Started
-								<ArrowRight size={16} />
+								<span className="flex items-center gap-2">
+									Get Started Free
+									<ArrowRight
+										size={20}
+										className="group-hover:translate-x-1 transition-transform"
+									/>
+								</span>
 							</button>
 
 							<button
 								onClick={() => onAuthClick('login')}
-								className="px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors border border-gray-300"
+								className="px-8 py-4 text-base font-semibold text-gray-300 bg-gray-900/80 backdrop-blur-xl border border-gray-800 rounded-xl hover:bg-gray-800/80 hover:text-white transition-all duration-300"
 							>
 								Login
 							</button>
 						</div>
 					</div>
 
-					{/* Dashboard */}
 					<div className="relative flex justify-center">
 						<img
 							src={dashboard}
 							alt="Dashboard Preview"
-							className="w-full max-w-md lg:max-w-lg object-contain max-h-[50vh]"
+							className="w-full rounded-2xl"
 						/>
 					</div>
 				</div>
 
-				{/* Stepper / Features Section */}
-				<div className="mt-12">
-					<div className="relative w-full px-4 lg:px-0">
-						<div className="hidden md:block absolute top-6 left-6 right-6 h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent" />
-
-						<div className="grid md:grid-cols-3 gap-12">
-							{steps.map((item) => (
-								<div
-									key={item.step}
-									className="relative flex flex-col items-center text-center space-y-4"
-								>
-									<div
-										className={`z-10 w-12 h-12 rounded-full flex items-center justify-center ${item.color}`}
-									>
-										{item.icon}
-									</div>
-									<div className="space-y-1">
-										<h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-											{item.title}
-										</h3>
-										<p className="text-sm sm:text-base text-gray-600 leading-relaxed max-w-[220px] mx-auto">
-											{item.description}
-										</p>
+				{/* Steps */}
+				<div className="relative">
+					<div className="grid md:grid-cols-3 gap-8">
+						{steps.map((step, i) => (
+							<div key={i} className="group relative">
+								<div className="relative bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 hover:bg-gray-900/70 transition-all duration-500 hover:scale-105">
+									<div className="flex flex-col items-center text-center space-y-4">
+										<div
+											className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl ${step.color} group-hover:scale-110 transition-transform duration-300`}
+										>
+											<div className={step.iconColor}>{step.icon}</div>
+										</div>
+										<div>
+											<h3 className="text-xl font-bold text-white mb-2">
+												{step.title}
+											</h3>
+											<p className="text-gray-400">{step.description}</p>
+										</div>
 									</div>
 								</div>
-							))}
-						</div>
+							</div>
+						))}
 					</div>
 				</div>
 
-				{/* Scroll Hint */}
-				<div className="text-center mt-8">
-					<div className="animate-bounce inline-flex flex-col items-center text-gray-400">
-						<span className="text-xs">Scroll for more</span>
+				{/* Scroll indicator */}
+				<div className="text-center mt-16">
+					<div className="inline-flex flex-col items-center text-gray-500 animate-bounce">
+						<span className="text-sm mb-2">Scroll to explore</span>
 						<svg
-							className="w-3 h-3 mt-1"
+							className="w-6 h-6"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
