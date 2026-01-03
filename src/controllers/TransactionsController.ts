@@ -20,6 +20,7 @@ interface TransactionsControllerReturn {
 	addTransaction: (transaction: Omit<Transaction, 'id' | 'date' | 'createdAt'>) => Promise<void>;
 	updateTransaction: (id: string, updates: Partial<Transaction>) => Promise<void>;
 	deleteTransaction: (id: string) => Promise<void>;
+	deleteAllTransactions: () => Promise<void>;
 
 	// Query methods
 	getExpenses: () => Transaction[];
@@ -40,7 +41,7 @@ interface TransactionsControllerReturn {
 }
 
 export const useTransactionsController = (): TransactionsControllerReturn => {
-	const { transactions, addTransaction, updateTransaction, deleteTransaction, loading } =
+	const { transactions, addTransaction, updateTransaction, deleteTransaction, deleteAllTransactions, loading } =
 		useTransactions();
 
 	return {
@@ -52,6 +53,7 @@ export const useTransactionsController = (): TransactionsControllerReturn => {
 		addTransaction,
 		updateTransaction,
 		deleteTransaction,
+		deleteAllTransactions,
 
 		// Query methods
 		getExpenses: () => filterExpenses(transactions),

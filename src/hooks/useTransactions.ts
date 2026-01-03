@@ -48,7 +48,7 @@ export const useTransactions = () => {
 
 	useEffect(() => {
 		fetchTransactions();
-	}, [user]); // <-- re-fetch when user changes
+	}, [user]);
 
 	const addTransaction = async (transaction: {
 		type: 'income' | 'expense';
@@ -66,7 +66,6 @@ export const useTransactions = () => {
 			userId: user.uid,
 		};
 
-		// Add custom date if provided, otherwise let Firestore handle it
 		if (transaction.date) {
 			transactionData.date = Timestamp.fromDate(transaction.date);
 		}
@@ -75,21 +74,11 @@ export const useTransactions = () => {
 		await fetchTransactions();
 	};
 
-	const deleteTransaction = async (id: string) => {
-		try {
-			await deleteDoc(doc(db, 'transactions', id));
-			await fetchTransactions();
-		} catch (error) {
-			console.error('Error deleting transaction:', error);
-		}
-	};
-
 	const updateTransaction = async (id: string, updates: any) => {
 		try {
 			const transactionRef = doc(db, 'transactions', id);
 			const updateData: any = { ...updates };
 
-			// Convert date to Timestamp if provided
 			if (updates.date instanceof Date) {
 				updateData.date = Timestamp.fromDate(updates.date);
 			}
@@ -101,11 +90,45 @@ export const useTransactions = () => {
 		}
 	};
 
+	const deleteTransaction = async (id: string) => {
+		try {
+			await deleteDoc(doc(db, 'transactions', id));
+			await fetchTransactions();
+		} catch (error) {
+			console.error('Error deleting transaction:', error);
+		}
+	};
+
+	const deleteAllTransactions = async () => {
+		if (!user) throw new Error('User not authenticated');
+
+		try {
+			const q = query(
+				collection(db, 'transactions'),
+				where('userId', '==', user.uid)
+			);
+
+			const querySnapshot = await getDocs(q);
+
+			// Delete all documents in parallel
+			const deletePromises = querySnapshot.docs.map((document) =>
+				deleteDoc(doc(db, 'transactions', document.id))
+			);
+
+			await Promise.all(deletePromises);
+			await fetchTransactions();
+		} catch (error) {
+			console.error('Error deleting all transactions:', error);
+			throw error;
+		}
+	};
+
 	return {
 		transactions,
 		addTransaction,
-		deleteTransaction,
 		updateTransaction,
+		deleteTransaction,
+		deleteAllTransactions,
 		loading,
 	};
 };
