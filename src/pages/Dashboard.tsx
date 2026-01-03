@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { FiDollarSign, FiPieChart, FiPlusCircle } from 'react-icons/fi';
+import { FiPlusCircle } from 'react-icons/fi';
 import { useTransactionsContext } from '../context/TransactionsContext';
 import { ViewType, DateRange } from '../types';
 import { filterTransactionsByDateRangeObject } from '../utils/dateRangeFilter';
@@ -110,6 +110,10 @@ const Dashboard: React.FC = () => {
 		} else {
 			setActiveView('dashboard');
 		}
+	};
+
+	const handleShowTransactionsTable = () => {
+		setActiveView('table');
 	};
 
 	const handleAuthClose = () => {
@@ -376,7 +380,7 @@ const Dashboard: React.FC = () => {
 
 			<div
 				className={`flex-1 flex flex-col h-screen md:h-auto overflow-y-auto transition-all duration-300 ease-in-out ${
-					sidebarVisible ? 'md:ml-64' : 'md:ml-0'
+					sidebarVisible ? 'md:ml-8' : 'md:ml-0'
 				}`}
 			>
 				{!sidebarVisible && (
@@ -411,70 +415,70 @@ const Dashboard: React.FC = () => {
 						selectedId={selectedTransactionId}
 					/>
 				) : (
-					<div className="flex flex-1 items-center justify-center p-4 md:p-8">
-						<div className="w-full max-w-3xl">
-							<div className="mb-8 md:mb-10 text-center">
-								<div className="mb-4 inline-flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/25">
-									<FiDollarSign className="h-7 w-7 md:h-8 md:w-8 text-primary-foreground" />
-								</div>
-								<h2 className="mb-2 md:mb-3 text-2xl md:text-4xl font-bold tracking-tight">
-									Welcome to CashFlow
-								</h2>
-								<p className="text-base md:text-lg text-muted-foreground">
-									Your personal finance companion
-								</p>
+					<div className="flex flex-1 items-center justify-center px-6">
+						<div className="w-full max-w-2xl text-center">
+							{/* Sparkle / Brand Indicator */}
+							<div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+								<span className="text-primary text-lg">✦</span>
 							</div>
 
-							<div className="mb-8 md:mb-10 grid gap-3 md:gap-5 grid-cols-1 md:grid-cols-2">
-								<div className="group rounded-lg md:rounded-xl border-2 bg-card p-4 md:p-6 transition-all hover:border-primary/50 hover:shadow-lg">
-									<div className="mb-4 flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-lg md:rounded-xl bg-gradient-to-br from-green-500/10 to-emerald-500/10 transition-transform group-hover:scale-110">
-										<FiDollarSign className="h-6 w-6 md:h-7 md:w-7 text-green-600 dark:text-green-500" />
-									</div>
-									<h4 className="mb-2 text-base md:text-lg font-semibold">
-										Track Expenses
-									</h4>
-									<p className="text-xs md:text-sm text-muted-foreground">
-										Log and categorize your spending with ease
-									</p>
-								</div>
-								<button
-									onClick={() => handleShowPieChart(true)}
-									className="group rounded-lg md:rounded-xl border-2 bg-card p-4 md:p-6 text-left transition-all hover:border-primary/50 hover:shadow-lg"
-								>
-									<div className="mb-4 flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-lg md:rounded-xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 transition-transform group-hover:scale-110">
-										<FiPieChart className="h-6 w-6 md:h-7 md:w-7 text-blue-600 dark:text-blue-500" />
-									</div>
-									<h4 className="mb-2 text-base md:text-lg font-semibold">
-										Visual Reports
-									</h4>
-									<p className="text-xs md:text-sm text-muted-foreground">
-										Beautiful charts and insights from your data
-									</p>
-								</button>
-							</div>
+							{/* Title */}
+							<h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">
+								CashFlow
+							</h1>
 
-							<div className="flex flex-col gap-3 md:gap-4 sm:flex-row sm:justify-center">
+							{/* Prompt */}
+							<p className="text-muted-foreground mb-10">
+								What would you like to do?
+							</p>
+
+							{/* Primary Action */}
+							<div className="mb-6">
 								<Button
-									onClick={handleCreate}
 									size="lg"
-									className="h-12 md:h-14 rounded-lg md:rounded-xl bg-gradient-to-r from-primary to-primary/90 px-6 md:px-8 text-sm md:text-base font-semibold shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 w-full sm:w-auto"
+									onClick={handleCreate}
+									className="w-full h-14 rounded-2xl px-6 text-left flex items-center justify-between"
 								>
-									<FiPlusCircle className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-									Create Transaction
+									<div>
+										<div className="font-medium">New transaction</div>
+										<div className="text-sm text-primary-foreground/80">
+											Track income or expense
+										</div>
+									</div>
+									<span className="text-lg">→</span>
 								</Button>
-
-								{transactions.length > 0 && (
-									<Button
-										variant="outline"
-										size="lg"
-										onClick={() => handleShowPieChart(true)}
-										className="h-12 md:h-14 rounded-lg md:rounded-xl border-2 px-6 md:px-8 text-sm md:text-base font-semibold transition-all hover:bg-muted/50 w-full sm:w-auto"
-									>
-										<FiPieChart className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-										View Distribution
-									</Button>
-								)}
 							</div>
+
+							{/* Secondary Actions */}
+							{transactions.length > 0 && (
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+									<button
+										onClick={() => handleShowPieChart(true)}
+										className="rounded-2xl border bg-background p-4 text-left transition-colors hover:bg-muted/50"
+									>
+										<div className="flex items-center gap-2 mb-1">
+											<span className="text-sm">↗</span>
+											<span className="font-medium">Overview</span>
+										</div>
+										<p className="text-sm text-muted-foreground">
+											View insights
+										</p>
+									</button>
+
+									<button
+										onClick={handleShowTransactionsTable}
+										className="rounded-2xl border bg-background p-4 text-left transition-colors hover:bg-muted/50"
+									>
+										<div className="flex items-center gap-2 mb-1">
+											<span className="text-sm">☰</span>
+											<span className="font-medium">History</span>
+										</div>
+										<p className="text-sm text-muted-foreground">
+											All transactions
+										</p>
+									</button>
+								</div>
+							)}
 						</div>
 					</div>
 				)}

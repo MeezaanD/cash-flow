@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { FiArrowUp, FiArrowDown, FiTrash2 } from 'react-icons/fi';
+import { FiTrash2 } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import DateRangeFilter, { DateRange } from '../../components/DateRangeFilter';
 import { filterTransactionsByDateRangeObject } from '../../utils/dateRangeFilter';
@@ -145,16 +145,25 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 				: `Amount (Total Expense: ${formatCurrency(totals.totalExpense, currency)})`;
 
 	return (
-		<div className="w-full space-y-4 p-4">
-			<div className="flex flex-wrap items-center gap-2">
+		<div className="flex flex-col gap-6 p-4 md:p-6">
+			{/* Prompt-style Header */}
+			<div className="flex flex-col gap-1">
+				<h2 className="text-xl font-semibold tracking-tight">Transaction history</h2>
+				<p className="text-sm text-muted-foreground">
+					Search, filter, and review your activity.
+				</p>
+			</div>
+
+			{/* Control Bar */}
+			<div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-3">
 				<Input
-					placeholder="Search transactions"
+					placeholder="Search transactions…"
 					value={search}
 					onChange={(e) => {
 						setSearch(e.target.value);
 						resetVisibleCount();
 					}}
-					className="flex-1 min-w-[200px]"
+					className="h-10 flex-1 min-w-[220px] border-none focus-visible:ring-0"
 				/>
 
 				<Select
@@ -164,11 +173,11 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 						resetVisibleCount();
 					}}
 				>
-					<SelectTrigger className="w-[120px]">
+					<SelectTrigger className="h-10 w-[120px] rounded-xl">
 						<SelectValue placeholder="Type" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="all">All Types</SelectItem>
+						<SelectItem value="all">All</SelectItem>
 						<SelectItem value="income">Income</SelectItem>
 						<SelectItem value="expense">Expense</SelectItem>
 					</SelectContent>
@@ -181,16 +190,16 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 						resetVisibleCount();
 					}}
 				>
-					<SelectTrigger className="w-[140px]">
+					<SelectTrigger className="h-10 w-[150px] rounded-xl">
 						<SelectValue placeholder="Category" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="all">All Categories</SelectItem>
+						<SelectItem value="all">All categories</SelectItem>
 						{allCategories.map((category) => (
 							<SelectItem key={category} value={category}>
 								<div className="flex items-center gap-2">
-									<div
-										className="h-3 w-3 rounded-full"
+									<span
+										className="h-2.5 w-2.5 rounded-full"
 										style={{
 											backgroundColor: CATEGORY_COLORS[category] || '#9CA3AF',
 										}}
@@ -209,7 +218,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 						resetVisibleCount();
 					}}
 				>
-					<SelectTrigger className="w-[140px]">
+					<SelectTrigger className="h-10 w-[130px] rounded-xl">
 						<SelectValue placeholder="Month" />
 					</SelectTrigger>
 					<SelectContent>
@@ -234,31 +243,31 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 				/>
 			</div>
 
-			<div className="rounded-md border bg-card">
+			{/* Table Surface */}
+			<div className="rounded-2xl border bg-card">
 				<div
-					className="relative max-h-[calc(100vh-180px)] w-full overflow-auto scroll-smooth"
+					className="relative max-h-[calc(100vh-220px)] overflow-auto"
 					onScroll={handleScroll}
 				>
 					<Table>
-						<TableHeader className="sticky top-0 z-10 bg-muted/50 backdrop-blur-sm">
+						<TableHeader className="sticky top-0 z-10 bg-card/80 backdrop-blur">
 							<TableRow className="hover:bg-transparent">
-								<TableHead className="font-semibold">Description</TableHead>
-								<TableHead className="text-right font-semibold">
-									{amountHeader}
-								</TableHead>
-								<TableHead className="text-right font-semibold">Date</TableHead>
-								<TableHead className="text-right font-semibold">Category</TableHead>
-								<TableHead className="text-right font-semibold">Actions</TableHead>
+								<TableHead>Description</TableHead>
+								<TableHead className="text-right">{amountHeader}</TableHead>
+								<TableHead className="text-right">Date</TableHead>
+								<TableHead className="text-right">Category</TableHead>
+								<TableHead className="text-right"></TableHead>
 							</TableRow>
 						</TableHeader>
+
 						<TableBody>
 							{visibleTransactions.map((tx) => (
 								<TableRow
 									key={tx.id}
-									className={`cursor-pointer transition-colors ${
-										tx.id === selectedId ? 'bg-accent' : 'hover:bg-muted/50'
-									}`}
 									onClick={() => onSelect(tx)}
+									className={`cursor-pointer transition-colors ${
+										tx.id === selectedId ? 'bg-muted' : 'hover:bg-muted/40'
+									}`}
 								>
 									<TableCell>
 										<div className="font-medium">{tx.title}</div>
@@ -266,6 +275,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 											{tx.type}
 										</div>
 									</TableCell>
+
 									<TableCell
 										className={`text-right font-medium ${
 											tx.type === 'income'
@@ -273,36 +283,25 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 												: 'text-red-600 dark:text-red-400'
 										}`}
 									>
-										<div className="flex items-center justify-end gap-1">
-											{tx.type === 'income' ? (
-												<FiArrowUp className="h-3.5 w-3.5" />
-											) : (
-												<FiArrowDown className="h-3.5 w-3.5" />
-											)}
-											<span>{formatCurrency(tx.amount, currency)}</span>
-										</div>
+										{formatCurrency(tx.amount, currency)}
 									</TableCell>
-									<TableCell className="text-right">
+
+									<TableCell className="text-right text-sm text-muted-foreground">
 										{(() => {
 											const dateValue = tx.date ?? tx.createdAt;
-											let dateObj: Date;
-											if (!dateValue) {
-												dateObj = new Date(0);
-											} else if (
+											const date =
 												typeof dateValue === 'object' &&
 												'toDate' in dateValue
-											) {
-												dateObj = dateValue.toDate();
-											} else {
-												dateObj = new Date(dateValue);
-											}
-											return dateObj.toLocaleDateString('en-US', {
+													? dateValue.toDate()
+													: new Date(dateValue || new Date());
+											return date.toLocaleDateString('en-US', {
 												month: 'short',
 												day: 'numeric',
 												year: 'numeric',
 											});
 										})()}
 									</TableCell>
+
 									<TableCell className="text-right">
 										<Badge
 											className="text-white"
@@ -314,6 +313,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 											{tx.category}
 										</Badge>
 									</TableCell>
+
 									<TableCell className="text-right">
 										<Button
 											variant="ghost"
@@ -328,13 +328,17 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 									</TableCell>
 								</TableRow>
 							))}
+
 							{filtered.length === 0 && (
 								<TableRow>
-									<TableCell colSpan={5} className="text-center py-12">
-										<div className="text-sm text-muted-foreground">
-											{search
-												? 'No matching transactions found'
-												: 'No transactions available'}
+									<TableCell colSpan={5} className="py-16 text-center">
+										<div className="space-y-1">
+											<div className="text-sm font-medium">
+												Nothing to show
+											</div>
+											<div className="text-sm text-muted-foreground">
+												Try adjusting your filters or search.
+											</div>
 										</div>
 									</TableCell>
 								</TableRow>
