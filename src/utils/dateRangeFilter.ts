@@ -1,5 +1,5 @@
 import { Transaction } from '../types';
-import { DateRange } from '../components/DateRangeFilter';
+import { DateRange } from '../components/app/DateRangeFilter';
 
 export const filterTransactionsByDateRange = (
 	transactions: Transaction[],

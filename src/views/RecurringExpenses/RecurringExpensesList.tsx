@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FiEdit, FiTrash2, FiPlus, FiDollarSign } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import { RecurringExpense } from '../../models/RecurringExpenseModel';
-import { Button } from '../../components/ui/button';
+import { Button } from '../../components/app/ui/button';
 import RecurringExpenseForm from './RecurringExpenseForm';
 import {
 	Dialog,
@@ -11,7 +11,7 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from '../../components/ui/dialog';
+} from '../../components/app/ui/dialog';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { useTheme } from '../../context/ThemeContext';
 

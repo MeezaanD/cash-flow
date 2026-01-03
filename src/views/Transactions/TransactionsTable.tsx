@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
-import DateRangeFilter, { DateRange } from '../../components/DateRangeFilter';
+import DateRangeFilter, { DateRange } from '../../components/app/DateRangeFilter';
 import { filterTransactionsByDateRangeObject } from '../../utils/dateRangeFilter';
 import { useTheme } from '../../context/ThemeContext';
 import { formatCurrency } from '../../utils/formatCurrency';
@@ -12,17 +12,17 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from '../../components/ui/table';
-import { Input } from '../../components/ui/input';
+} from '../../components/app/ui/table';
+import { Input } from '../../components/app/ui/input';
 import {
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-} from '../../components/ui/select';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
+} from '../../components/app/ui/select';
+import { Button } from '../../components/app/ui/button';
+import { Badge } from '../../components/app/ui/badge';
 
 interface TransactionsTableProps {
 	onDelete: (id: string) => void;

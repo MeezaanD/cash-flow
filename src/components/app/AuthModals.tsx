@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { auth } from '../services/firebase';
+import { auth } from '../../services/firebase';
 import {
 	createUserWithEmailAndPassword,
 	signInWithEmailAndPassword,

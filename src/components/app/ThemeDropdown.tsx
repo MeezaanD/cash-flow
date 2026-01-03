@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { FiSun, FiMoon } from 'react-icons/fi';
-import useClickOutside from '../hooks/useClickOutside';
-import { useTheme } from '../context/ThemeContext';
-import { Theme } from '../types';
+import useClickOutside from '../../hooks/useClickOutside';
+import { useTheme } from '../../context/ThemeContext';
+import { Theme } from '../../types';
 
 const ThemeDropdown: React.FC = () => {
 	const { theme, setTheme } = useTheme();

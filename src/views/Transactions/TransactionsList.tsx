@@ -3,10 +3,10 @@ import { FiArrowUp, FiArrowDown, FiSearch, FiCalendar } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import { useTheme } from '../../context/ThemeContext';
 import { formatCurrency } from '../../utils/formatCurrency';
-import { Input } from '../../components/ui/input';
-import { Badge } from '../../components/ui/badge';
-import { Avatar, AvatarFallback } from '../../components/ui/avatar';
-import { Card } from '../../components/ui/card';
+import { Input } from '../../components/app/ui/input';
+import { Badge } from '../../components/app/ui/badge';
+import { Avatar, AvatarFallback } from '../../components/app/ui/avatar';
+import { Card } from '../../components/app/ui/card';
 
 interface TransactionsListProps {
 	onSelect?: (tx: any) => void;
@@ -140,8 +140,14 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 																	variant="outline"
 																	className="text-xs font-medium border-2"
 																	style={{
-																		borderColor: CATEGORY_COLORS[tx.category] || '#9CA3AF',
-																		color: CATEGORY_COLORS[tx.category] || '#9CA3AF',
+																		borderColor:
+																			CATEGORY_COLORS[
+																				tx.category
+																			] || '#9CA3AF',
+																		color:
+																			CATEGORY_COLORS[
+																				tx.category
+																			] || '#9CA3AF',
 																		backgroundColor: `${CATEGORY_COLORS[tx.category] || '#9CA3AF'}15`,
 																	}}
 																>
@@ -174,7 +180,12 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 																	<FiArrowDown className="h-4 w-4" />
 																)}
 															</div>
-															<span>{formatCurrency(tx.amount, currency)}</span>
+															<span>
+																{formatCurrency(
+																	tx.amount,
+																	currency
+																)}
+															</span>
 														</div>
 													</div>
 												</div>
@@ -196,7 +207,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 								<h3 className="text-lg font-semibold">No transactions found</h3>
 								<p className="text-sm text-muted-foreground max-w-sm mx-auto">
 									{search
-										? 'Try adjusting your search terms to find what you\'re looking for.'
+										? "Try adjusting your search terms to find what you're looking for."
 										: 'Start by adding your first transaction to track your finances.'}
 								</p>
 							</div>

@@ -9,12 +9,12 @@ import {
 	FiArrowUp,
 	FiArrowDown,
 } from 'react-icons/fi';
-import { useAuth } from '../hooks/useAuth';
-import { Transaction } from '../types';
-import logoDark from '../assets/images/dark-transparent-image.png';
-import logoLight from '../assets/images/white-transparent-image.png';
-import { useTheme } from '../context/ThemeContext';
-import { useTransactionsContext } from '../context/TransactionsContext';
+import { useAuth } from '../../hooks/useAuth';
+import { Transaction } from '../../types';
+import logoDark from '@/assets/images/logos/dark-transparent-image.png';
+import logoLight from '@/assets/images/logos/white-transparent-image.png';
+import { useTheme } from '../../context/ThemeContext';
+import { useTransactionsContext } from '../../context/TransactionsContext';
 import {
 	Dialog,
 	DialogContent,
@@ -22,10 +22,10 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-} from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+} from '../app/ui/dialog';
+import { Button } from '../app/ui/button';
+import { Input } from '../app/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '../app/ui/avatar';
 
 interface SidebarProps {
 	onCreate: () => void;
