@@ -136,12 +136,6 @@ const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
 		<div className="space-y-3">
 			<div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-3">
 				<div className="flex-1 sm:flex-initial">
-					<Label
-						htmlFor="preset-select"
-						className="text-xs md:text-sm font-medium mb-2 block"
-					>
-						Filter by Preset
-					</Label>
 					<Select value={activePreset} onValueChange={handlePresetChange}>
 						<SelectTrigger id="preset-select" className="w-full sm:w-[180px]">
 							<SelectValue placeholder="Date Range" />
