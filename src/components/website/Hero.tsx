@@ -45,7 +45,7 @@ const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
 	}, []);
 
 	return (
-		<section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+		<section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 lg:pt-32 pb-12 lg:pb-20 px-4 sm:px-6 lg:px-8">
 			{/* Animated gradient background */}
 			<div className="absolute inset-0 bg-gray-950">
 				<div className="absolute inset-0 opacity-20">
@@ -87,28 +87,28 @@ const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
 					</span>
 				</div>
 
-				<div className="grid lg:grid-cols-2 gap-12 items-center mb-20">
-					<div className="space-y-8">
-						<div className="space-y-6">
-							<h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight">
+				<div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-8 lg:mb-12">
+					<div className="space-y-4 lg:space-y-6">
+						<div className="space-y-3 lg:space-y-4">
+							<h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight">
 								<span className="block text-white">Take Control of</span>
 								<span className="block text-blue-500">Your Finances</span>
 							</h1>
-							<p className="text-xl text-gray-400 leading-relaxed max-w-xl">
+							<p className="text-base lg:text-lg xl:text-xl text-gray-400 leading-relaxed max-w-xl">
 								Track income, monitor expenses, and achieve your financial goals
 								with CashFlow - the simple, fast, and secure budgeting app.
 							</p>
 						</div>
 
-						<div className="flex flex-wrap gap-4">
+						<div className="flex flex-wrap gap-3 lg:gap-4">
 							<button
 								onClick={() => onAuthClick('register')}
-								className="group px-8 py-4 text-base font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-300"
+								className="group px-6 py-3 lg:px-8 lg:py-4 text-sm lg:text-base font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-300"
 							>
 								<span className="flex items-center gap-2">
 									Get Started Free
 									<ArrowRight
-										size={20}
+										size={18}
 										className="group-hover:translate-x-1 transition-transform"
 									/>
 								</span>
@@ -116,7 +116,7 @@ const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
 
 							<button
 								onClick={() => onAuthClick('login')}
-								className="px-8 py-4 text-base font-semibold text-gray-300 bg-gray-900/80 backdrop-blur-xl border border-gray-800 rounded-xl hover:bg-gray-800/80 hover:text-white transition-all duration-300"
+								className="px-6 py-3 lg:px-8 lg:py-4 text-sm lg:text-base font-semibold text-gray-300 bg-gray-900/80 backdrop-blur-xl border border-gray-800 rounded-xl hover:bg-gray-800/80 hover:text-white transition-all duration-300"
 							>
 								Login
 							</button>
@@ -134,21 +134,21 @@ const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
 
 				{/* Steps */}
 				<div className="relative">
-					<div className="grid md:grid-cols-3 gap-8">
+					<div className="grid md:grid-cols-3 gap-4 lg:gap-6 xl:gap-8">
 						{steps.map((step, i) => (
 							<div key={i} className="group relative">
-								<div className="relative bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 hover:bg-gray-900/70 transition-all duration-500 hover:scale-105">
-									<div className="flex flex-col items-center text-center space-y-4">
+								<div className="relative bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-xl lg:rounded-2xl xl:rounded-3xl p-4 lg:p-6 xl:p-8 hover:bg-gray-900/70 transition-all duration-500 hover:scale-105">
+									<div className="flex flex-col items-center text-center space-y-2 lg:space-y-3">
 										<div
-											className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl ${step.color} group-hover:scale-110 transition-transform duration-300`}
+											className={`inline-flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 xl:w-14 xl:h-14 rounded-xl lg:rounded-2xl ${step.color} group-hover:scale-110 transition-transform duration-300`}
 										>
 											<div className={step.iconColor}>{step.icon}</div>
 										</div>
 										<div>
-											<h3 className="text-xl font-bold text-white mb-2">
+											<h3 className="text-base lg:text-lg xl:text-xl font-bold text-white mb-1 lg:mb-2">
 												{step.title}
 											</h3>
-											<p className="text-gray-400">{step.description}</p>
+											<p className="text-xs lg:text-sm xl:text-base text-gray-400">{step.description}</p>
 										</div>
 									</div>
 								</div>
@@ -158,11 +158,11 @@ const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
 				</div>
 
 				{/* Scroll indicator */}
-				<div className="text-center mt-16">
+				<div className="text-center mt-8 lg:mt-12 xl:mt-16">
 					<div className="inline-flex flex-col items-center text-gray-500 animate-bounce">
-						<span className="text-sm mb-2">Scroll to explore</span>
+						<span className="text-xs lg:text-sm mb-2">Scroll to explore</span>
 						<svg
-							className="w-6 h-6"
+							className="w-5 h-5 lg:w-6 lg:h-6"
 							fill="none"
 							stroke="currentColor"
 							viewBox="0 0 24 24"
