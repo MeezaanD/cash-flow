@@ -1,10 +1,21 @@
 {
-	"rewrites": [{ "source": "/(.*)", "destination": "/" }],
+	"rewrites": [
+		{
+			"source": "/(.*)",
+			"destination": "/"
+		}
+	],
 	"redirects": [
-    {
-      "source": "/(.*)",
-      "destination": "https://cashflow.meezaan.dev/$1",
-      "permanent": true
-    }
-  ]
+		{
+			"source": "/(.*)",
+			"has": [
+				{
+					"type": "host",
+					"value": "cash-flow-ebon.vercel.app"
+				}
+			],
+			"destination": "https://cashflow.meezaan.dev/$1",
+			"permanent": true
+		}
+	]
 }
