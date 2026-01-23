@@ -1,3 +1,10 @@
 {
-	"rewrites": [{ "source": "/(.*)", "destination": "/" }]
+	"rewrites": [{ "source": "/(.*)", "destination": "/" }],
+	"redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://cashflow.meezaan.dev/$1",
+      "permanent": true
+    }
+  ]
 }
