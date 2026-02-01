@@ -1,0 +1,20 @@
+export const parseDbDate = (dateInput: unknown): Date => {
+	if (dateInput instanceof Date) return dateInput;
+
+	if (
+		typeof dateInput === 'object' &&
+		dateInput !== null &&
+		'toDate' in dateInput
+	) {
+		return (dateInput as { toDate: () => Date }).toDate();
+	}
+
+	if (typeof dateInput === 'string') {
+		// Handle potential specific string formats if needed, matching current logic:
+		const dateOnly = dateInput.split(' at ')[0];
+		const parsed = new Date(dateOnly);
+		if (!isNaN(parsed.getTime())) return parsed;
+	}
+
+	return new Date();
+};
