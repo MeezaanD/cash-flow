@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
 	FiPlus,
 	FiPieChart,
@@ -26,6 +26,7 @@ import {
 import { Button } from '../app/ui/button';
 import { Input } from '../app/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '../app/ui/avatar';
+import { parseDbDate } from '../../utils/date';
 
 interface SidebarProps {
 	onCreate: () => void;
@@ -36,9 +37,20 @@ interface SidebarProps {
 	toggleSidebar: () => void;
 	onOpenSettings?: () => void;
 	onOpenLogin?: () => void;
+	onViewChange: (view: string) => void;
+	activeView: string;
 }
 
-const Sidebar = ({
+const ICON_MAP: Record<string, React.ElementType> = {
+	dashboard: FiList,
+	reports: FiPieChart,
+	table: FiSearch,
+	list: FiList,
+};
+
+const BASE_VIEWS = ['dashboard', 'reports', 'list'];
+
+const Sidebar: React.FC<SidebarProps> = ({
 	onCreate,
 	onSelect,
 	onDelete,
@@ -49,9 +61,6 @@ const Sidebar = ({
 	onOpenLogin,
 	onViewChange,
 	activeView,
-}: SidebarProps & {
-	onViewChange: (view: string) => void;
-	activeView: string;
 }) => {
 	const { currentUser } = useAuth();
 	const { theme } = useTheme();
@@ -71,75 +80,89 @@ const Sidebar = ({
 
 	const logo = theme === 'dark' ? logoLight : logoDark;
 
-	const handleCreateTransaction = () => {
+	const handleCreateTransaction = useCallback(() => {
 		onCreate();
 		if (window.innerWidth < 768) {
 			toggleSidebar();
 		}
-	};
+	}, [onCreate, toggleSidebar]);
 
-	const handleDeleteClick = (id: string) => {
+	const handleDeleteClick = useCallback((id: string) => {
 		setTransactionToDelete(id);
 		setDialogOpen(true);
-	};
+	}, []);
 
-	const handleConfirmAction = async () => {
+	const handleConfirmAction = useCallback(() => {
 		if (transactionToDelete) {
 			onDelete(transactionToDelete);
 		}
 		setDialogOpen(false);
 		setTransactionToDelete(null);
-	};
+	}, [transactionToDelete, onDelete]);
 
-	const handleCancelAction = () => {
+	const handleCancelAction = useCallback(() => {
 		setDialogOpen(false);
 		setTransactionToDelete(null);
-	};
+	}, []);
 
-	const parseDbDate = (dateInput: unknown): Date => {
-		if (typeof dateInput === 'object' && dateInput !== null && 'toDate' in dateInput) {
-			return (dateInput as { toDate: () => Date }).toDate();
-		}
-		if (dateInput instanceof Date) return dateInput;
-		if (typeof dateInput === 'string') {
-			const dateOnly = dateInput.split(' at ')[0];
-			return new Date(dateOnly);
-		}
-		return new Date();
-	};
-
-	const formatDisplayDate = (dateInput: unknown) => {
-		try {
-			const date = parseDbDate(dateInput);
-			return date.toLocaleDateString('en-US', {
-				month: 'short',
-				day: 'numeric',
-				year: 'numeric',
-			});
-		} catch (e) {
-			console.error('Error formatting date:', dateInput, e);
-			return 'N/A';
-		}
-	};
-
-	const sortedTransactions = [...transactions].sort((a, b) => {
-		const dateA = parseDbDate(a.date ?? a.createdAt);
-		const dateB = parseDbDate(b.date ?? b.createdAt);
-		return dateB.getTime() - dateA.getTime();
-	});
-
-	const filteredTransactions = sortedTransactions.filter((tx) =>
-		tx.title.toLowerCase().includes(searchTerm.toLowerCase())
+	const handleViewClick = useCallback(
+		(view: string) => {
+			onViewChange(view);
+			if (window.innerWidth < 768) {
+				toggleSidebar();
+			}
+		},
+		[onViewChange, toggleSidebar]
 	);
 
-	const views = ['dashboard', 'reports', 'list', ...(isMobile ? [] : ['table'])];
+	const handleTransactionClick = useCallback(
+		(tx: Transaction) => {
+			onSelect(tx);
+			if (window.innerWidth < 768) {
+				toggleSidebar();
+			}
+		},
+		[onSelect, toggleSidebar]
+	);
 
-	const iconMap: Record<string, React.ElementType> = {
-		dashboard: FiList,
-		reports: FiPieChart,
-		table: FiSearch,
-		list: FiList,
-	};
+	const sortedTransactions = useMemo(() => {
+		return [...transactions].sort((a, b) => {
+			const dateA = parseDbDate(a.date ?? a.createdAt);
+			const dateB = parseDbDate(b.date ?? b.createdAt);
+			return dateB.getTime() - dateA.getTime();
+		});
+	}, [transactions]);
+
+	const filteredTransactions = useMemo(() => {
+		return sortedTransactions.filter((tx) =>
+			tx.title.toLowerCase().includes(searchTerm.toLowerCase())
+		);
+	}, [sortedTransactions, searchTerm]);
+
+	const groupedTransactions = useMemo(() => {
+		return filteredTransactions.reduce(
+			(groups, tx) => {
+				const date = parseDbDate(tx.date ?? tx.createdAt);
+				const dateKey = date.toLocaleDateString('en-US', {
+					month: 'short',
+					day: 'numeric',
+					year: 'numeric',
+				});
+
+				if (!groups[dateKey]) {
+					groups[dateKey] = [];
+				}
+				groups[dateKey].push(tx);
+				return groups;
+			},
+			{} as Record<string, typeof filteredTransactions>
+		);
+	}, [filteredTransactions]);
+
+	const views = useMemo(
+		() => (isMobile ? BASE_VIEWS : [...BASE_VIEWS, 'table']),
+		[isMobile]
+	);
 
 	return (
 		<>
@@ -163,18 +186,16 @@ const Sidebar = ({
 			</Dialog>
 
 			<aside
-				className={`fixed left-0 top-0 z-40 h-screen w-64 md:w-64 border-r bg-card transition-all duration-300 ease-in-out ${
-					collapsed
-						? 'w-0 overflow-hidden opacity-0 md:relative md:w-0 md:opacity-0'
-						: 'opacity-100 md:relative md:w-64'
-				}`}
+				className={`fixed left-0 top-0 z-40 h-screen w-64 md:w-64 border-r bg-card transition-all duration-300 ease-in-out ${collapsed
+					? 'w-0 overflow-hidden opacity-0 md:relative md:w-0 md:opacity-0'
+					: 'opacity-100 md:relative md:w-64'
+					}`}
 			>
 				<div
-					className={`flex h-full flex-col transition-all duration-300 ${
-						collapsed
-							? 'opacity-0 pointer-events-none scale-95'
-							: 'opacity-100 scale-100'
-					}`}
+					className={`flex h-full flex-col transition-all duration-300 ${collapsed
+						? 'opacity-0 pointer-events-none scale-95'
+						: 'opacity-100 scale-100'
+						}`}
 				>
 					{/* Header */}
 					<div className="flex items-center justify-between border-b p-3 md:p-4">
@@ -189,6 +210,7 @@ const Sidebar = ({
 								size="icon"
 								onClick={toggleSidebar}
 								className="md:hidden"
+								aria-label="Close sidebar"
 							>
 								<FiX className="h-5 w-5" />
 							</Button>
@@ -202,22 +224,16 @@ const Sidebar = ({
 								<div className="space-y-1">
 									{views.map((view) => {
 										const isActive = activeView === view;
-										const IconComponent = iconMap[view];
+										const IconComponent = ICON_MAP[view];
 
 										return (
 											<button
 												key={view}
-												onClick={() => {
-													onViewChange(view);
-													if (window.innerWidth < 768) {
-														toggleSidebar();
-													}
-												}}
-												className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-													isActive
-														? 'bg-accent text-accent-foreground'
-														: 'text-muted-foreground hover:bg-muted hover:text-foreground'
-												}`}
+												onClick={() => handleViewClick(view)}
+												className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive
+													? 'bg-accent text-accent-foreground'
+													: 'text-muted-foreground hover:bg-muted hover:text-foreground'
+													}`}
 											>
 												<IconComponent className="h-4 w-4" />
 												<span className="hidden sm:inline">
@@ -256,56 +272,62 @@ const Sidebar = ({
 					{/* Transactions */}
 					<div className="flex-1 overflow-y-auto p-2 scroll-smooth">
 						{filteredTransactions.length > 0 ? (
-							<div className="space-y-2">
-								{filteredTransactions.map((tx) => (
-									<div
-										key={tx.id}
-										onClick={() => {
-											onSelect(tx);
-											if (window.innerWidth < 768) {
-												toggleSidebar();
-											}
-										}}
-										className={`group flex cursor-pointer items-center justify-between rounded-lg border p-2 md:p-3 transition-colors ${
-											selectedId === tx.id
-												? 'border-primary bg-accent'
-												: 'border-border bg-background hover:bg-muted'
-										}`}
-									>
-										<div className="flex-1 min-w-0">
-											<h4 className="truncate font-medium text-sm md:text-base">
-												{tx.title}
-											</h4>
-											<div className="mt-1 flex items-center gap-2 text-xs">
-												<span
-													className={`font-medium ${
-														tx.type === 'income'
-															? 'text-green-600 dark:text-green-400'
-															: 'text-red-600 dark:text-red-400'
-													}`}
-												>
-													{tx.type === 'income' ? (
-														<FiArrowUp className="inline h-3 w-3" />
-													) : (
-														<FiArrowDown className="inline h-3 w-3" />
-													)}
-													R{tx.amount.toFixed(2)}
-												</span>
-												<span className="text-muted-foreground hidden sm:inline">
-													{formatDisplayDate(tx.date ?? tx.createdAt)}
-												</span>
-											</div>
+							<div className="space-y-4">
+								{Object.entries(groupedTransactions).map(([date, txs]) => (
+									<div key={date} className="space-y-1">
+										<div className="sticky top-0 z-10 bg-card px-2 py-1 text-xs font-semibold text-muted-foreground bg-opacity-95 backdrop-blur-sm border-b">
+											{date}
 										</div>
-										<button
-											onClick={(e) => {
-												e.stopPropagation();
-												if (tx.id) handleDeleteClick(tx.id);
-											}}
-											className="ml-2 opacity-0 transition-opacity group-hover:opacity-100"
-											aria-label="Delete transaction"
-										>
-											<FiX className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-										</button>
+										<div className="space-y-2 pt-1">
+											{txs.map((tx) => (
+												<div
+													key={tx.id}
+													onClick={() => handleTransactionClick(tx)}
+													onKeyDown={(e) => {
+														if (e.key === 'Enter' || e.key === ' ') {
+															handleTransactionClick(tx);
+														}
+													}}
+													role="button"
+													tabIndex={0}
+													className={`group flex cursor-pointer items-center justify-between rounded-lg border p-2 md:p-3 transition-colors ${selectedId === tx.id
+														? 'border-primary bg-accent'
+														: 'border-border bg-background hover:bg-muted'
+														}`}
+												>
+													<div className="flex-1 min-w-0">
+														<h4 className="truncate font-medium text-sm md:text-base">
+															{tx.title}
+														</h4>
+														<div className="mt-1 flex items-center gap-2 text-xs">
+															<span
+																className={`font-medium ${tx.type === 'income'
+																	? 'text-green-600 dark:text-green-400'
+																	: 'text-red-600 dark:text-red-400'
+																	}`}
+															>
+																{tx.type === 'income' ? (
+																	<FiArrowUp className="inline h-3 w-3" />
+																) : (
+																	<FiArrowDown className="inline h-3 w-3" />
+																)}
+																R{tx.amount.toFixed(2)}
+															</span>
+														</div>
+													</div>
+													<button
+														onClick={(e) => {
+															e.stopPropagation();
+															if (tx.id) handleDeleteClick(tx.id);
+														}}
+														className="ml-2 opacity-0 transition-opacity group-hover:opacity-100"
+														aria-label="Delete transaction"
+													>
+														<FiX className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+													</button>
+												</div>
+											))}
+										</div>
 									</div>
 								))}
 							</div>

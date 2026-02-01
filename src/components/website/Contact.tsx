@@ -66,7 +66,7 @@ const Contact: React.FC = () => {
 								</span>
 							</a>
 							<a
-								href="https://meezaan-portfolio.vercel.app/"
+								href="https://meezaan.dev/"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="group/link inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gray-900/80 backdrop-blur-xl border border-gray-800 hover:bg-gray-800/80 transition-all duration-300 hover:-translate-y-1"
