@@ -188,13 +188,22 @@ const Sidebar: React.FC<SidebarProps> = ({
 			{/* Backdrop for mobile */}
 			{!collapsed && isMobile && (
 				<div
+					role="button"
+					tabIndex={0}
 					className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
 					onClick={toggleSidebar}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							toggleSidebar();
+						}
+					}}
 					aria-label="Close sidebar"
 				/>
 			)}
 
 			<aside
+				aria-hidden={collapsed}
 				className={`fixed left-0 top-0 z-40 h-screen w-64 border-r bg-card transition-transform duration-300 ease-in-out md:relative md:z-auto md:transition-all ${
 					collapsed
 						? '-translate-x-full md:translate-x-0 md:w-0'
