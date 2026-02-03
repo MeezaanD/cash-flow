@@ -197,6 +197,9 @@ const Sidebar: React.FC<SidebarProps> = ({
 							e.preventDefault();
 							toggleSidebar();
 						}
+						if (e.key === 'Escape') {
+							toggleSidebar();
+						}
 					}}
 					aria-label="Close sidebar"
 				/>
