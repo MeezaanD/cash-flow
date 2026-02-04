@@ -84,7 +84,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	return (
 		<>
 			<Dialog open={open} onOpenChange={onClose}>
-				<DialogContent className="sm:max-w-3xl max-h-[90dvh] overflow-hidden flex flex-col">
+				<DialogContent 
+					className="sm:max-w-3xl overflow-hidden flex flex-col"
+					style={{ maxHeight: 'calc(0.9 * var(--vh-screen))' }}
+				>
 					<DialogHeader>
 						<DialogTitle>Settings</DialogTitle>
 						<DialogDescription>Manage your app preferences and data</DialogDescription>
