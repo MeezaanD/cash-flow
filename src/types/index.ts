@@ -4,8 +4,6 @@ export type Theme = 'light' | 'dark';
 export interface ThemeContextType {
 	theme: Theme;
 	setTheme: (theme: Theme) => void;
-	currency: CurrencyCode;
-	setCurrency: (currency: CurrencyCode) => void;
 }
 
 // ViewType
@@ -78,9 +76,6 @@ export interface TransactionsTableProps {
 	onSelect: (tx: Transaction) => void;
 	selectedId: string | null;
 }
-
-// Currency
-export type CurrencyCode = 'USD' | 'EUR' | 'ZAR' | 'GBP' | 'JPY' | 'AUD' | 'CAD';
 
 export interface ImportResult {
 	importedCount: number;

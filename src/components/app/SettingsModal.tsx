@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiSettings, FiDatabase, FiRefreshCw } from 'react-icons/fi';
 import { useTheme } from '../../context/ThemeContext';
-import { CurrencyCode } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../services/firebase';
@@ -16,7 +15,6 @@ import {
 import { Button } from '../app/ui/button';
 import { Switch } from '../app/ui/switch';
 import { Label } from '../app/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../app/ui/select';
 import { useTransactionsContext } from '@/context/TransactionsContext';
 import RecurringExpensesList from '../../views/RecurringExpenses/RecurringExpensesList';
 
@@ -28,8 +26,6 @@ interface SettingsModalProps {
 	onExportJSON?: () => void;
 }
 
-const currencyOptions: CurrencyCode[] = ['ZAR', 'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD'];
-
 const SettingsModal: React.FC<SettingsModalProps> = ({
 	open,
 	onClose,
@@ -38,9 +34,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	onExportJSON,
 }) => {
 	const { deleteAllTransactions } = useTransactionsContext();
-	const { theme, setTheme, currency, setCurrency } = useTheme();
+	const { theme, setTheme } = useTheme();
 	const [localTheme, setLocalTheme] = useState(theme);
-	const [localCurrency, setLocalCurrency] = useState<CurrencyCode>(currency);
 	const { currentUser } = useAuth();
 	const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 	const [deleteAllConfirmOpen, setDeleteAllConfirmOpen] = useState(false);
@@ -50,13 +45,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 		setLocalTheme(theme);
 	}, [theme]);
 
-	useEffect(() => {
-		setLocalCurrency(currency);
-	}, [currency]);
-
 	const handleApply = () => {
 		if (localTheme !== theme) setTheme(localTheme);
-		if (localCurrency !== currency) setCurrency(localCurrency);
 		onClose();
 	};
 
@@ -103,8 +93,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 									aria-controls="settings-tab-general"
 									onClick={() => setActiveTab('general')}
 									className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'general'
-											? 'bg-accent text-accent-foreground'
-											: 'text-muted-foreground hover:bg-muted'
+										? 'bg-accent text-accent-foreground'
+										: 'text-muted-foreground hover:bg-muted'
 										}`}
 								>
 									<FiSettings className="h-4 w-4" />
@@ -116,8 +106,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 									aria-controls="settings-tab-data"
 									onClick={() => setActiveTab('data')}
 									className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'data'
-											? 'bg-accent text-accent-foreground'
-											: 'text-muted-foreground hover:bg-muted'
+										? 'bg-accent text-accent-foreground'
+										: 'text-muted-foreground hover:bg-muted'
 										}`}
 								>
 									<FiDatabase className="h-4 w-4" />
@@ -129,8 +119,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 									aria-controls="settings-tab-recurring"
 									onClick={() => setActiveTab('recurring')}
 									className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'recurring'
-											? 'bg-accent text-accent-foreground'
-											: 'text-muted-foreground hover:bg-muted'
+										? 'bg-accent text-accent-foreground'
+										: 'text-muted-foreground hover:bg-muted'
 										}`}
 								>
 									<FiRefreshCw className="h-4 w-4" />
@@ -161,26 +151,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 														setLocalTheme(checked ? 'dark' : 'light')
 													}
 												/>
-											</div>
-											<div className="space-y-2">
-												<Label htmlFor="currency">Currency</Label>
-												<Select
-													value={localCurrency}
-													onValueChange={(value: string) =>
-														setLocalCurrency(value as CurrencyCode)
-													}
-												>
-													<SelectTrigger id="currency">
-														<SelectValue />
-													</SelectTrigger>
-													<SelectContent>
-														{currencyOptions.map((c) => (
-															<SelectItem key={c} value={c}>
-																{c}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
 											</div>
 										</div>
 									</div>

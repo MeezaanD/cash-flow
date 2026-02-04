@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { FiTrash2 } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
-import DateRangeFilter, { DateRange } from '../../components/app/DateRangeFilter';
+import DateRangeFilter from '../../components/app/DateRangeFilter';
 import { filterTransactionsByDateRangeObject } from '../../utils/dateRangeFilter';
-import { useTheme } from '../../context/ThemeContext';
 import { formatCurrency } from '../../utils/formatCurrency';
+import { DateRange } from '../../types';
 import {
 	Table,
 	TableBody,
@@ -65,7 +65,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 	selectedId,
 }) => {
 	const { transactions } = useTransactionsContext();
-	const { currency } = useTheme();
 	const [search, setSearch] = useState('');
 	const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
 	const [filterCategory, setFilterCategory] = useState('all');
@@ -87,10 +86,10 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 				const dateValue = tx.date ?? tx.createdAt;
 				const month = dateValue
 					? new Date(
-							typeof dateValue === 'object' && 'toDate' in dateValue
-								? dateValue.toDate()
-								: dateValue
-						).getMonth()
+						typeof dateValue === 'object' && 'toDate' in dateValue
+							? dateValue.toDate()
+							: dateValue
+					).getMonth()
 					: -1;
 				const matchesMonth = filterMonth === 'all' || month === parseInt(filterMonth);
 
@@ -139,10 +138,10 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 
 	const amountHeader =
 		filterType === 'all'
-			? `Amount (Total: ${formatCurrency(totals.totalAmount, currency)}, Income: ${formatCurrency(totals.totalIncome, currency)}, Expense: ${formatCurrency(totals.totalExpense, currency)})`
+			? `Amount (Total: ${formatCurrency(totals.totalAmount)}, Income: ${formatCurrency(totals.totalIncome)}, Expense: ${formatCurrency(totals.totalExpense)})`
 			: filterType === 'income'
-				? `Amount (Total Income: ${formatCurrency(totals.totalIncome, currency)})`
-				: `Amount (Total Expense: ${formatCurrency(totals.totalExpense, currency)})`;
+				? `Amount (Total Income: ${formatCurrency(totals.totalIncome)})`
+				: `Amount (Total Expense: ${formatCurrency(totals.totalExpense)})`;
 
 	return (
 		<div className="flex flex-col gap-6 p-4 md:p-6">
@@ -265,9 +264,8 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 								<TableRow
 									key={tx.id}
 									onClick={() => onSelect(tx)}
-									className={`cursor-pointer transition-colors ${
-										tx.id === selectedId ? 'bg-muted' : 'hover:bg-muted/40'
-									}`}
+									className={`cursor-pointer transition-colors ${tx.id === selectedId ? 'bg-muted' : 'hover:bg-muted/40'
+										}`}
 								>
 									<TableCell>
 										<div className="font-medium">{tx.title}</div>
@@ -277,13 +275,12 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 									</TableCell>
 
 									<TableCell
-										className={`text-right font-medium ${
-											tx.type === 'income'
-												? 'text-green-600 dark:text-green-400'
-												: 'text-red-600 dark:text-red-400'
-										}`}
+										className={`text-right font-medium ${tx.type === 'income'
+											? 'text-green-600 dark:text-green-400'
+											: 'text-red-600 dark:text-red-400'
+											}`}
 									>
-										{formatCurrency(tx.amount, currency)}
+										{formatCurrency(tx.amount)}
 									</TableCell>
 
 									<TableCell className="text-right text-sm text-muted-foreground">
@@ -291,7 +288,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 											const dateValue = tx.date ?? tx.createdAt;
 											const date =
 												typeof dateValue === 'object' &&
-												'toDate' in dateValue
+													'toDate' in dateValue
 													? dateValue.toDate()
 													: new Date(dateValue || new Date());
 											return date.toLocaleDateString('en-US', {

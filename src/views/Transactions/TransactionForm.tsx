@@ -15,7 +15,6 @@ import {
 	SelectValue,
 } from '../../components/app/ui/select';
 import { formatCurrency } from '../../utils/formatCurrency';
-import { useTheme } from '../../context/ThemeContext';
 
 interface TransactionFormProps {
 	onClose: () => void;
@@ -38,7 +37,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 	recurringExpense: initialRecurringExpense,
 }) => {
 	const { addTransaction, updateTransaction, recurringExpenses } = useTransactionsContext();
-	const { currency } = useTheme();
 	const [title, setTitle] = useState('');
 	const [amount, setAmount] = useState(0);
 	const [type, setType] = useState<Transaction['type']>('expense');
@@ -179,7 +177,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 										<span className="font-medium">{expense.title}</span>
 										<span className="text-muted-foreground">
 											{' '}
-											• {formatCurrency(expense.amount, currency)}
+											• {formatCurrency(expense.amount)}
 										</span>
 									</SelectItem>
 								))}

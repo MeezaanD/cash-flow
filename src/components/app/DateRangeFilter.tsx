@@ -4,11 +4,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
-
-export interface DateRange {
-	startDate: string;
-	endDate: string;
-}
+import { DateRange } from '../../types';
 
 interface DateRangeFilterProps {
 	dateRange: DateRange;

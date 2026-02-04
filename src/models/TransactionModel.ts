@@ -1,3 +1,5 @@
+import { parseDbDateOrNull } from '../utils/date';
+
 export interface Transaction {
 	id?: string;
 	userId?: string;
@@ -102,14 +104,10 @@ export const groupByCategory = (transactions: Transaction[]): Record<string, Tra
 // Sort transactions by date (newest first)
 export const sortByDateDesc = (transactions: Transaction[]): Transaction[] => {
 	return [...transactions].sort((a, b) => {
-		const getValidDate = (val: any): Date => {
-			if (!val) return new Date(0);
-			if (typeof val === 'object' && 'toDate' in val) return val.toDate();
-			return new Date(val);
-		};
-
-		const dateA = getValidDate(a.date ?? a.createdAt);
-		const dateB = getValidDate(b.date ?? b.createdAt);
+		const dateA =
+			parseDbDateOrNull(a.date) ?? parseDbDateOrNull(a.createdAt) ?? new Date(0);
+		const dateB =
+			parseDbDateOrNull(b.date) ?? parseDbDateOrNull(b.createdAt) ?? new Date(0);
 		return dateB.getTime() - dateA.getTime();
 	});
 };

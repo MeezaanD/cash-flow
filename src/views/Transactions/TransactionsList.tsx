@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { FiArrowUp, FiArrowDown, FiSearch, FiCalendar } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
-import { useTheme } from '../../context/ThemeContext';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { Input } from '../../components/app/ui/input';
 import { Badge } from '../../components/app/ui/badge';
@@ -24,7 +23,6 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedId }) => {
 	const { transactions } = useTransactionsContext();
-	const { currency } = useTheme();
 	const [search, setSearch] = useState('');
 
 	const sorted = useMemo(() => {
@@ -106,22 +104,20 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 								{txs.map((tx, i) => (
 									<Card
 										key={tx.id || i}
-										className={`group cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/20 ${
-											tx.id === selectedId
-												? 'border-primary bg-accent shadow-sm'
-												: 'border-border bg-card'
-										}`}
+										className={`group cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/20 ${tx.id === selectedId
+											? 'border-primary bg-accent shadow-sm'
+											: 'border-border bg-card'
+											}`}
 										onClick={() => onSelect && onSelect(tx)}
 									>
 										<div className="p-4">
 											<div className="flex items-start gap-4">
 												{/* Avatar */}
 												<Avatar
-													className={`h-12 w-12 shrink-0 transition-transform group-hover:scale-105 ${
-														tx.type === 'income'
-															? 'bg-gradient-to-br from-green-500 to-green-600'
-															: 'bg-gradient-to-br from-red-500 to-red-600'
-													}`}
+													className={`h-12 w-12 shrink-0 transition-transform group-hover:scale-105 ${tx.type === 'income'
+														? 'bg-gradient-to-br from-green-500 to-green-600'
+														: 'bg-gradient-to-br from-red-500 to-red-600'
+														}`}
 												>
 													<AvatarFallback className="text-white font-semibold text-sm">
 														{getInitials(tx.title)}
@@ -142,11 +138,11 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 																	style={{
 																		borderColor:
 																			CATEGORY_COLORS[
-																				tx.category
+																			tx.category
 																			] || '#9CA3AF',
 																		color:
 																			CATEGORY_COLORS[
-																				tx.category
+																			tx.category
 																			] || '#9CA3AF',
 																		backgroundColor: `${CATEGORY_COLORS[tx.category] || '#9CA3AF'}15`,
 																	}}
@@ -161,18 +157,16 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 
 														{/* Amount */}
 														<div
-															className={`flex items-center gap-1.5 font-bold text-lg shrink-0 ${
-																tx.type === 'income'
-																	? 'text-green-600 dark:text-green-400'
-																	: 'text-red-600 dark:text-red-400'
-															}`}
+															className={`flex items-center gap-1.5 font-bold text-lg shrink-0 ${tx.type === 'income'
+																? 'text-green-600 dark:text-green-400'
+																: 'text-red-600 dark:text-red-400'
+																}`}
 														>
 															<div
-																className={`p-1.5 rounded-full ${
-																	tx.type === 'income'
-																		? 'bg-green-100 dark:bg-green-900/30'
-																		: 'bg-red-100 dark:bg-red-900/30'
-																}`}
+																className={`p-1.5 rounded-full ${tx.type === 'income'
+																	? 'bg-green-100 dark:bg-green-900/30'
+																	: 'bg-red-100 dark:bg-red-900/30'
+																	}`}
 															>
 																{tx.type === 'income' ? (
 																	<FiArrowUp className="h-4 w-4" />
@@ -180,12 +174,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 																	<FiArrowDown className="h-4 w-4" />
 																)}
 															</div>
-															<span>
-																{formatCurrency(
-																	tx.amount,
-																	currency
-																)}
-															</span>
+															<span>{formatCurrency(tx.amount)}</span>
 														</div>
 													</div>
 												</div>
