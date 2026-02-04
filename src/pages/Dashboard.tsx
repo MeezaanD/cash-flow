@@ -39,6 +39,16 @@ const Dashboard: React.FC = () => {
 	const [authModalOpen, setAuthModalOpen] = useState(false);
 	const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 	const [settingsOpen, setSettingsOpen] = useState(false);
+	const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+	// Track window resize for responsive behavior
+	React.useEffect(() => {
+		const handleResize = () => {
+			setIsMobile(window.innerWidth < 768);
+		};
+		window.addEventListener('resize', handleResize);
+		return () => window.removeEventListener('resize', handleResize);
+	}, []);
 
 	const filteredTransactions = useMemo(() => {
 		return filterTransactionsByDateRangeObject(transactions, dateRange);
@@ -114,7 +124,6 @@ const Dashboard: React.FC = () => {
 
 	const handleShowTransactionsTable = () => {
 		// On mobile, show list view; on desktop, show table view
-		const isMobile = window.innerWidth < 768;
 		setActiveView(isMobile ? 'list' : 'table');
 	};
 

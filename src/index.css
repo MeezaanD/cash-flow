@@ -85,16 +85,28 @@
 		/* Fallback for browsers without dvh support */
 		--vh-full: 100vh;
 		--vh-screen: 100vh;
-		
-		/* Use dynamic viewport height when available (accounts for browser UI) */
-		--vh-full: 100dvh;
-		--vh-screen: 100dvh;
-		
-		/* Large viewport height (browser UI hidden) */
-		--vh-large: 100lvh;
-		
-		/* Small viewport height (browser UI visible) */
-		--vh-small: 100svh;
+		--vh-large: 100vh;
+		--vh-small: 100vh;
+	}
+
+	/* Use dynamic viewport height when available (accounts for browser UI) */
+	@supports (height: 100dvh) {
+		:root {
+			--vh-full: 100dvh;
+			--vh-screen: 100dvh;
+		}
+	}
+
+	@supports (height: 100lvh) {
+		:root {
+			--vh-large: 100lvh;
+		}
+	}
+
+	@supports (height: 100svh) {
+		:root {
+			--vh-small: 100svh;
+		}
 	}
 
 	/* Utility classes for mobile-safe heights */
