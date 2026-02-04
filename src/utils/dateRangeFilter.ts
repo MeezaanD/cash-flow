@@ -1,5 +1,5 @@
-import { Transaction } from '../types';
-import { DateRange } from '../components/app/DateRangeFilter';
+import { DateRange, Transaction } from '../types';
+import { parseDbDateOrNull } from './date';
 
 export const filterTransactionsByDateRange = (
 	transactions: Transaction[],
@@ -25,26 +25,9 @@ export const filterTransactionsByDateRange = (
 	}
 
 	return transactions.filter((transaction) => {
-		let transactionDate: Date | null = null;
-
-		// Parse transaction date
-		if (transaction.date) {
-			if (typeof transaction.date === 'object' && 'toDate' in transaction.date) {
-				transactionDate = transaction.date.toDate();
-			} else if (transaction.date instanceof Date) {
-				transactionDate = transaction.date;
-			} else {
-				transactionDate = new Date(transaction.date);
-			}
-		} else if (transaction.createdAt) {
-			if (typeof transaction.createdAt === 'object' && 'toDate' in transaction.createdAt) {
-				transactionDate = transaction.createdAt.toDate();
-			} else if (transaction.createdAt instanceof Date) {
-				transactionDate = transaction.createdAt;
-			} else {
-				transactionDate = new Date(transaction.createdAt);
-			}
-		}
+		const transactionDate =
+			parseDbDateOrNull(transaction.date) ??
+			parseDbDateOrNull(transaction.createdAt);
 
 		// Skip transactions without a valid date
 		if (!transactionDate || isNaN(transactionDate.getTime())) {

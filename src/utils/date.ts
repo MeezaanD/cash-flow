@@ -1,4 +1,4 @@
-export const parseDbDate = (dateInput: unknown): Date => {
+export const parseDbDateOrNull = (dateInput: unknown): Date | null => {
 	if (dateInput instanceof Date) return dateInput;
 
 	if (
@@ -16,5 +16,9 @@ export const parseDbDate = (dateInput: unknown): Date => {
 		if (!isNaN(parsed.getTime())) return parsed;
 	}
 
-	return new Date();
+	return null;
+};
+
+export const parseDbDate = (dateInput: unknown): Date => {
+	return parseDbDateOrNull(dateInput) ?? new Date();
 };

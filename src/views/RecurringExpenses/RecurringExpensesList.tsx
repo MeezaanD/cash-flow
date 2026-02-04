@@ -13,12 +13,10 @@ import {
 	DialogTitle,
 } from '../../components/app/ui/dialog';
 import { formatCurrency } from '../../utils/formatCurrency';
-import { useTheme } from '../../context/ThemeContext';
 
 const RecurringExpensesList: React.FC = () => {
 	const { recurringExpenses, deleteRecurringExpense, recurringExpensesLoading } =
 		useTransactionsContext();
-	const { currency } = useTheme();
 	const [editingExpense, setEditingExpense] = useState<RecurringExpense | undefined>(undefined);
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -120,7 +118,7 @@ const RecurringExpensesList: React.FC = () => {
 									</span>
 								</div>
 								<div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-									<span>{formatCurrency(expense.amount, currency)}</span>
+									<span>{formatCurrency(expense.amount)}</span>
 									<span className="hidden sm:inline">•</span>
 									<span>{expense.category}</span>
 									{expense.description && (
