@@ -207,7 +207,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 			<aside
 				aria-hidden={collapsed}
-				className={`fixed left-0 top-0 z-40 h-screen w-64 border-r bg-card transition-transform duration-300 ease-in-out md:relative md:z-auto md:transition-all ${
+				className={`fixed left-0 top-0 z-40 h-screen-safe w-64 border-r bg-card transition-transform duration-300 ease-in-out md:relative md:z-auto md:transition-all ${
 					collapsed
 						? '-translate-x-full md:translate-x-0 md:w-0'
 						: 'translate-x-0 md:w-64'
@@ -257,7 +257,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 													}`}
 											>
 												<IconComponent className="h-4 w-4" />
-												<span className="hidden sm:inline">
+												<span>
 													{view.charAt(0).toUpperCase() + view.slice(1)}
 												</span>
 											</button>
@@ -392,7 +392,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 										{currentUser.email?.[0]?.toUpperCase() ?? '?'}
 									</AvatarFallback>
 								</Avatar>
-								<div className="flex-1 min-w-0 hidden sm:block">
+								<div className="flex-1 min-w-0">
 									<p className="truncate text-sm font-medium">
 										{currentUser.displayName || currentUser.email || 'User'}
 									</p>

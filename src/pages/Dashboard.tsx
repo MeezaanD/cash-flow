@@ -113,7 +113,9 @@ const Dashboard: React.FC = () => {
 	};
 
 	const handleShowTransactionsTable = () => {
-		setActiveView('table');
+		// On mobile, show list view; on desktop, show table view
+		const isMobile = window.innerWidth < 768;
+		setActiveView(isMobile ? 'list' : 'table');
 	};
 
 	const handleAuthClose = () => {
@@ -158,7 +160,7 @@ const Dashboard: React.FC = () => {
 	};
 
 	return (
-		<div className="flex h-screen flex-col md:flex-row bg-background">
+		<div className="flex h-screen-safe flex-col md:flex-row bg-background">
 			<Toaster />
 			<Sidebar
 				collapsed={!sidebarVisible}
@@ -379,7 +381,7 @@ const Dashboard: React.FC = () => {
 			/>
 
 			<div
-				className={`flex-1 flex flex-col h-screen md:h-auto overflow-y-auto transition-all duration-300 ease-in-out ${
+				className={`flex-1 flex flex-col h-screen-safe md:h-auto overflow-y-auto transition-all duration-300 ease-in-out ${
 					sidebarVisible ? 'md:ml-8' : 'md:ml-0'
 				}`}
 			>

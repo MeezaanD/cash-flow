@@ -80,8 +80,8 @@ const RecurringExpensesList: React.FC = () => {
 	}
 
 	return (
-		<div className="space-y-4">
-			<div className="flex items-center justify-between">
+		<div className="space-y-4 max-h-[60vh] overflow-y-auto">
+			<div className="flex items-center justify-between sticky top-0 bg-card z-10 pb-2">
 				<h3 className="text-lg font-semibold">Recurring Expenses</h3>
 				<Button onClick={handleAddNew} size="sm">
 					<FiPlus className="mr-2 h-4 w-4" />
@@ -90,7 +90,7 @@ const RecurringExpensesList: React.FC = () => {
 			</div>
 
 			{isFormOpen && (
-				<div className="rounded-xl border-2 bg-card p-6 shadow-sm">
+				<div className="rounded-xl border-2 bg-card p-4 md:p-6 shadow-sm">
 					<RecurringExpenseForm expense={editingExpense} onClose={handleCloseForm} />
 				</div>
 			)}

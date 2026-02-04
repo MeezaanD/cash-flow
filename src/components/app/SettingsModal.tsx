@@ -84,13 +84,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	return (
 		<>
 			<Dialog open={open} onOpenChange={onClose}>
-				<DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+				<DialogContent className="sm:max-w-3xl max-h-[90dvh] overflow-hidden flex flex-col">
 					<DialogHeader>
 						<DialogTitle>Settings</DialogTitle>
 						<DialogDescription>Manage your app preferences and data</DialogDescription>
 					</DialogHeader>
 
-					<div className="flex flex-col gap-4 sm:flex-row">
+					<div className="flex flex-col gap-4 sm:flex-row overflow-y-auto flex-1 min-h-0">
 						<div className="w-full sm:w-56">
 							<div className="space-y-1 rounded-lg border p-1">
 								<button

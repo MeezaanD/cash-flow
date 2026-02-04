@@ -79,6 +79,36 @@
 	.dark body {
 		color: hsl(var(--foreground));
 	}
+
+	/* Mobile-safe viewport heights for Safari and other mobile browsers */
+	:root {
+		/* Fallback for browsers without dvh support */
+		--vh-full: 100vh;
+		--vh-screen: 100vh;
+		
+		/* Use dynamic viewport height when available (accounts for browser UI) */
+		--vh-full: 100dvh;
+		--vh-screen: 100dvh;
+		
+		/* Large viewport height (browser UI hidden) */
+		--vh-large: 100lvh;
+		
+		/* Small viewport height (browser UI visible) */
+		--vh-small: 100svh;
+	}
+
+	/* Utility classes for mobile-safe heights */
+	.h-screen-safe {
+		height: var(--vh-screen);
+	}
+
+	.min-h-screen-safe {
+		min-height: var(--vh-screen);
+	}
+
+	.max-h-screen-safe {
+		max-height: var(--vh-screen);
+	}
 }
 
 /* Custom Scrollbar Styles */
