@@ -39,6 +39,28 @@ const Dashboard: React.FC = () => {
 	const [authModalOpen, setAuthModalOpen] = useState(false);
 	const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 	const [settingsOpen, setSettingsOpen] = useState(false);
+	const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+	// Track window resize for responsive behavior
+	React.useEffect(() => {
+		let timeoutId: ReturnType<typeof setTimeout> | undefined;
+		const handleResize = () => {
+			// Debounce resize events to avoid excessive re-renders
+			if (timeoutId !== undefined) {
+				clearTimeout(timeoutId);
+			}
+			timeoutId = setTimeout(() => {
+				setIsMobile(window.innerWidth < 768);
+			}, 150);
+		};
+		window.addEventListener('resize', handleResize);
+		return () => {
+			if (timeoutId !== undefined) {
+				clearTimeout(timeoutId);
+			}
+			window.removeEventListener('resize', handleResize);
+		};
+	}, []);
 
 	const filteredTransactions = useMemo(() => {
 		return filterTransactionsByDateRangeObject(transactions, dateRange);
@@ -113,7 +135,8 @@ const Dashboard: React.FC = () => {
 	};
 
 	const handleShowTransactionsTable = () => {
-		setActiveView('table');
+		// On mobile, show list view; on desktop, show table view
+		setActiveView(isMobile ? 'list' : 'table');
 	};
 
 	const handleAuthClose = () => {
@@ -158,7 +181,7 @@ const Dashboard: React.FC = () => {
 	};
 
 	return (
-		<div className="flex h-screen flex-col md:flex-row bg-background">
+		<div className="flex h-screen-safe flex-col md:flex-row bg-background">
 			<Toaster />
 			<Sidebar
 				collapsed={!sidebarVisible}
@@ -379,7 +402,7 @@ const Dashboard: React.FC = () => {
 			/>
 
 			<div
-				className={`flex-1 flex flex-col h-screen md:h-auto overflow-y-auto transition-all duration-300 ease-in-out ${
+				className={`flex-1 flex flex-col h-screen-safe md:h-auto overflow-y-auto transition-all duration-300 ease-in-out ${
 					sidebarVisible ? 'md:ml-8' : 'md:ml-0'
 				}`}
 			>

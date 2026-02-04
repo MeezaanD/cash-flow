@@ -246,7 +246,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 			{/* Table Surface */}
 			<div className="rounded-2xl border bg-card">
 				<div
-					className="relative max-h-[calc(100vh-220px)] overflow-auto"
+					className="relative max-h-[calc(var(--vh-screen)-220px)] overflow-auto"
 					onScroll={handleScroll}
 				>
 					<Table>

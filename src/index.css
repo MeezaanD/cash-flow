@@ -79,6 +79,61 @@
 	.dark body {
 		color: hsl(var(--foreground));
 	}
+
+	/* Mobile-safe viewport heights for Safari and other mobile browsers */
+	:root {
+		/* Fallback for browsers without dvh support */
+		--vh-full: 100vh;
+		--vh-screen: 100vh;
+		--vh-large: 100vh;
+		--vh-small: 100vh;
+	}
+
+	/* Use dynamic viewport height when available (accounts for browser UI) */
+	@supports (height: 100dvh) {
+		:root {
+			--vh-full: 100dvh;
+			--vh-screen: 100dvh;
+		}
+	}
+
+	@supports (height: 100lvh) {
+		:root {
+			--vh-large: 100lvh;
+		}
+	}
+
+	@supports (height: 100svh) {
+		:root {
+			--vh-small: 100svh;
+		}
+	}
+
+	/* Utility classes for mobile-safe heights */
+	.h-screen-safe {
+		height: var(--vh-screen);
+	}
+
+	.min-h-screen-safe {
+		min-height: var(--vh-screen);
+	}
+
+	.max-h-screen-safe {
+		max-height: var(--vh-screen);
+	}
+
+	/* Modal and dialog specific heights */
+	.max-h-dialog {
+		max-height: calc(0.95 * var(--vh-screen));
+	}
+
+	.max-h-modal {
+		max-height: calc(0.9 * var(--vh-screen));
+	}
+
+	.max-h-modal-list {
+		max-height: calc(0.6 * var(--vh-screen));
+	}
 }
 
 /* Custom Scrollbar Styles */
