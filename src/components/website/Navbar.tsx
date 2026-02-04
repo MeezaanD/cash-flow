@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Menu, X } from 'lucide-react';
-import logo from '@/assets/images/logos/white-transparent-image.png';
+import logo from '@/assets/images/logos/cflow-transparent-light.png';
 
 interface NavbarProps {
 	onAuthClick: (mode: 'login' | 'register') => void;
@@ -63,7 +63,7 @@ const Navbar: React.FC<NavbarProps> = ({ onAuthClick }) => {
 							{/* Logo */}
 							<div className="flex-shrink-0">
 								<a href="/" className="flex items-center">
-									<img className="w-16" src={logo} alt="CashFlow Logo" />
+									<img className="w-24" src={logo} alt="CashFlow Logo" />
 								</a>
 							</div>
 
