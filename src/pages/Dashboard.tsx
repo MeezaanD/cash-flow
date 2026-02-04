@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { FiPlusCircle } from 'react-icons/fi';
+import { FiMenu } from 'react-icons/fi';
 import { useTransactionsContext } from '../context/TransactionsContext';
 import { ViewType, DateRange } from '../types';
 import { filterTransactionsByDateRangeObject } from '../utils/dateRangeFilter';
@@ -386,11 +386,12 @@ const Dashboard: React.FC = () => {
 				{!sidebarVisible && (
 					<Button
 						variant="outline"
-						className="absolute left-4 top-4 z-10"
+						className="absolute left-4 top-4 z-50"
 						onClick={toggleSidebar}
+						aria-label="Open menu"
 					>
-						<FiPlusCircle className="mr-2 h-4 w-4 rotate-45" />
-						Open Sidebar
+						<FiMenu className="mr-2 h-4 w-4" />
+						Menu
 					</Button>
 				)}
 

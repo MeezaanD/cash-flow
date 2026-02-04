@@ -185,17 +185,38 @@ const Sidebar: React.FC<SidebarProps> = ({
 				</DialogContent>
 			</Dialog>
 
+			{/* Backdrop for mobile */}
+			{!collapsed && isMobile && (
+				<div
+					role="button"
+					tabIndex={0}
+					className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+					onClick={toggleSidebar}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							toggleSidebar();
+						}
+						if (e.key === 'Escape') {
+							toggleSidebar();
+						}
+					}}
+					aria-label="Close sidebar"
+				/>
+			)}
+
 			<aside
-				className={`fixed left-0 top-0 z-40 h-screen w-64 md:w-64 border-r bg-card transition-all duration-300 ease-in-out ${collapsed
-					? 'w-0 overflow-hidden opacity-0 md:relative md:w-0 md:opacity-0'
-					: 'opacity-100 md:relative md:w-64'
-					}`}
+				aria-hidden={collapsed}
+				className={`fixed left-0 top-0 z-40 h-screen w-64 border-r bg-card transition-transform duration-300 ease-in-out md:relative md:z-auto md:transition-all ${
+					collapsed
+						? '-translate-x-full md:translate-x-0 md:w-0'
+						: 'translate-x-0 md:w-64'
+				}`}
 			>
 				<div
-					className={`flex h-full flex-col transition-all duration-300 ${collapsed
-						? 'opacity-0 pointer-events-none scale-95'
-						: 'opacity-100 scale-100'
-						}`}
+					className={`flex h-full flex-col transition-opacity duration-300 ${
+						collapsed ? 'md:opacity-0 md:pointer-events-none' : 'opacity-100'
+					}`}
 				>
 					{/* Header */}
 					<div className="flex items-center justify-between border-b p-3 md:p-4">
