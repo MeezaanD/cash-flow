@@ -43,17 +43,21 @@ const Dashboard: React.FC = () => {
 
 	// Track window resize for responsive behavior
 	React.useEffect(() => {
-		let timeoutId: NodeJS.Timeout;
+		let timeoutId: ReturnType<typeof setTimeout> | undefined;
 		const handleResize = () => {
 			// Debounce resize events to avoid excessive re-renders
-			clearTimeout(timeoutId);
+			if (timeoutId !== undefined) {
+				clearTimeout(timeoutId);
+			}
 			timeoutId = setTimeout(() => {
 				setIsMobile(window.innerWidth < 768);
 			}, 150);
 		};
 		window.addEventListener('resize', handleResize);
 		return () => {
-			clearTimeout(timeoutId);
+			if (timeoutId !== undefined) {
+				clearTimeout(timeoutId);
+			}
 			window.removeEventListener('resize', handleResize);
 		};
 	}, []);
