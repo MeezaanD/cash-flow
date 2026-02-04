@@ -21,8 +21,8 @@ const parseCsv = (text: string): SerializableTransaction[] => {
 	const [headerLine, ...lines] = text.split(/\r?\n/).filter(Boolean);
 	if (!headerLine) return [];
 
-	const headers = headerLine.split(',').map((h) => h.replace(/^"|"$/g, ''));
 	const parseCSVValue = (cell: string) => cell.replace(/^"|"$/g, '').replace(/""/g, '"');
+	const headers = (headerLine.match(/"(?:[^"]|"")*"|[^,]+/g) || []).map(parseCSVValue);
 
 	return lines.map((line) => {
 		const cells = line.match(/"(?:[^"]|"")*"|[^,]+/g) || [];
@@ -59,7 +59,11 @@ export const importTransactionsFromFile = async (
 	let records: SerializableTransaction[] = [];
 
 	if (file.name.toLowerCase().endsWith('.json')) {
-		records = JSON.parse(text);
+		try {
+			records = JSON.parse(text);
+		} catch {
+			throw new Error('Invalid JSON file.');
+		}
 	} else if (file.name.toLowerCase().endsWith('.csv')) {
 		records = parseCsv(text);
 	} else {
@@ -138,5 +142,10 @@ export const exportTransactionsToCsv = (transactions: Transaction[]): string => 
 };
 
 export const exportTransactionsToJson = (transactions: Transaction[]): string => {
-	return JSON.stringify(transactions, null, 2);
+	const normalized = transactions.map((t) => ({
+		...t,
+		date: t.date ? normalizeIsoDate(t.date) : undefined,
+		createdAt: t.createdAt ? normalizeIsoDate(t.createdAt) : undefined,
+	}));
+	return JSON.stringify(normalized, null, 2);
 };
