@@ -92,51 +92,61 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
 					<div className="flex flex-col gap-4 sm:flex-row overflow-y-auto flex-1 min-h-0">
 						<div className="w-full sm:w-56">
-							<div className="space-y-1 rounded-lg border p-1">
+							<div
+								role="tablist"
+								aria-label="Settings sections"
+								className="flex gap-1 rounded-lg border p-1 sm:flex-col"
+							>
 								<button
+									role="tab"
+									aria-selected={activeTab === 'general'}
+									aria-controls="settings-tab-general"
 									onClick={() => setActiveTab('general')}
-									className={`w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-										activeTab === 'general'
+									className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'general'
 											? 'bg-accent text-accent-foreground'
 											: 'text-muted-foreground hover:bg-muted'
-									}`}
+										}`}
 								>
 									<FiSettings className="h-4 w-4" />
 									General
 								</button>
 								<button
+									role="tab"
+									aria-selected={activeTab === 'data'}
+									aria-controls="settings-tab-data"
 									onClick={() => setActiveTab('data')}
-									className={`w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-										activeTab === 'data'
+									className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'data'
 											? 'bg-accent text-accent-foreground'
 											: 'text-muted-foreground hover:bg-muted'
-									}`}
+										}`}
 								>
 									<FiDatabase className="h-4 w-4" />
 									Data
 								</button>
 								<button
+									role="tab"
+									aria-selected={activeTab === 'recurring'}
+									aria-controls="settings-tab-recurring"
 									onClick={() => setActiveTab('recurring')}
-									className={`w-full flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-										activeTab === 'recurring'
+									className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'recurring'
 											? 'bg-accent text-accent-foreground'
 											: 'text-muted-foreground hover:bg-muted'
-									}`}
+										}`}
 								>
 									<FiRefreshCw className="h-4 w-4" />
-									Recurring Expenses
+									Recurring
 								</button>
 							</div>
 						</div>
 
 						<div className="flex-1 space-y-4">
 							{activeTab === 'general' && (
-								<div className="space-y-4">
+								<div className="space-y-4" id="settings-tab-general" role="tabpanel">
 									<div>
 										<h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 											General
 										</h3>
-										<div className="space-y-4 rounded-lg border p-4">
+										<div className="space-y-4 rounded-lg border p-4 sm:p-5">
 											<div className="flex items-center justify-between">
 												<Label
 													htmlFor="dark-mode"
@@ -178,12 +188,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 							)}
 
 							{activeTab === 'data' && (
-								<div className="space-y-4">
+								<div className="space-y-4" id="settings-tab-data" role="tabpanel">
 									<div>
 										<h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 											Data
 										</h3>
-										<div className="space-y-4 rounded-lg border p-4">
+										<div className="space-y-4 rounded-lg border p-4 sm:p-5">
 											<p className="text-sm text-muted-foreground">
 												Import transactions from CSV/JSON. Duplicates are
 												automatically skipped.
@@ -247,12 +257,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 							)}
 
 							{activeTab === 'recurring' && (
-								<div className="space-y-4">
+								<div className="space-y-4" id="settings-tab-recurring" role="tabpanel">
 									<div>
 										<h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 											Recurring Expenses
 										</h3>
-										<div className="rounded-lg border bg-card p-6">
+										<div className="rounded-lg border bg-card p-4 sm:p-6">
 											<RecurringExpensesList />
 										</div>
 									</div>

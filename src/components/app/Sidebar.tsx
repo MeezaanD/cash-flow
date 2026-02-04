@@ -11,8 +11,8 @@ import {
 } from 'react-icons/fi';
 import { useAuth } from '../../hooks/useAuth';
 import { Transaction } from '../../types';
-import logoDark from '@/assets/images/logos/dark-transparent-image.png';
-import logoLight from '@/assets/images/logos/white-transparent-image.png';
+import logoDark from '@/assets/images/logos/cflow-transparent-dark.png';
+import logoLight from '@/assets/images/logos/cflow-transparent-light.png';
 import { useTheme } from '../../context/ThemeContext';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import {
@@ -48,7 +48,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 	list: FiList,
 };
 
-const BASE_VIEWS = ['dashboard', 'reports', 'list'];
+const BASE_VIEWS = ['dashboard', 'reports'];
 
 const Sidebar: React.FC<SidebarProps> = ({
 	onCreate,
@@ -160,7 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 	}, [filteredTransactions]);
 
 	const views = useMemo(
-		() => (isMobile ? BASE_VIEWS : [...BASE_VIEWS, 'table']),
+		() => (isMobile ? [...BASE_VIEWS, 'list'] : [...BASE_VIEWS, 'table']),
 		[isMobile]
 	);
 
@@ -207,30 +207,33 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 			<aside
 				aria-hidden={collapsed}
-				className={`fixed left-0 top-0 z-40 h-screen-safe w-64 border-r bg-card transition-transform duration-300 ease-in-out md:relative md:z-auto md:transition-all ${
-					collapsed
+				className={`fixed left-0 top-0 z-40 h-screen-safe w-64 border-r bg-card transition-transform duration-300 ease-in-out md:relative md:z-auto md:transition-all ${collapsed
 						? '-translate-x-full md:translate-x-0 md:w-0'
 						: 'translate-x-0 md:w-64'
-				}`}
+					}`}
 			>
 				<div
-					className={`flex h-full flex-col transition-opacity duration-300 ${
-						collapsed ? 'md:opacity-0 md:pointer-events-none' : 'opacity-100'
-					}`}
+					className={`flex h-full flex-col transition-opacity duration-300 ${collapsed ? 'md:opacity-0 md:pointer-events-none' : 'opacity-100'
+						}`}
 				>
 					{/* Header */}
 					<div className="flex items-center justify-between border-b p-3 md:p-4">
-						<img
-							src={logo}
-							alt="CashFlow Logo"
-							className="h-7 md:h-8 transition-opacity duration-300"
-						/>
+						<div className="flex items-center gap-2 flex-1">
+							<img
+								src={logo}
+								alt="CashFlow Logo"
+								className="h-8 md:h-10 flex-shrink-0"
+							/>
+							<h3 className="text-lg md:text-xl font-bold tracking-tight">
+								CashFlow
+							</h3>
+						</div>
 						{!collapsed && (
 							<Button
 								variant="ghost"
 								size="icon"
 								onClick={toggleSidebar}
-								className="md:hidden"
+								className="md:hidden flex-shrink-0"
 								aria-label="Close sidebar"
 							>
 								<FiX className="h-5 w-5" />

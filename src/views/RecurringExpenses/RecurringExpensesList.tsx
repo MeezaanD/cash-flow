@@ -73,7 +73,7 @@ const RecurringExpensesList: React.FC = () => {
 
 	if (recurringExpensesLoading) {
 		return (
-			<div className="flex items-center justify-center py-8">
+			<div className="flex items-center justify-center py-8" aria-live="polite">
 				<div className="text-sm text-muted-foreground">Loading recurring expenses...</div>
 			</div>
 		);
@@ -81,12 +81,14 @@ const RecurringExpensesList: React.FC = () => {
 
 	return (
 		<div className="space-y-4 max-h-modal-list overflow-y-auto">
-			<div className="flex items-center justify-between sticky top-0 bg-card z-10 pb-2">
-				<h3 className="text-lg font-semibold">Recurring Expenses</h3>
-				<Button onClick={handleAddNew} size="sm">
-					<FiPlus className="mr-2 h-4 w-4" />
-					Add New
-				</Button>
+			<div className="sticky top-0 z-10 bg-card pb-2">
+				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+					<h3 className="text-lg font-semibold">Recurring Expenses</h3>
+					<Button onClick={handleAddNew} size="sm" className="w-full sm:w-auto">
+						<FiPlus className="mr-2 h-4 w-4" />
+						Add New
+					</Button>
+				</div>
 			</div>
 
 			{isFormOpen && (
@@ -103,37 +105,39 @@ const RecurringExpensesList: React.FC = () => {
 					</p>
 				</div>
 			) : (
-				<div className="space-y-2">
+				<div role="list" className="space-y-2">
 					{recurringExpenses.map((expense) => (
 						<div
 							key={expense.id}
-							className="flex items-center justify-between rounded-lg border bg-card p-4 transition-colors hover:bg-muted/50"
+							role="listitem"
+							className="flex flex-col gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between"
 						>
-							<div className="flex-1">
-								<div className="flex items-center gap-2">
+							<div className="min-w-0 flex-1">
+								<div className="flex flex-wrap items-center gap-2">
 									<h4 className="font-medium">{expense.title}</h4>
 									<span className="text-xs text-muted-foreground">
 										({getFrequencyLabel(expense.frequency)})
 									</span>
 								</div>
-								<div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
+								<div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
 									<span>{formatCurrency(expense.amount, currency)}</span>
-									<span>•</span>
+									<span className="hidden sm:inline">•</span>
 									<span>{expense.category}</span>
 									{expense.description && (
 										<>
-											<span>•</span>
+											<span className="hidden sm:inline">•</span>
 											<span className="truncate">{expense.description}</span>
 										</>
 									)}
 								</div>
 							</div>
-							<div className="flex items-center gap-2">
+							<div className="flex items-center gap-2 sm:justify-end">
 								<Button
 									variant="ghost"
 									size="icon"
 									onClick={() => handleEdit(expense)}
-									className="h-8 w-8"
+									className="h-9 w-9"
+									aria-label="Edit recurring expense"
 								>
 									<FiEdit className="h-4 w-4" />
 								</Button>
@@ -141,7 +145,8 @@ const RecurringExpensesList: React.FC = () => {
 									variant="ghost"
 									size="icon"
 									onClick={() => handleDelete(expense.id!)}
-									className="h-8 w-8 text-destructive hover:text-destructive"
+									className="h-9 w-9 text-destructive hover:text-destructive"
+									aria-label="Delete recurring expense"
 								>
 									<FiTrash2 className="h-4 w-4" />
 								</Button>

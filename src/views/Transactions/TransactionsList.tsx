@@ -70,7 +70,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 	};
 
 	return (
-		<div className="flex min-h-full w-full items-start justify-center p-4 md:p-6">
+		<div className="flex min-h-full w-full items-start justify-center p-4 md:p-5">
 			<div className="w-full max-w-3xl space-y-6">
 				{/* Search Bar */}
 				<Card className="p-4">

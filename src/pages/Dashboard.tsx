@@ -340,8 +340,8 @@ const Dashboard: React.FC = () => {
 									: '';
 						const createdAt =
 							t.createdAt &&
-							typeof t.createdAt === 'object' &&
-							'toDate' in t.createdAt
+								typeof t.createdAt === 'object' &&
+								'toDate' in t.createdAt
 								? t.createdAt.toDate().toISOString()
 								: t.createdAt
 									? new Date(t.createdAt as any).toISOString()
@@ -402,9 +402,8 @@ const Dashboard: React.FC = () => {
 			/>
 
 			<div
-				className={`flex-1 flex flex-col h-screen-safe md:h-auto overflow-y-auto transition-all duration-300 ease-in-out ${
-					sidebarVisible ? 'md:ml-8' : 'md:ml-0'
-				}`}
+				className={`flex-1 flex flex-col h-screen-safe md:h-auto overflow-y-auto transition-all duration-300 ease-in-out ${sidebarVisible ? 'md:ml-8' : 'md:ml-0'
+					}`}
 			>
 				{!sidebarVisible && (
 					<Button
