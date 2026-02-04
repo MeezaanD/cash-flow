@@ -43,11 +43,19 @@ const Dashboard: React.FC = () => {
 
 	// Track window resize for responsive behavior
 	React.useEffect(() => {
+		let timeoutId: NodeJS.Timeout;
 		const handleResize = () => {
-			setIsMobile(window.innerWidth < 768);
+			// Debounce resize events to avoid excessive re-renders
+			clearTimeout(timeoutId);
+			timeoutId = setTimeout(() => {
+				setIsMobile(window.innerWidth < 768);
+			}, 150);
 		};
 		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
+		return () => {
+			clearTimeout(timeoutId);
+			window.removeEventListener('resize', handleResize);
+		};
 	}, []);
 
 	const filteredTransactions = useMemo(() => {

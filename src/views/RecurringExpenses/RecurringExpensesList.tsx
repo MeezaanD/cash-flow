@@ -80,6 +80,7 @@ const RecurringExpensesList: React.FC = () => {
 	}
 
 	return (
+		// 60% of viewport to prevent list from dominating the modal and allow space for form when editing
 		<div className="space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(0.6 * var(--vh-screen))' }}>
 			<div className="flex items-center justify-between sticky top-0 bg-card z-10 pb-2">
 				<h3 className="text-lg font-semibold">Recurring Expenses</h3>

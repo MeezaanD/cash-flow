@@ -86,6 +86,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 			<Dialog open={open} onOpenChange={onClose}>
 				<DialogContent 
 					className="sm:max-w-3xl overflow-hidden flex flex-col"
+					// 90% of viewport to accommodate tabs and content with comfortable spacing
 					style={{ maxHeight: 'calc(0.9 * var(--vh-screen))' }}
 				>
 					<DialogHeader>
