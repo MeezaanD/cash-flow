@@ -121,6 +121,19 @@
 	.max-h-screen-safe {
 		max-height: var(--vh-screen);
 	}
+
+	/* Modal and dialog specific heights */
+	.max-h-dialog {
+		max-height: calc(0.95 * var(--vh-screen));
+	}
+
+	.max-h-modal {
+		max-height: calc(0.9 * var(--vh-screen));
+	}
+
+	.max-h-modal-list {
+		max-height: calc(0.6 * var(--vh-screen));
+	}
 }
 
 /* Custom Scrollbar Styles */
