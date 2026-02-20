@@ -1,8 +1,8 @@
 {
 	"rewrites": [
 		{
-			"source": "/(.*)",
-			"destination": "/"
+			"source": "/app/(.*)",
+			"destination": "/app"
 		}
 	],
 	"redirects": [

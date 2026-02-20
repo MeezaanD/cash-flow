@@ -1,0 +1,19 @@
+---
+import App from '../../app/src/App';
+import '../../app/src/index.css';
+
+const title = 'Cash Flow App';
+const description = 'Secure dashboard for managing income, expenses, and recurring transactions.';
+---
+
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width" />
+<title>{title}</title>
+<meta name="description" content={description} />
+</head>
+<body style="margin: 0;">
+<App client:only="react" />
+</body>
+</html>
