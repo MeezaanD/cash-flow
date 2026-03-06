@@ -1,5 +1,8 @@
 .env
 
+# Astro dev cache
+.astro/
+
 # Logs
 logs
 *.log

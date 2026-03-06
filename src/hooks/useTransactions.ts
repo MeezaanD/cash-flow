@@ -2,27 +2,26 @@ import { useState, useEffect } from 'react';
 import { db, auth } from '../services/firebase';
 import {
 	collection,
-	updateDoc,
 	doc,
 	query,
 	onSnapshot,
 	Timestamp,
 	writeBatch,
 	getDocs,
+	getDoc,
 	increment,
 } from 'firebase/firestore';
 import { Transaction } from '../types';
 import { normalizeTransaction } from '../models/TransactionModel';
 
 interface AddTransactionData {
-	type: 'income' | 'expense' | 'transfer';
+	type: 'income' | 'expense';
 	accountId: string;
 	title: string;
 	category: string;
 	description?: string;
 	amount: number;
 	date?: Date;
-	transferAccountId?: string;
 }
 
 interface AddTransferData {
@@ -152,13 +151,47 @@ export const useTransactions = () => {
 		if (!user) throw new Error('User not authenticated');
 		try {
 			const txRef = doc(db, 'users', user.uid, 'transactions', id);
-			const updateData: any = { ...updates };
 
+			// Read current state so we can compute balance delta
+			const snap = await getDoc(txRef);
+			const old = snap.exists() ? (snap.data() as any) : null;
+
+			const updateData: any = { ...updates };
 			if (updates.date instanceof Date) {
 				updateData.date = Timestamp.fromDate(updates.date);
 			}
 
-			await updateDoc(txRef, updateData);
+			const batch = writeBatch(db);
+			batch.update(txRef, updateData);
+
+			// Adjust account balances when amount, type, or accountId changes
+			if (old && old.type !== 'transfer') {
+				const oldAccountId: string = old.accountId;
+				const newAccountId: string = updates.accountId ?? oldAccountId;
+				const oldAmount: number = old.amount;
+				const newAmount: number = updates.amount ?? oldAmount;
+				const oldType: string = old.type;
+				const newType: string = updates.type ?? oldType;
+
+				const oldDelta = oldType === 'income' ? oldAmount : -oldAmount;
+				const newDelta = newType === 'income' ? newAmount : -newAmount;
+
+				if (oldAccountId !== newAccountId) {
+					// Reverse old balance on old account, apply new balance on new account
+					const oldAccountRef = doc(db, 'users', user.uid, 'accounts', oldAccountId);
+					const newAccountRef = doc(db, 'users', user.uid, 'accounts', newAccountId);
+					batch.update(oldAccountRef, { balance: increment(-oldDelta) });
+					batch.update(newAccountRef, { balance: increment(newDelta) });
+				} else {
+					const balanceChange = newDelta - oldDelta;
+					if (balanceChange !== 0) {
+						const accountRef = doc(db, 'users', user.uid, 'accounts', oldAccountId);
+						batch.update(accountRef, { balance: increment(balanceChange) });
+					}
+				}
+			}
+
+			await batch.commit();
 		} catch (error) {
 			console.error('Error updating transaction:', error);
 			throw error;
@@ -168,7 +201,6 @@ export const useTransactions = () => {
 	const deleteTransaction = async (id: string) => {
 		if (!user) throw new Error('User not authenticated');
 		try {
-			// Find the transaction to reverse balance
 			const tx = transactions.find((t) => t.id === id);
 			const batch = writeBatch(db);
 
@@ -176,15 +208,31 @@ export const useTransactions = () => {
 			batch.delete(txRef);
 
 			if (tx && tx.accountId) {
-				const accountRef = doc(db, 'users', user.uid, 'accounts', tx.accountId);
-				// Reverse the balance effect
-				if (tx.type === 'income') {
-					batch.update(accountRef, { balance: increment(-tx.amount) });
-				} else if (tx.type === 'expense') {
-					batch.update(accountRef, { balance: increment(tx.amount) });
-				} else if (tx.type === 'transfer') {
-					// For transfer records, reverse the debit on source or credit on dest
-					batch.update(accountRef, { balance: increment(tx.amount) });
+				if (tx.type === 'transfer' && tx.transferAccountId) {
+					// Find and delete the paired transfer record, reverse both balances
+					const partner = transactions.find(
+						(t) =>
+							t.id !== id &&
+							t.accountId === tx.transferAccountId &&
+							t.transferAccountId === tx.accountId
+					);
+					if (partner?.id) {
+						const partnerRef = doc(db, 'users', user.uid, 'transactions', partner.id);
+						batch.delete(partnerRef);
+						// Reverse credit on destination account
+						const partnerAccountRef = doc(db, 'users', user.uid, 'accounts', partner.accountId);
+						batch.update(partnerAccountRef, { balance: increment(-partner.amount) });
+					}
+					// Reverse debit on source account
+					const sourceAccountRef = doc(db, 'users', user.uid, 'accounts', tx.accountId);
+					batch.update(sourceAccountRef, { balance: increment(tx.amount) });
+				} else {
+					const accountRef = doc(db, 'users', user.uid, 'accounts', tx.accountId);
+					if (tx.type === 'income') {
+						batch.update(accountRef, { balance: increment(-tx.amount) });
+					} else if (tx.type === 'expense') {
+						batch.update(accountRef, { balance: increment(tx.amount) });
+					}
 				}
 			}
 
@@ -200,10 +248,15 @@ export const useTransactions = () => {
 
 		try {
 			const txCol = collection(db, 'users', user.uid, 'transactions');
-			const snapshot = await getDocs(query(txCol));
+			const acctCol = collection(db, 'users', user.uid, 'accounts');
+			const [txSnapshot, acctSnapshot] = await Promise.all([
+				getDocs(query(txCol)),
+				getDocs(query(acctCol)),
+			]);
 
 			const batch = writeBatch(db);
-			snapshot.docs.forEach((d) => batch.delete(d.ref));
+			txSnapshot.docs.forEach((d) => batch.delete(d.ref));
+			acctSnapshot.docs.forEach((d) => batch.update(d.ref, { balance: 0 }));
 			await batch.commit();
 		} catch (error) {
 			console.error('Error deleting all transactions:', error);

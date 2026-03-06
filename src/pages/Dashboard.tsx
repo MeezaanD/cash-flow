@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FiMenu } from 'react-icons/fi';
 import { useTransactionsContext } from '../context/TransactionsContext';
+import { useAccountsContext } from '../context/AccountsContext';
 import { ViewType } from '../types';
 import Sidebar from '../components/app/Sidebar';
 import SettingsModal from '../components/app/SettingsModal';
@@ -32,6 +33,7 @@ import {
 
 const Dashboard: React.FC = () => {
 	const { transactions, addTransaction, deleteTransaction } = useTransactionsContext();
+	const { accounts } = useAccountsContext();
 	const { toast } = useToast();
 
 	const [selectedTx, setSelectedTx] = useState<any | null>(null);
@@ -278,7 +280,8 @@ const Dashboard: React.FC = () => {
 						const result = await importTransactionsFromFile(
 							file,
 							transactions,
-							addTransaction
+							addTransaction,
+							accounts[0]?.id ?? ""
 						);
 						if (result.errors.length) {
 							toast({

@@ -36,7 +36,7 @@ const AccountDetailPage: React.FC = () => {
 	const accountTransactions = useMemo(
 		() =>
 			[...transactions]
-				.filter((t) => t.accountId === accountId || t.transferAccountId === accountId)
+				.filter((t) => t.accountId === accountId)
 				.sort((a, b) => {
 					const da = parseDbDate(a.date ?? a.createdAt);
 					const db = parseDbDate(b.date ?? b.createdAt);

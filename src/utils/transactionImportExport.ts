@@ -44,8 +44,8 @@ const validateImportRow = (row: Record<string, unknown>, rowIndex: number): stri
 	if (!isFinite(amountNum)) {
 		errors.push(`Row ${rowIndex}: Invalid amount`);
 	}
-	if (row.type !== 'income' && row.type !== 'expense' && row.type !== 'transfer') {
-		errors.push(`Row ${rowIndex}: Invalid type`);
+	if (row.type !== 'income' && row.type !== 'expense') {
+		errors.push(`Row ${rowIndex}: Invalid type (transfers cannot be imported)`);
 	}
 	return errors;
 };
@@ -53,7 +53,7 @@ const validateImportRow = (row: Record<string, unknown>, rowIndex: number): stri
 export const importTransactionsFromFile = async (
 	file: File,
 	existingTransactions: Transaction[],
-	addTransaction: (transaction: Omit<Transaction, 'id' | 'date' | 'createdAt'>) => Promise<void>,
+	addTransaction: (data: { type: 'income' | 'expense'; accountId: string; title: string; category: string; description?: string; amount: number }) => Promise<void>,
 	defaultAccountId: string = ''
 ): Promise<ImportResult> => {
 	const text = await file.text();
@@ -100,7 +100,7 @@ export const importTransactionsFromFile = async (
 			await addTransaction({
 				title: String(row.title),
 				amount: amountNum,
-				type: row.type as 'income' | 'expense' | 'transfer',
+				type: row.type as 'income' | 'expense',
 				category: String(row.category),
 				description: row.description ? String(row.description) : '',
 				accountId: row.accountId ? String(row.accountId) : defaultAccountId,

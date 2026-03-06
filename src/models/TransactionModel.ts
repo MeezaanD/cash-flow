@@ -7,7 +7,7 @@ export const normalizeTransaction = (doc: any): Transaction => {
 	const transaction: Transaction = {
 		id: doc.id,
 		userId: doc.userId,
-		accountId: doc.accountId ?? '',
+		accountId: doc.accountId,
 		title: doc.title,
 		amount: doc.amount,
 		type: doc.type as TransactionType,

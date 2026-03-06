@@ -37,7 +37,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 	transaction,
 	recurringExpense: initialRecurringExpense,
 }) => {
-	const { addTransaction, updateTransaction, recurringExpenses } = useTransactionsContext();
+	const { addTransaction, addTransfer, updateTransaction, recurringExpenses } = useTransactionsContext();
 	const { accounts } = useAccountsContext();
 
 	const [title, setTitle] = useState('');
@@ -121,25 +121,41 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (type === 'transfer' && !transferAccountId) return;
 		try {
-			const data: any = {
-				title,
-				amount: Number(amount),
-				type,
-				accountId,
-				category: type === 'transfer' ? 'transfer' : category,
-				description,
-				date: date ? new Date(date) : new Date(),
-			};
-
-			if (type === 'transfer' && transferAccountId) {
-				data.transferAccountId = transferAccountId;
-			}
-
 			if (transaction && transaction.id) {
+				const data: any = {
+					title,
+					amount: Number(amount),
+					type,
+					accountId,
+					category: type === 'transfer' ? 'transfer' : category,
+					description,
+					date: date ? new Date(date) : new Date(),
+				};
+				if (type === 'transfer' && transferAccountId) {
+					data.transferAccountId = transferAccountId;
+				}
 				await updateTransaction(transaction.id, data);
+			} else if (type === 'transfer') {
+				await addTransfer({
+					fromAccountId: accountId,
+					toAccountId: transferAccountId,
+					amount: Number(amount),
+					title,
+					description,
+					date: date ? new Date(date) : new Date(),
+				});
 			} else {
-				await addTransaction(data);
+				await addTransaction({
+					title,
+					amount: Number(amount),
+					type,
+					accountId,
+					category,
+					description,
+					date: date ? new Date(date) : new Date(),
+				});
 			}
 			onClose();
 		} catch (error) {
@@ -314,7 +330,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
 					{/* Actions */}
 					<div className="flex gap-3 pt-4">
-						<Button type="submit" className="flex-1 h-12">
+						<Button type="submit" className="flex-1 h-12" disabled={type === 'transfer' && !transferAccountId}>
 							{transaction ? 'Update Transaction' : 'Add Transaction'}
 						</Button>
 						<Button type="button" variant="outline" onClick={onClose}>

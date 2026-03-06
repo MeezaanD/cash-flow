@@ -15,14 +15,13 @@ import {
 import { TransactionType } from '../types';
 
 interface AddTransactionData {
-	type: 'income' | 'expense' | 'transfer';
+	type: 'income' | 'expense';
 	accountId: string;
 	title: string;
 	category: string;
 	description?: string;
 	amount: number;
 	date?: Date;
-	transferAccountId?: string;
 }
 
 interface AddTransferData {
