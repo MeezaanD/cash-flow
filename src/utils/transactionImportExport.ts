@@ -44,7 +44,7 @@ const validateImportRow = (row: Record<string, unknown>, rowIndex: number): stri
 	if (!isFinite(amountNum)) {
 		errors.push(`Row ${rowIndex}: Invalid amount`);
 	}
-	if (row.type !== 'income' && row.type !== 'expense') {
+	if (row.type !== 'income' && row.type !== 'expense' && row.type !== 'transfer') {
 		errors.push(`Row ${rowIndex}: Invalid type`);
 	}
 	return errors;
@@ -53,7 +53,8 @@ const validateImportRow = (row: Record<string, unknown>, rowIndex: number): stri
 export const importTransactionsFromFile = async (
 	file: File,
 	existingTransactions: Transaction[],
-	addTransaction: (transaction: Omit<Transaction, 'id' | 'date' | 'createdAt'>) => Promise<void>
+	addTransaction: (transaction: Omit<Transaction, 'id' | 'date' | 'createdAt'>) => Promise<void>,
+	defaultAccountId: string = ''
 ): Promise<ImportResult> => {
 	const text = await file.text();
 	let records: SerializableTransaction[] = [];
@@ -99,9 +100,10 @@ export const importTransactionsFromFile = async (
 			await addTransaction({
 				title: String(row.title),
 				amount: amountNum,
-				type: row.type as 'income' | 'expense',
+				type: row.type as 'income' | 'expense' | 'transfer',
 				category: String(row.category),
 				description: row.description ? String(row.description) : '',
+				accountId: row.accountId ? String(row.accountId) : defaultAccountId,
 			});
 			importedCount++;
 			existingSignatures.add(signature);
@@ -114,7 +116,7 @@ export const importTransactionsFromFile = async (
 };
 
 export const exportTransactionsToCsv = (transactions: Transaction[]): string => {
-	const headers = ['title', 'amount', 'type', 'category', 'description', 'date', 'createdAt', 'id'];
+	const headers = ['title', 'amount', 'type', 'category', 'description', 'date', 'createdAt', 'id', 'accountId'];
 	const safe = (value: unknown) => {
 		if (value == null) return '';
 		const str = String(value).replace(/"/g, '""');
@@ -133,6 +135,7 @@ export const exportTransactionsToCsv = (transactions: Transaction[]): string => 
 			date,
 			createdAt,
 			t.id ?? '',
+			t.accountId ?? '',
 		]
 			.map(safe)
 			.join(',');

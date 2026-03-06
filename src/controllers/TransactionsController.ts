@@ -3,67 +3,85 @@ import {
 	Transaction,
 	filterExpenses,
 	filterIncome,
+	filterTransfers,
 	filterByCategory,
 	filterByType,
+	filterByAccount,
 	getUniqueCategories,
 	calculateTotals,
 	groupByCategory,
 	sortByDateDesc,
 } from '../models/TransactionModel';
+import { TransactionType } from '../types';
+
+interface AddTransactionData {
+	type: 'income' | 'expense' | 'transfer';
+	accountId: string;
+	title: string;
+	category: string;
+	description?: string;
+	amount: number;
+	date?: Date;
+	transferAccountId?: string;
+}
+
+interface AddTransferData {
+	fromAccountId: string;
+	toAccountId: string;
+	amount: number;
+	title: string;
+	description?: string;
+	date?: Date;
+}
 
 interface TransactionsControllerReturn {
-	// Data
 	transactions: Transaction[];
 	loading: boolean;
-
-	// CRUD operations
-	addTransaction: (transaction: Omit<Transaction, 'id' | 'date' | 'createdAt'>) => Promise<void>;
+	addTransaction: (data: AddTransactionData) => Promise<void>;
+	addTransfer: (data: AddTransferData) => Promise<void>;
 	updateTransaction: (id: string, updates: Partial<Transaction>) => Promise<void>;
 	deleteTransaction: (id: string) => Promise<void>;
 	deleteAllTransactions: () => Promise<void>;
-
-	// Query methods
 	getExpenses: () => Transaction[];
 	getIncome: () => Transaction[];
+	getTransfers: () => Transaction[];
 	getByCategory: (category: string) => Transaction[];
-	getByType: (type: 'income' | 'expense') => Transaction[];
+	getByType: (type: TransactionType) => Transaction[];
+	getByAccount: (accountId: string) => Transaction[];
 	getAll: () => Transaction[];
 	getUniqueCategories: () => string[];
-
-	// Utility methods
-	calculateTotals: () => {
-		totalAmount: number;
-		totalIncome: number;
-		totalExpense: number;
-	};
+	calculateTotals: () => { totalAmount: number; totalIncome: number; totalExpense: number };
 	groupByCategory: () => Record<string, Transaction[]>;
 	sortByDateDesc: () => Transaction[];
 }
 
 export const useTransactionsController = (): TransactionsControllerReturn => {
-	const { transactions, addTransaction, updateTransaction, deleteTransaction, deleteAllTransactions, loading } =
-		useTransactions();
-
-	return {
-		// Data
+	const {
 		transactions,
-		loading,
-
-		// CRUD operations
 		addTransaction,
+		addTransfer,
 		updateTransaction,
 		deleteTransaction,
 		deleteAllTransactions,
+		loading,
+	} = useTransactions();
 
-		// Query methods
+	return {
+		transactions,
+		loading,
+		addTransaction,
+		addTransfer,
+		updateTransaction,
+		deleteTransaction,
+		deleteAllTransactions,
 		getExpenses: () => filterExpenses(transactions),
 		getIncome: () => filterIncome(transactions),
-		getByCategory: (category: string) => filterByCategory(transactions, category),
-		getByType: (type: 'income' | 'expense') => filterByType(transactions, type),
+		getTransfers: () => filterTransfers(transactions),
+		getByCategory: (category) => filterByCategory(transactions, category),
+		getByType: (type) => filterByType(transactions, type),
+		getByAccount: (accountId) => filterByAccount(transactions, accountId),
 		getAll: () => transactions,
 		getUniqueCategories: () => getUniqueCategories(transactions),
-
-		// Utility methods
 		calculateTotals: () => calculateTotals(transactions),
 		groupByCategory: () => groupByCategory(transactions),
 		sortByDateDesc: () => sortByDateDesc(transactions),

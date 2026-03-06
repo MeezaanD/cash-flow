@@ -1,185 +1,219 @@
 # Cash Flow App - Data Structure and Flow Design
 
-## 1. Data Structure
+## 1. Data Structures
+
+**Account:**
+
+- `id?: string`
+- `userId?: string`
+- `name: string`
+- `bank?: string`
+- `type: 'debit' | 'credit' | 'savings' | 'cash'`
+- `currency?: string`
+- `balance: number`
+- `color?: string`
+- `icon?: string`
+- `createdAt?: Date | { toDate: () => Date }`
 
 **Transaction:**
 
 - `id?: string`
 - `userId?: string`
+- `accountId: string` ← required; links to an Account
+- `transferAccountId?: string` ← set on transfer records to identify the counterpart account
 - `title: string`
 - `amount: number`
-- `type: 'income' | 'expense'`
+- `type: 'income' | 'expense' | 'transfer'`
 - `category: string`
 - `description?: string`
 - `date?: Date | { toDate: () => Date }`
 - `createdAt?: Date | { toDate: () => Date }`
 
-**Expense:**
+**Transfer:**
+A transfer is represented as **two Transaction documents** — both with `type: 'transfer'`. The source account gets a debit record; the destination account gets a credit record. Both carry `transferAccountId` pointing to the other account.
 
-- An Expense is a Transaction where `type = 'expense'`
-
-**RecurringExpense:**
+**Budget:**
 
 - `id?: string`
 - `userId?: string`
+- `category: string`
+- `amount: number`
+- `period: 'monthly'`
+- `createdAt?: Date | { toDate: () => Date }`
+
+**RecurringExpense (template):**
+
+- `id?: string`
+- `userId?: string`
+- `accountId?: string`
 - `title: string`
 - `amount: number`
+- `type?: 'income' | 'expense'`
 - `category: string`
 - `description?: string`
 - `frequency?: 'daily' | 'weekly' | 'monthly' | 'yearly'`
 - `createdAt?: Date | { toDate: () => Date }`
 
-## 2. Data Flow (MVC Architecture)
+---
 
-**View Layer:**
+## 2. Firestore Structure
 
-- `TransactionForm`: Add or edit a transaction with date selection and quick fill from recurring expenses
-- `TransactionsTable`: List of transactions
-- `TransactionsList`: List view of transactions
-- `PieChart`: Visualizes expenses by category
-- `Sidebar`: Navigation and transaction selection
-- `Dashboard`: Main page, coordinates all components
-- `RecurringExpenseForm`: Add or edit recurring expenses
-- `RecurringExpensesList`: List and manage recurring expenses
-- `SettingsModal`: Settings including recurring expenses management
-
-**Controller Layer:**
-
-- `TransactionsController`: Business logic and data operations for transactions
-- `RecurringExpensesController`: Business logic and data operations for recurring expenses
-- `useTransactionsContext`: Global state access via React Context (includes both transactions and recurring expenses)
-
-**Model Layer:**
-
-- `TransactionModel`: Data types, normalization, and utility functions for transactions
-- `RecurringExpenseModel`: Data types, normalization, and utility functions for recurring expenses
-
-**Data Layer:**
-
-- `useTransactions` hook: Handles fetching, adding, updating, deleting transactions from Firestore
-- `useRecurringExpenses` hook: Handles fetching, adding, updating, deleting recurring expenses from Firestore with real-time subscriptions
-- `Firestore DB`: Stores all transaction and recurring expense data
-
-**Flow Description:**
-
-**Transactions Flow:**
-1. User interacts with view components (forms/tables) to create, edit, or delete transactions
-2. Views access data through `TransactionsContext` (Controller layer)
-3. Controller uses `useTransactions` hook to communicate with Firestore
-4. Data is normalized through the Model layer (Firestore Timestamps → Dates)
-5. UI components automatically update when data changes
-6. Expenses are filtered from transactions where `type === 'expense'` for reporting
-
-**Recurring Expenses Flow:**
-1. User creates recurring expenses in Settings Modal → Recurring Expenses tab
-2. Recurring expenses are stored in Firestore `recurringExpenses` collection
-3. Real-time updates via `useRecurringExpenses` hook using `onSnapshot`
-4. Quick Fill feature in TransactionForm allows one-click form pre-filling
-5. Selecting a recurring expense auto-fills title, amount, category, and description
-6. User can still edit all fields before submitting the transaction
-
-## 3. Textual Flow Diagram
+All data is scoped to the authenticated user via subcollections:
 
 ```
-MVC Architecture Flow:
-
-[View Components] --> [TransactionsContext] --> [TransactionsController]
-                                            --> [RecurringExpensesController]
-                                            --> [useTransactions Hook]
-                                            --> [useRecurringExpenses Hook]
-                                            --> [Firestore DB]
-
-Detailed Transaction Flow:
-[TransactionForm] --submits/edits--> [TransactionsContext] --> [TransactionsController]
-[TransactionsController] --> [useTransactions Hook] --> [Firestore DB]
-[Firestore DB] --> [useTransactions Hook] --> [TransactionsContext] --> [All View Components]
-
-Detailed Recurring Expenses Flow:
-[RecurringExpenseForm] --submits/edits--> [TransactionsContext] --> [RecurringExpensesController]
-[RecurringExpensesController] --> [useRecurringExpenses Hook] --> [Firestore DB]
-[Firestore DB] --> [useRecurringExpenses Hook] (real-time) --> [TransactionsContext] --> [All View Components]
-
-Quick Fill Flow:
-[TransactionForm] --selects recurring expense--> [Pre-fills form fields] --> [User edits if needed] --> [Submits as transaction]
+users/{userId}/
+  transactions/{transactionId}   — income, expense, and transfer records
+  accounts/{accountId}           — financial accounts (debit, credit, savings, cash)
+  budgets/{budgetId}             — monthly category budgets
+  recurringTransactions/{id}     — recurring expense templates
 ```
 
-**Key Features:**
+Legacy top-level `transactions` and `recurringExpenses` collections exist as **read-only** for backward compatibility.
 
-- Date selection: TransactionForm includes a date picker (defaults to current date)
-- MVC separation: All transaction views (Form, List, Table) are in `views/Transactions/`
-- Global state: All components access data via `TransactionsContext`
-- Recurring Expenses: Create templates for frequently used expenses
-- Quick Fill: One-click form pre-filling from recurring expenses
-- Real-time updates: Recurring expenses sync in real-time using Firestore subscriptions
-- Settings Integration: Manage recurring expenses in Settings Modal
+---
 
-_Note: Expense is a Transaction with type 'expense'._
+## 3. MVC Architecture
 
-## 4. Basic ASCII Sketch
+**Model Layer** (`src/models/`)
+
+| File | Responsibilities |
+|---|---|
+| `AccountModel.ts` | `Account` interface, `normalizeAccount()`, `calculateNetWorth()`, `ACCOUNT_TYPE_LABELS`, `ACCOUNT_COLORS` |
+| `BudgetModel.ts` | `Budget` interface, `normalizeBudget()`, `calculateBudgetUsage(budget, transactions)` |
+| `TransactionModel.ts` | `Transaction` interface, `normalizeTransaction()`, filter helpers (`filterExpenses`, `filterIncome`, `filterTransfers`, `filterByAccount`, `filterByCategory`, `groupByCategory`, `calculateTotals`) |
+| `RecurringExpenseModel.ts` | `RecurringExpense` interface, `normalizeRecurringExpenses()` |
+
+**Hook (Data) Layer** (`src/hooks/`)
+
+| Hook | Collection | Key operations |
+|---|---|---|
+| `useAccounts` | `users/{uid}/accounts` | `onSnapshot`, `addAccount`, `updateAccount`, `deleteAccount`, `updateBalance(delta)` |
+| `useBudgets` | `users/{uid}/budgets` | `onSnapshot`, `addBudget`, `updateBudget`, `deleteBudget` |
+| `useTransactions` | `users/{uid}/transactions` | `onSnapshot`, `addTransaction` (batch tx + balance), `addTransfer` (batch 2 tx + 2 balances), `deleteTransaction` (batch delete + reverse balance) |
+| `useRecurringExpenses` | `users/{uid}/recurringTransactions` | `onSnapshot`, `addRecurringExpense`, `updateRecurringExpense`, `deleteRecurringExpense` |
+
+**Controller Layer** (`src/controllers/`)
+
+| Controller | Wraps | Adds |
+|---|---|---|
+| `AccountsController` | `useAccounts` | `getAccountById`, `getAccountsByType`, `calculateTotalBalance`, `calculateNetWorth` |
+| `BudgetsController` | `useBudgets` | `getBudgetProgress(budgetId, txs)`, `getAllBudgetProgress(txs)` |
+| `TransactionsController` | `useTransactions` | `getExpenses`, `getIncome`, `getTransfers`, `getByAccount`, `getByCategory`, `sortByDateDesc`, `calculateTotals` |
+| `ReportsController` | Pure functions (no Firestore) | `getSpendingByCategory`, `getSpendingByAccount`, `getMonthlyTrend`, `getNetWorth` |
+
+**Context Layer** (`src/context/`)
+
+| Context | Provider | Consumers |
+|---|---|---|
+| `AccountsContext` | `AccountsProvider` | Sidebar, AccountsList, AccountForm, TransferForm, ReconcileForm, AccountDetail, ReportsView |
+| `BudgetsContext` | `BudgetsProvider` | BudgetsList, BudgetForm |
+| `TransactionsContext` | `TransactionsProvider` | All transaction views, RecurringExpensesController, BudgetProgress calculation |
+| `ThemeContext` | `ThemeProvider` | Sidebar, SettingsModal |
+
+Provider nesting in `App.tsx`:
+```
+ThemeProvider
+  TransactionsProvider
+    AccountsProvider
+      BudgetsProvider
+        Router
+```
+
+**View Layer** (`src/views/`, `src/pages/`)
+
+| Component | View path | Description |
+|---|---|---|
+| `AccountsList` | `views/Accounts/` | Grid of account cards with net worth summary |
+| `AccountForm` | `views/Accounts/` | Create / edit account |
+| `TransferForm` | `views/Accounts/` | Transfer between two accounts |
+| `ReconcileForm` | `views/Accounts/` | 3-step reconciliation flow |
+| `BudgetsList` | `views/Budgets/` | Budget cards with progress bars |
+| `BudgetForm` | `views/Budgets/` | Create / edit budget |
+| `ReportsView` | `views/Reports/` | 4 charts: category pie, account bar, monthly trend, net worth |
+| `TransactionForm` | `views/Transactions/` | Create / edit; supports income, expense, transfer types + account selector |
+| `TransactionsTable` | `views/Transactions/` | Tabular transaction list |
+| `TransactionsList` | `views/Transactions/` | Card-style list |
+| `AccountDetail` | `pages/` | Route `/accounts/:accountId` — per-account history |
+| `Dashboard` | `pages/` | Main app shell, view routing |
+
+---
+
+## 4. Data Flow
+
+### Adding a Transaction
 
 ```
-           +-------------------+
-           |   TransactionForm |
-           |  (with Quick Fill)|
-           +-------------------+
-                    |
-        +-----------+-----------+
-        |                       |
-        v                       v
-+-------------------+   +-------------------+
-| useTransactions   |   |useRecurringExpenses|
-+-------------------+   +-------------------+
-        |                       |
-        |                       |
-        +-----------+-----------+
-                    |
-        +-----------+-----------+-------------------+-------------------+
-        |           |           |                   |
-        v           v           v                   v
-+----------------+ +-----------+-----------+ +--------------+ +----------------+
-| Transactions   | |   PieChart           | |   Sidebar    | |   Dashboard     |
-|   Table        | +---------------------+ +--------------+ +----------------+
-+----------------+
-        |
-        v
-+-------------------+
-|   Dashboard       |
-+-------------------+
-
-        +-------------------+
-        |   SettingsModal   |
-        +-------------------+
-                    |
-                    v
-        +-------------------+
-        |RecurringExpensesList|
-        +-------------------+
-                    |
-                    v
-        +-------------------+
-        |RecurringExpenseForm|
-        +-------------------+
-
-+-------------------+
-|   Firestore DB    |
-+-------------------+
-        ^
-        |
-+-----------+-----------+
-|           |           |
-v           v           v
-+-------------------+   +-------------------+
-| useTransactions   |   |useRecurringExpenses|
-+-------------------+   +-------------------+
-        |                       |
-        |                       |
-        +-----------+-----------+
-                    |
-           +-------------------+
-           |TransactionsContext|
-           +-------------------+
-
-* Expense = Transaction where type = 'expense'
-* RecurringExpense = Template for frequently used expenses
-* Quick Fill = Pre-fill transaction form from recurring expense
+TransactionForm --submit--> TransactionsContext.addTransaction(data)
+  --> useTransactions.addTransaction(data)
+      writeBatch:
+        batch.set(txRef, { ...data, createdAt: now })
+        batch.update(accountRef, { balance: increment(delta) })
+      batch.commit()
+  --> onSnapshot fires --> setTransactions([...]) --> all subscribed views update
 ```
+
+### Adding a Transfer
+
+```
+TransferForm --submit--> TransactionsContext.addTransfer({ fromAccountId, toAccountId, amount, ... })
+  --> useTransactions.addTransfer(data)
+      writeBatch:
+        batch.set(expenseRef,  { type: 'transfer', accountId: from, transferAccountId: to, ... })
+        batch.set(incomeRef,   { type: 'transfer', accountId: to,   transferAccountId: from, ... })
+        batch.update(fromRef,  { balance: increment(-amount) })
+        batch.update(toRef,    { balance: increment(+amount) })
+      batch.commit()
+```
+
+### Budget Progress
+
+```
+BudgetsList --render--> useBudgetsContext.getAllBudgetProgress(transactions)
+  --> BudgetsController.getAllBudgetProgress(transactions)
+      --> budgets.map(b => calculateBudgetUsage(b, transactions))
+          // pure: filter expenses by category + current month, sum amounts
+          --> { budget, spent, remaining, percent }
+```
+
+### Reports
+
+```
+ReportsView --render--> ReportsController functions (pure, no Firestore)
+  getSpendingByCategory(transactions, dateRange)  --> CategoryReport[]
+  getSpendingByAccount(transactions, accounts, dateRange) --> AccountReport[]
+  getMonthlyTrend(transactions, months)            --> MonthlyTrend[]
+  getNetWorth(accounts)                            --> NetWorthData
+```
+
+---
+
+## 5. Textual Flow Diagram
+
+```
+MVC Architecture:
+
+[Views / Pages]
+  |
+  +--> [AccountsContext]   --> [AccountsController]   --> [useAccounts]    --> Firestore accounts
+  +--> [BudgetsContext]    --> [BudgetsController]    --> [useBudgets]     --> Firestore budgets
+  +--> [TransactionsContext]--> [TransactionsController]--> [useTransactions]--> Firestore transactions
+                            --> [RecurringExpenses]   --> [useRecurringExpenses]--> Firestore recurringTransactions
+
+All hooks use onSnapshot() for real-time updates.
+All writes to transactions also update account.balance via writeBatch + increment().
+```
+
+---
+
+## 6. Account Balance Rules
+
+| Operation | Balance effect |
+|---|---|
+| Add income | `account.balance += amount` |
+| Add expense | `account.balance -= amount` |
+| Add transfer | `from.balance -= amount`, `to.balance += amount` |
+| Delete income | `account.balance -= amount` (reversed) |
+| Delete expense | `account.balance += amount` (reversed) |
+| Reconcile | creates income or expense adjustment transaction |
+
+All balance updates use `increment()` inside a `writeBatch` — no read-modify-write race conditions.
