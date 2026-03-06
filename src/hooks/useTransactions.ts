@@ -2,18 +2,39 @@ import { useState, useEffect } from 'react';
 import { db, auth } from '../services/firebase';
 import {
 	collection,
-	addDoc,
-	deleteDoc,
-	updateDoc,
 	doc,
 	query,
-	where,
-	getDocs,
+	onSnapshot,
 	Timestamp,
+	writeBatch,
+	getDocs,
+	getDoc,
+	increment,
 } from 'firebase/firestore';
+import { Transaction } from '../types';
+import { normalizeTransaction } from '../models/TransactionModel';
+
+interface AddTransactionData {
+	type: 'income' | 'expense';
+	accountId: string;
+	title: string;
+	category: string;
+	description?: string;
+	amount: number;
+	date?: Date;
+}
+
+interface AddTransferData {
+	fromAccountId: string;
+	toAccountId: string;
+	amount: number;
+	title: string;
+	description?: string;
+	date?: Date;
+}
 
 export const useTransactions = () => {
-	const [transactions, setTransactions] = useState<any[]>([]);
+	const [transactions, setTransactions] = useState<Transaction[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [user, setUser] = useState(() => auth.currentUser);
 
@@ -21,11 +42,10 @@ export const useTransactions = () => {
 		const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
 			setUser(firebaseUser);
 		});
-
 		return () => unsubscribe();
 	}, []);
 
-	const fetchTransactions = async () => {
+	useEffect(() => {
 		if (!user) {
 			setTransactions([]);
 			setLoading(false);
@@ -33,69 +53,193 @@ export const useTransactions = () => {
 		}
 
 		setLoading(true);
+		const txCol = collection(db, 'users', user.uid, 'transactions');
+		const q = query(txCol);
 
-		const q = query(collection(db, 'transactions'), where('userId', '==', user.uid));
+		const unsubscribe = onSnapshot(q, (snapshot) => {
+			const fetched = snapshot.docs.map((d) =>
+				normalizeTransaction({ id: d.id, ...d.data() })
+			);
+			setTransactions(fetched);
+			setLoading(false);
+		}, (error) => {
+			console.error('Error fetching transactions:', error);
+			setLoading(false);
+		});
 
-		const querySnapshot = await getDocs(q);
-		const fetchedTransactions = querySnapshot.docs.map((doc) => ({
-			id: doc.id,
-			...doc.data(),
-		}));
-
-		setTransactions(fetchedTransactions);
-		setLoading(false);
-	};
-
-	useEffect(() => {
-		fetchTransactions();
+		return () => unsubscribe();
 	}, [user]);
 
-	const addTransaction = async (transaction: {
-		type: 'income' | 'expense';
-		title: string;
-		category: string;
-		description?: string;
-		amount: number;
-		date?: Date;
-	}) => {
+	const addTransaction = async (data: AddTransactionData) => {
 		if (!user) throw new Error('User not authenticated');
 
-		const transactionData: any = {
-			...transaction,
+		const batch = writeBatch(db);
+
+		const txCol = collection(db, 'users', user.uid, 'transactions');
+		const txRef = doc(txCol);
+
+		const txData: any = {
+			...data,
 			createdAt: Timestamp.now(),
 			userId: user.uid,
 		};
 
-		if (transaction.date) {
-			transactionData.date = Timestamp.fromDate(transaction.date);
+		if (data.date) {
+			txData.date = Timestamp.fromDate(data.date);
 		}
 
-		await addDoc(collection(db, 'transactions'), transactionData);
-		await fetchTransactions();
+		batch.set(txRef, txData);
+
+		// Update account balance
+		const accountRef = doc(db, 'users', user.uid, 'accounts', data.accountId);
+		const balanceDelta = data.type === 'income' ? data.amount : -data.amount;
+		batch.update(accountRef, { balance: increment(balanceDelta) });
+
+		await batch.commit();
 	};
 
-	const updateTransaction = async (id: string, updates: any) => {
-		try {
-			const transactionRef = doc(db, 'transactions', id);
-			const updateData: any = { ...updates };
+	const addTransfer = async (data: AddTransferData) => {
+		if (!user) throw new Error('User not authenticated');
 
+		const batch = writeBatch(db);
+		const txCol = collection(db, 'users', user.uid, 'transactions');
+		const now = Timestamp.now();
+		const txDate = data.date ? Timestamp.fromDate(data.date) : now;
+
+		// Expense on source account
+		const expenseRef = doc(txCol);
+		batch.set(expenseRef, {
+			userId: user.uid,
+			accountId: data.fromAccountId,
+			transferAccountId: data.toAccountId,
+			title: data.title,
+			amount: data.amount,
+			type: 'transfer',
+			category: 'transfer',
+			description: data.description ?? '',
+			date: txDate,
+			createdAt: now,
+		});
+
+		// Income on destination account
+		const incomeRef = doc(txCol);
+		batch.set(incomeRef, {
+			userId: user.uid,
+			accountId: data.toAccountId,
+			transferAccountId: data.fromAccountId,
+			title: data.title,
+			amount: data.amount,
+			type: 'transfer',
+			category: 'transfer',
+			description: data.description ?? '',
+			date: txDate,
+			createdAt: now,
+		});
+
+		// Debit source account balance
+		const fromRef = doc(db, 'users', user.uid, 'accounts', data.fromAccountId);
+		batch.update(fromRef, { balance: increment(-data.amount) });
+
+		// Credit destination account balance
+		const toRef = doc(db, 'users', user.uid, 'accounts', data.toAccountId);
+		batch.update(toRef, { balance: increment(data.amount) });
+
+		await batch.commit();
+	};
+
+	const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
+		if (!user) throw new Error('User not authenticated');
+		try {
+			const txRef = doc(db, 'users', user.uid, 'transactions', id);
+
+			// Read current state so we can compute balance delta
+			const snap = await getDoc(txRef);
+			const old = snap.exists() ? (snap.data() as any) : null;
+
+			const updateData: any = { ...updates };
 			if (updates.date instanceof Date) {
 				updateData.date = Timestamp.fromDate(updates.date);
 			}
 
-			await updateDoc(transactionRef, updateData);
-			await fetchTransactions();
+			const batch = writeBatch(db);
+			batch.update(txRef, updateData);
+
+			// Adjust account balances when amount, type, or accountId changes
+			if (old && old.type !== 'transfer') {
+				const oldAccountId: string = old.accountId;
+				const newAccountId: string = updates.accountId ?? oldAccountId;
+				const oldAmount: number = old.amount;
+				const newAmount: number = updates.amount ?? oldAmount;
+				const oldType: string = old.type;
+				const newType: string = updates.type ?? oldType;
+
+				const oldDelta = oldType === 'income' ? oldAmount : -oldAmount;
+				const newDelta = newType === 'income' ? newAmount : -newAmount;
+
+				if (oldAccountId !== newAccountId) {
+					// Reverse old balance on old account, apply new balance on new account
+					const oldAccountRef = doc(db, 'users', user.uid, 'accounts', oldAccountId);
+					const newAccountRef = doc(db, 'users', user.uid, 'accounts', newAccountId);
+					batch.update(oldAccountRef, { balance: increment(-oldDelta) });
+					batch.update(newAccountRef, { balance: increment(newDelta) });
+				} else {
+					const balanceChange = newDelta - oldDelta;
+					if (balanceChange !== 0) {
+						const accountRef = doc(db, 'users', user.uid, 'accounts', oldAccountId);
+						batch.update(accountRef, { balance: increment(balanceChange) });
+					}
+				}
+			}
+
+			await batch.commit();
 		} catch (error) {
 			console.error('Error updating transaction:', error);
+			throw error;
 		}
 	};
 
 	const deleteTransaction = async (id: string) => {
+		if (!user) throw new Error('User not authenticated');
 		try {
-			await deleteDoc(doc(db, 'transactions', id));
-			await fetchTransactions();
+			const tx = transactions.find((t) => t.id === id);
+			const batch = writeBatch(db);
+
+			const txRef = doc(db, 'users', user.uid, 'transactions', id);
+			batch.delete(txRef);
+
+			if (tx && tx.accountId) {
+				if (tx.type === 'transfer' && tx.transferAccountId) {
+					// Find and delete the paired transfer record, reverse both balances
+					const partner = transactions.find(
+						(t) =>
+							t.id !== id &&
+							t.accountId === tx.transferAccountId &&
+							t.transferAccountId === tx.accountId
+					);
+					if (partner?.id) {
+						const partnerRef = doc(db, 'users', user.uid, 'transactions', partner.id);
+						batch.delete(partnerRef);
+						// Reverse credit on destination account
+						const partnerAccountRef = doc(db, 'users', user.uid, 'accounts', partner.accountId);
+						batch.update(partnerAccountRef, { balance: increment(-partner.amount) });
+					}
+					// Reverse debit on source account
+					const sourceAccountRef = doc(db, 'users', user.uid, 'accounts', tx.accountId);
+					batch.update(sourceAccountRef, { balance: increment(tx.amount) });
+				} else {
+					const accountRef = doc(db, 'users', user.uid, 'accounts', tx.accountId);
+					if (tx.type === 'income') {
+						batch.update(accountRef, { balance: increment(-tx.amount) });
+					} else if (tx.type === 'expense') {
+						batch.update(accountRef, { balance: increment(tx.amount) });
+					}
+				}
+			}
+
+			await batch.commit();
 		} catch (error) {
 			console.error('Error deleting transaction:', error);
+			throw error;
 		}
 	};
 
@@ -103,20 +247,17 @@ export const useTransactions = () => {
 		if (!user) throw new Error('User not authenticated');
 
 		try {
-			const q = query(
-				collection(db, 'transactions'),
-				where('userId', '==', user.uid)
-			);
+			const txCol = collection(db, 'users', user.uid, 'transactions');
+			const acctCol = collection(db, 'users', user.uid, 'accounts');
+			const [txSnapshot, acctSnapshot] = await Promise.all([
+				getDocs(query(txCol)),
+				getDocs(query(acctCol)),
+			]);
 
-			const querySnapshot = await getDocs(q);
-
-			// Delete all documents in parallel
-			const deletePromises = querySnapshot.docs.map((document) =>
-				deleteDoc(doc(db, 'transactions', document.id))
-			);
-
-			await Promise.all(deletePromises);
-			await fetchTransactions();
+			const batch = writeBatch(db);
+			txSnapshot.docs.forEach((d) => batch.delete(d.ref));
+			acctSnapshot.docs.forEach((d) => batch.update(d.ref, { balance: 0 }));
+			await batch.commit();
 		} catch (error) {
 			console.error('Error deleting all transactions:', error);
 			throw error;
@@ -126,6 +267,7 @@ export const useTransactions = () => {
 	return {
 		transactions,
 		addTransaction,
+		addTransfer,
 		updateTransaction,
 		deleteTransaction,
 		deleteAllTransactions,

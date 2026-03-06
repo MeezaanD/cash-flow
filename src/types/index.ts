@@ -7,7 +7,16 @@ export interface ThemeContextType {
 }
 
 // ViewType
-export type ViewType = 'dashboard' | 'reports' | 'transaction' | 'table' | 'list';
+export type ViewType =
+	| 'dashboard'
+	| 'reports'
+	| 'transaction'
+	| 'table'
+	| 'list'
+	| 'accounts'
+	| 'budgets'
+	| 'transfer'
+	| 'reconcile';
 
 // Category
 export interface Category {
@@ -15,11 +24,29 @@ export interface Category {
 	label: string;
 }
 
+// Account
+export type AccountType = 'debit' | 'credit' | 'savings' | 'cash';
+
+export interface Account {
+	id?: string;
+	userId?: string;
+	name: string;
+	bank?: string;
+	type: AccountType;
+	currency?: string;
+	balance: number;
+	color?: string;
+	icon?: string;
+	createdAt?: Date | { toDate: () => Date };
+}
+
 // Transaction
-export type TransactionType = 'income' | 'expense';
+export type TransactionType = 'income' | 'expense' | 'transfer';
 
 export interface Transaction {
 	id?: string;
+	userId?: string;
+	accountId: string;
 	title: string;
 	amount: number;
 	type: TransactionType;
@@ -27,6 +54,59 @@ export interface Transaction {
 	description?: string;
 	date?: Date | { toDate: () => Date };
 	createdAt?: Date | { toDate: () => Date };
+	transferAccountId?: string;
+}
+
+// Budget
+export interface Budget {
+	id?: string;
+	userId?: string;
+	category: string;
+	amount: number;
+	period: 'monthly';
+	createdAt?: Date | { toDate: () => Date };
+}
+
+export interface BudgetProgress {
+	budget: Budget;
+	spent: number;
+	remaining: number;
+	percent: number;
+}
+
+// Report types
+export interface CategoryReport {
+	category: string;
+	amount: number;
+	color: string;
+}
+
+export interface AccountReport {
+	accountId: string;
+	accountName: string;
+	color: string;
+	income: number;
+	expense: number;
+}
+
+export interface MonthlyTrend {
+	month: string;
+	income: number;
+	expense: number;
+}
+
+export interface NetWorthData {
+	assets: number;
+	liabilities: number;
+	netWorth: number;
+}
+
+// Global filters
+export interface GlobalFilters {
+	accountId: string | null;
+	category: string | null;
+	dateRange: DateRange;
+	type: TransactionType | null;
 }
 
 // DateRange
@@ -90,4 +170,5 @@ export interface SerializableTransaction {
 	category: string;
 	description?: string;
 	date?: string;
+	accountId?: string;
 }

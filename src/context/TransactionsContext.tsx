@@ -3,27 +3,43 @@ import { useTransactionsController } from '../controllers/TransactionsController
 import { useRecurringExpensesController } from '../controllers/RecurringExpensesController';
 import { Transaction } from '../models/TransactionModel';
 import { RecurringExpense } from '../models/RecurringExpenseModel';
+import { TransactionType } from '../types';
+
+interface AddTransactionData {
+	type: 'income' | 'expense';
+	accountId: string;
+	title: string;
+	category: string;
+	description?: string;
+	amount: number;
+	date?: Date;
+}
+
+interface AddTransferData {
+	fromAccountId: string;
+	toAccountId: string;
+	amount: number;
+	title: string;
+	description?: string;
+	date?: Date;
+}
 
 interface TransactionsContextValue {
-	// Data
 	transactions: Transaction[];
 	loading: boolean;
-
-	// CRUD operations
-	addTransaction: (transaction: Omit<Transaction, 'id' | 'date' | 'createdAt'>) => Promise<void>;
+	addTransaction: (data: AddTransactionData) => Promise<void>;
+	addTransfer: (data: AddTransferData) => Promise<void>;
 	updateTransaction: (id: string, updates: Partial<Transaction>) => Promise<void>;
 	deleteTransaction: (id: string) => Promise<void>;
 	deleteAllTransactions: () => Promise<void>;
-
-	// Query methods
 	getExpenses: () => Transaction[];
 	getIncome: () => Transaction[];
+	getTransfers: () => Transaction[];
 	getByCategory: (category: string) => Transaction[];
-	getByType: (type: 'income' | 'expense') => Transaction[];
+	getByType: (type: TransactionType) => Transaction[];
+	getByAccount: (accountId: string) => Transaction[];
 	getAll: () => Transaction[];
 	getUniqueCategories: () => string[];
-
-	// Utility methods
 	calculateTotals: () => {
 		totalAmount: number;
 		totalIncome: number;
@@ -31,8 +47,6 @@ interface TransactionsContextValue {
 	};
 	groupByCategory: () => Record<string, Transaction[]>;
 	sortByDateDesc: () => Transaction[];
-
-	// Recurring Expenses
 	recurringExpenses: RecurringExpense[];
 	recurringExpensesLoading: boolean;
 	addRecurringExpense: (expense: Omit<RecurringExpense, 'id' | 'createdAt' | 'userId'>) => Promise<void>;
@@ -42,11 +56,7 @@ interface TransactionsContextValue {
 
 const TransactionsContext = createContext<TransactionsContextValue | undefined>(undefined);
 
-interface TransactionsProviderProps {
-	children: ReactNode;
-}
-
-export const TransactionsProvider: React.FC<TransactionsProviderProps> = ({ children }) => {
+export const TransactionsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 	const transactionsController = useTransactionsController();
 	const recurringExpensesController = useRecurringExpensesController();
 

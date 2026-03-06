@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FiRefreshCw } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
+import { useAccountsContext } from '../../context/AccountsContext';
 import { Transaction } from '../../models/TransactionModel';
 import { RecurringExpense } from '../../models/RecurringExpenseModel';
-import { Category } from '../../types';
+import { Category, TransactionType } from '../../types';
 import { Button } from '../../components/app/ui/button';
 import { Input } from '../../components/app/ui/input';
 import { Textarea } from '../../components/app/ui/textarea';
@@ -36,10 +37,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 	transaction,
 	recurringExpense: initialRecurringExpense,
 }) => {
-	const { addTransaction, updateTransaction, recurringExpenses } = useTransactionsContext();
+	const { addTransaction, addTransfer, updateTransaction, recurringExpenses } = useTransactionsContext();
+	const { accounts } = useAccountsContext();
+
 	const [title, setTitle] = useState('');
 	const [amount, setAmount] = useState(0);
-	const [type, setType] = useState<Transaction['type']>('expense');
+	const [type, setType] = useState<TransactionType>('expense');
+	const [accountId, setAccountId] = useState('');
+	const [transferAccountId, setTransferAccountId] = useState('');
 	const [category, setCategory] = useState('');
 	const [description, setDescription] = useState('');
 	const [date, setDate] = useState<string>('');
@@ -47,11 +52,20 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 		initialRecurringExpense?.id || null
 	);
 
+	// Default to first account
+	useEffect(() => {
+		if (!accountId && accounts.length > 0) {
+			setAccountId(accounts[0].id!);
+		}
+	}, [accounts]);
+
 	useEffect(() => {
 		if (transaction) {
 			setTitle(transaction.title);
 			setAmount(transaction.amount);
 			setType(transaction.type);
+			setAccountId(transaction.accountId ?? '');
+			setTransferAccountId(transaction.transferAccountId ?? '');
 			setCategory(transaction.category ?? '');
 			setDescription(transaction.description ?? '');
 			setSelectedRecurringId(null);
@@ -65,16 +79,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 				}
 			}
 
-			if (transactionDate) {
-				setDate(transactionDate.toISOString().split('T')[0]);
-			} else {
-				setDate('');
-			}
+			setDate(transactionDate ? transactionDate.toISOString().split('T')[0] : '');
 		} else if (initialRecurringExpense) {
-			// Pre-fill from recurring expense
 			setTitle(initialRecurringExpense.title);
 			setAmount(initialRecurringExpense.amount);
-			setType('expense'); // Recurring expenses are always expenses
+			setType((initialRecurringExpense.type as TransactionType) ?? 'expense');
+			if (initialRecurringExpense.accountId) setAccountId(initialRecurringExpense.accountId);
 			setCategory(initialRecurringExpense.category ?? '');
 			setDescription(initialRecurringExpense.description ?? '');
 			setDate(new Date().toISOString().split('T')[0]);
@@ -90,19 +100,18 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 		}
 	}, [transaction, initialRecurringExpense]);
 
-	// Handle recurring expense selection
 	useEffect(() => {
 		if (selectedRecurringId && !transaction) {
 			const selectedExpense = recurringExpenses.find((e) => e.id === selectedRecurringId);
 			if (selectedExpense) {
 				setTitle(selectedExpense.title);
 				setAmount(selectedExpense.amount);
-				setType('expense');
+				setType((selectedExpense.type as TransactionType) ?? 'expense');
+				if (selectedExpense.accountId) setAccountId(selectedExpense.accountId);
 				setCategory(selectedExpense.category ?? '');
 				setDescription(selectedExpense.description ?? '');
 			}
 		} else if (selectedRecurringId === null && !transaction && !initialRecurringExpense) {
-			// Clear form when "None" is selected
 			setTitle('');
 			setAmount(0);
 			setCategory('');
@@ -112,31 +121,49 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (type === 'transfer' && !transferAccountId) return;
 		try {
-			const data: any = {
-				title,
-				amount: Number(amount),
-				type,
-				category,
-				description,
-			};
-
-			if (date) {
-				data.date = new Date(date);
-			} else {
-				data.date = new Date();
-			}
-
 			if (transaction && transaction.id) {
+				const data: any = {
+					title,
+					amount: Number(amount),
+					type,
+					accountId,
+					category: type === 'transfer' ? 'transfer' : category,
+					description,
+					date: date ? new Date(date) : new Date(),
+				};
+				if (type === 'transfer' && transferAccountId) {
+					data.transferAccountId = transferAccountId;
+				}
 				await updateTransaction(transaction.id, data);
+			} else if (type === 'transfer') {
+				await addTransfer({
+					fromAccountId: accountId,
+					toAccountId: transferAccountId,
+					amount: Number(amount),
+					title,
+					description,
+					date: date ? new Date(date) : new Date(),
+				});
 			} else {
-				await addTransaction(data);
+				await addTransaction({
+					title,
+					amount: Number(amount),
+					type,
+					accountId,
+					category,
+					description,
+					date: date ? new Date(date) : new Date(),
+				});
 			}
 			onClose();
 		} catch (error) {
 			console.error('Failed to submit transaction:', error);
 		}
 	};
+
+	const availableTransferAccounts = accounts.filter((a) => a.id !== accountId);
 
 	return (
 		<div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -149,18 +176,17 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 					<p className="mt-1.5 text-sm text-muted-foreground">
 						{transaction
 							? 'Update your transaction details'
-							: 'Add a new income or expense to your records'}
+							: 'Add a new income, expense, or transfer'}
 					</p>
 				</div>
 
-				{/* Recurring Expense – Smart Autofill */}
+				{/* Recurring – Smart Autofill */}
 				{!transaction && recurringExpenses.length > 0 && (
 					<div className="mb-8 rounded-xl border border-dashed bg-muted/40 p-4">
 						<div className="mb-3 flex items-center gap-2 text-sm font-medium">
 							<FiRefreshCw className="h-4 w-4 text-primary" />
 							Quick fill from a recurring expense
 						</div>
-
 						<Select
 							value={selectedRecurringId || '__none__'}
 							onValueChange={(value) =>
@@ -175,10 +201,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 								{recurringExpenses.map((expense) => (
 									<SelectItem key={expense.id} value={expense.id!}>
 										<span className="font-medium">{expense.title}</span>
-										<span className="text-muted-foreground">
-											{' '}
-											• {formatCurrency(expense.amount)}
-										</span>
+										<span className="text-muted-foreground"> • {formatCurrency(expense.amount)}</span>
 									</SelectItem>
 								))}
 							</SelectContent>
@@ -187,25 +210,72 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 				)}
 
 				<form onSubmit={handleSubmit} className="space-y-6">
-					{/* Transaction Type */}
-					<div className="grid grid-cols-2 gap-3">
-						<Button
-							type="button"
-							variant={type === 'income' ? 'default' : 'outline'}
-							onClick={() => setType('income')}
-							className="h-14 rounded-xl"
-						>
-							Income
-						</Button>
-						<Button
-							type="button"
-							variant={type === 'expense' ? 'default' : 'outline'}
-							onClick={() => setType('expense')}
-							className="h-14 rounded-xl"
-						>
-							Expense
-						</Button>
+					{/* Transaction Type — 3 buttons */}
+					<div className="grid grid-cols-3 gap-3">
+						{(['income', 'expense', 'transfer'] as TransactionType[]).map((t) => (
+							<Button
+								key={t}
+								type="button"
+								variant={type === t ? 'default' : 'outline'}
+								onClick={() => setType(t)}
+								className="h-14 rounded-xl capitalize"
+							>
+								{t}
+							</Button>
+						))}
 					</div>
+
+					{/* Account Selector */}
+					{accounts.length > 0 && (
+						<div className="space-y-1.5">
+							<label className="text-sm font-medium">
+								{type === 'transfer' ? 'From Account' : 'Account'} *
+							</label>
+							<Select value={accountId} onValueChange={setAccountId}>
+								<SelectTrigger>
+									<SelectValue placeholder="Select account" />
+								</SelectTrigger>
+								<SelectContent>
+									{accounts.map((a) => (
+										<SelectItem key={a.id} value={a.id!}>
+											<span className="flex items-center gap-2">
+												<span
+													className="inline-block h-2.5 w-2.5 rounded-full flex-shrink-0"
+													style={{ backgroundColor: a.color ?? '#6366f1' }}
+												/>
+												{a.name} ({formatCurrency(a.balance)})
+											</span>
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
+
+					{/* Transfer To Account */}
+					{type === 'transfer' && (
+						<div className="space-y-1.5">
+							<label className="text-sm font-medium">To Account *</label>
+							<Select value={transferAccountId} onValueChange={setTransferAccountId}>
+								<SelectTrigger>
+									<SelectValue placeholder="Select destination account" />
+								</SelectTrigger>
+								<SelectContent>
+									{availableTransferAccounts.map((a) => (
+										<SelectItem key={a.id} value={a.id!}>
+											<span className="flex items-center gap-2">
+												<span
+													className="inline-block h-2.5 w-2.5 rounded-full flex-shrink-0"
+													style={{ backgroundColor: a.color ?? '#6366f1' }}
+												/>
+												{a.name} ({formatCurrency(a.balance)})
+											</span>
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					)}
 
 					{/* Title + Amount */}
 					<div className="grid gap-6 md:grid-cols-2">
@@ -220,30 +290,33 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 							value={amount}
 							onChange={(e) => setAmount(Number(e.target.value))}
 							placeholder="Amount"
+							min="0.01"
+							step="0.01"
 							required
 						/>
 					</div>
 
-					{/* Category + Date */}
+					{/* Category + Date — hide category for transfers */}
 					<div className="grid gap-6 md:grid-cols-2">
-						<Select value={category} onValueChange={setCategory}>
-							<SelectTrigger>
-								<SelectValue placeholder="Category" />
-							</SelectTrigger>
-							<SelectContent>
-								{CATEGORIES.map((cat) => (
-									<SelectItem key={cat.value} value={cat.value}>
-										{cat.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-
+						{type !== 'transfer' && (
+							<Select value={category} onValueChange={setCategory}>
+								<SelectTrigger>
+									<SelectValue placeholder="Category" />
+								</SelectTrigger>
+								<SelectContent>
+									{CATEGORIES.map((cat) => (
+										<SelectItem key={cat.value} value={cat.value}>
+											{cat.label}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						)}
 						<Input
 							type="date"
 							value={date}
 							onChange={(e) => setDate(e.target.value)}
-							required
+							className={type === 'transfer' ? 'col-span-1 md:col-span-2' : ''}
 						/>
 					</div>
 
@@ -257,7 +330,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
 					{/* Actions */}
 					<div className="flex gap-3 pt-4">
-						<Button type="submit" className="flex-1 h-12">
+						<Button type="submit" className="flex-1 h-12" disabled={type === 'transfer' && !transferAccountId}>
 							{transaction ? 'Update Transaction' : 'Add Transaction'}
 						</Button>
 						<Button type="button" variant="outline" onClick={onClose}>

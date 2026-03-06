@@ -1,24 +1,26 @@
 ## Project Overview - Cash Flow
 
-**Cash Flow** is a web application designed to help users track their income and expenses in real-time. Built for simplicity, speed, and privacy, it features secure authentication and cloud storage powered by Firebase.
+**Cash Flow** is a multi-account personal finance web application. It lets users track income, expenses, and transfers across multiple bank and cash accounts, set spending budgets, view reports, and reconcile balances — all in real-time via Firebase.
 
 ## Key Features
 
-- **Secure Login:** User authentication with Firebase.
-- **Real-Time Tracking:** Instantly log and update income and expenses.
-- **Recurring Expenses:** Create templates for frequently used expenses and quickly fill transaction forms.
-- **Quick Fill:** One-click form pre-filling from recurring expenses to save time.
-- **Date Selection:** Choose custom dates for transactions (defaults to current date).
-- **Clean Interface:** Modern, minimalist design with smooth user experience.
-- **Cloud Sync:** Data stored and synced via Firebase with real-time updates.
-- **Fast Hosting:** Deployed on Vercel for quick load times.
-- **Import/Export:** Import transactions from CSV/JSON with validation and deduping, export all data as CSV/JSON from the Settings modal.
-- **MVC Architecture:** Clean separation of concerns with Model-View-Controller pattern.
-- **Theme Support:** Dark and light mode with proper theming throughout the app.
+- **Secure Login:** User authentication with Firebase (Google + email/password).
+- **Multi-Account Management:** Track debit, credit, savings, and cash accounts with custom colors and bank names.
+- **Account Transfers:** Move money between accounts atomically — two linked transaction records and both balances updated in a single Firestore batch write.
+- **Account Reconciliation:** Compare app balance vs actual bank balance and auto-create an adjustment transaction to correct any discrepancy.
+- **Real-Time Tracking:** Instantly log income, expenses, and transfers with live Firestore subscriptions (`onSnapshot`).
+- **Budgets:** Set monthly spending limits per category with color-coded progress bars (green / yellow / red).
+- **Reports:** Spending by category (pie chart), spending by account (bar chart), income vs expense trend (area chart), and net worth breakdown.
+- **Account Detail Page:** Per-account transaction history with income/expense totals and category breakdown.
+- **Recurring Expenses:** Create templates for frequently used transactions with Quick Fill support in the form.
+- **Import/Export:** Import transactions from CSV/JSON with validation and deduping; export all data as CSV/JSON.
+- **MVC Architecture:** Clean separation of concerns — models, hooks, controllers, contexts, views.
+- **Theme Support:** Dark and light mode throughout.
+- **Cloud Sync:** All data stored under `users/{userId}/` subcollections in Firestore.
 
 ## Tech Stack
 
-- **Frontend:** React, TypeScript, Tailwind CSS, Shadcn
+- **Frontend:** React, TypeScript, Tailwind CSS, Shadcn/ui, Recharts
 - **Backend:** Firebase Auth & Firestore
 - **Hosting:** Vercel
 
@@ -31,7 +33,7 @@
 
 ### Environment Variables
 
-Create a .env.local file in the project root with the Firebase config values used in [src/services/firebase.ts](src/services/firebase.ts):
+Create a `.env.local` file in the project root with the Firebase config values used in [src/services/firebase.ts](src/services/firebase.ts):
 
 - VITE_FIREBASE_API_KEY
 - VITE_FIREBASE_AUTH_DOMAIN
@@ -43,55 +45,98 @@ Create a .env.local file in the project root with the Firebase config values use
 
 ### Install & Run
 
-1. Install dependencies: npm install
-2. Start dev server: npm run dev
-3. Run tests: npm test
+1. Install dependencies: `npm install`
+2. Start dev server: `npm run dev`
+3. Run tests: `npm test`
+
+### Deploy Firestore Rules
+
+After cloning, deploy security rules once:
+
+```
+firebase deploy --only firestore:rules
+```
 
 ### Useful Scripts
 
-- npm run build
-- npm run lint
-- npm run test:watch
-- npm run test:coverage
+- `npm run build`
+- `npm run lint`
+- `npm run test:watch`
+- `npm run test:coverage`
 
 ## Project Structure
 
-- [src/pages](src/pages): Route-level screens like [Dashboard](src/pages/Dashboard.tsx) and [Home](src/pages/Home.tsx).
-- [src/views](src/views): Feature-level UI (transactions and recurring expenses).
-- [src/components/app](src/components/app): Reusable app components and shared UI primitives.
-- [src/context](src/context): Global state (theme and transactions).
-- [src/hooks](src/hooks): Reusable stateful logic (auth, transactions, recurring expenses).
-- [src/controllers](src/controllers): Data controllers for transaction and recurring expense flows.
-- [src/models](src/models): Domain models, validation, and normalization for Firestore data.
-- [src/services](src/services): External services (Firebase).
-- [src/utils](src/utils): Pure utilities (date, formatting, import/export helpers).
-- [src/types](src/types): Shared TypeScript types used across the app.
+```
+src/
+├── pages/           # Route-level screens (Dashboard, Home, AccountDetail)
+├── views/
+│   ├── Accounts/    # AccountsList, AccountForm, TransferForm, ReconcileForm
+│   ├── Budgets/     # BudgetsList, BudgetForm
+│   ├── Reports/     # ReportsView (4 chart sections)
+│   └── Transactions/# TransactionForm, TransactionsTable, TransactionsList
+├── components/app/  # Reusable app components (Sidebar, SettingsModal, ui primitives)
+├── context/         # Global state — Accounts, Budgets, Transactions, Theme
+├── hooks/           # Data layer — useAccounts, useBudgets, useTransactions, useRecurringExpenses, useAuth
+├── controllers/     # Business logic — AccountsController, BudgetsController, TransactionsController, ReportsController
+├── models/          # Domain models, normalization — Account, Budget, Transaction, RecurringExpense
+├── services/        # Firebase init
+├── utils/           # Pure utilities (date, formatting, import/export, dateRangeFilter)
+└── types/           # Shared TypeScript interfaces
+```
 
 ## Architecture & Data Flow
 
-- UI lives in [src/pages](src/pages) and [src/views](src/views).
-- Business logic is concentrated in hooks and controllers.
-- Firestore data is normalized at the model layer in [src/models](src/models).
-- Shared formatting and filtering utilities sit in [src/utils](src/utils).
-- Theme and currency are managed in [src/context/ThemeContext.tsx](src/context/ThemeContext.tsx).
+### Firestore Collections
+
+All data is stored under user-scoped subcollections:
+
+| Path | Description |
+|---|---|
+| `users/{userId}/transactions/{id}` | All transactions (income, expense, transfer) |
+| `users/{userId}/accounts/{id}` | User's financial accounts |
+| `users/{userId}/budgets/{id}` | Monthly spending budgets |
+| `users/{userId}/recurringTransactions/{id}` | Recurring expense templates |
+
+### MVC Layers
+
+- **Models** — data interfaces, Firestore normalization, pure utility functions (`src/models/`)
+- **Hooks** — Firestore read/write with `onSnapshot` real-time listeners (`src/hooks/`)
+- **Controllers** — business logic wrapping hooks, exposed to UI via context (`src/controllers/`)
+- **Contexts** — React Context providers: `AccountsContext`, `BudgetsContext`, `TransactionsContext` (`src/context/`)
+- **Views** — feature UI components consuming contexts (`src/views/`, `src/pages/`)
+
+### Account Balance Integrity
+
+- Every `addTransaction` call in `useTransactions` uses a Firestore `writeBatch` to atomically write the transaction document and update the account balance via `increment()`.
+- Transfers create two transaction records (one per account) and update both balances in the same batch.
+- `deleteTransaction` reverses the balance update in the same batch.
 
 ## State Management
 
-- Transactions and recurring expenses are provided via [src/context/TransactionsContext.tsx](src/context/TransactionsContext.tsx).
-- Auth state is provided by [src/hooks/useAuth.ts](src/hooks/useAuth.ts).
+- **AccountsContext** — accounts list, CRUD, net worth calculation
+- **BudgetsContext** — budgets list, CRUD, budget progress
+- **TransactionsContext** — transactions list, recurring expenses, add/update/delete/transfer
+- **ThemeContext** — dark/light mode
+
+Provider nesting order in `App.tsx`:
+
+```
+ThemeProvider → TransactionsProvider → AccountsProvider → BudgetsProvider → Router
+```
 
 ## Coding Conventions
 
 - Keep data normalization in models, not in UI components.
 - Prefer small, focused components with single responsibility.
-- Reuse utilities from [src/utils](src/utils) instead of duplicating logic.
-- Use shared types from [src/types](src/types) across UI and logic layers.
+- Use `writeBatch` + `increment()` for any operation that touches both a transaction and an account balance.
+- Reuse utilities from `src/utils/` instead of duplicating logic.
+- Use shared types from `src/types/` across all layers.
 
 ## Goals
 
-- Help users stay on top of their finances.
+- Help users stay on top of their finances across multiple accounts.
 - Make budgeting easy and accessible.
-- Keep data secure and always up to date.
+- Keep data secure, consistent, and always up to date.
 
 ## Recurring Expenses Usage
 
@@ -99,33 +144,28 @@ Create a .env.local file in the project root with the Firebase config values use
    - Open Settings (bottom-left in the sidebar)
    - Navigate to the "Recurring Expenses" tab
    - Click "Add New"
-   - Fill in title, amount, category, frequency (daily/weekly/monthly/yearly), and optional description
+   - Fill in title, amount, category, frequency, and optional description
    - Click "Add Expense"
 
 2. **Using Quick Fill:**
-   - Click "New Transaction" or "Create Transaction"
-   - In the "Quick Fill" section at the top of the form, select a recurring expense
-   - The form automatically fills with the expense details
-   - Adjust any fields as needed (you can still edit everything)
-   - Submit the transaction
+   - Click "New Transaction"
+   - In the "Quick Fill" section, select a recurring expense
+   - The form auto-fills title, amount, and category
+   - Adjust any fields as needed, then submit
 
 3. **Managing Recurring Expenses:**
-   - Edit: Click the edit icon next to any recurring expense
-   - Delete: Click the delete icon (confirmation required)
+   - Edit: click the edit icon next to any recurring expense
+   - Delete: click the delete icon (confirmation required)
 
 ## Import/Export Usage
 
-- Open the app and go to the Dashboard.
-- Click the Settings button (bottom-left in the sidebar).
-- Navigate to the "Data" tab inside the Settings modal.
-- Use:
-    - Import: upload a `.csv` or `.json` file. Required fields: `title`, `amount`, `type`, `category`. Duplicates are skipped using a signature of title+amount+type+category+date.
-    - Export CSV / Export JSON: downloads all your transactions.
-
-Feedback is shown after import indicating how many records were imported, skipped, or errored.
+- Open the Dashboard → Settings (bottom-left in the sidebar) → "Data" tab.
+- **Import:** upload a `.csv` or `.json` file. Required fields: `title`, `amount`, `type`, `category`. Optional: `accountId`, `description`, `date`. Duplicates are skipped via title+amount+type+category+date signature.
+- **Export CSV / Export JSON:** downloads all your transactions including `accountId`.
 
 ## Ideal For
 
 - Budget-conscious individuals
+- People managing multiple bank accounts
 - Students and freelancers
-- Anyone wanting a lightweight finance tracker
+- Anyone wanting a lightweight, multi-account finance tracker

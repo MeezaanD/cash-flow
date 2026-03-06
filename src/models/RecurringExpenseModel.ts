@@ -1,27 +1,29 @@
 export interface RecurringExpense {
 	id?: string;
 	userId?: string;
+	accountId?: string;
 	title: string;
 	amount: number;
+	type?: 'income' | 'expense';
 	category: string;
 	description?: string;
 	frequency?: 'daily' | 'weekly' | 'monthly' | 'yearly';
 	createdAt?: Date | { toDate: () => Date };
 }
 
-// Normalize Firestore data (converts Timestamp to Date)
 export const normalizeRecurringExpense = (doc: any): RecurringExpense => {
 	const recurringExpense: RecurringExpense = {
 		id: doc.id,
 		userId: doc.userId,
+		accountId: doc.accountId,
 		title: doc.title,
 		amount: doc.amount,
+		type: doc.type ?? 'expense',
 		category: doc.category,
 		description: doc.description,
 		frequency: doc.frequency,
 	};
 
-	// Normalize createdAt field
 	if (doc.createdAt) {
 		if (typeof doc.createdAt === 'object' && 'toDate' in doc.createdAt) {
 			recurringExpense.createdAt = doc.createdAt.toDate();
@@ -35,12 +37,9 @@ export const normalizeRecurringExpense = (doc: any): RecurringExpense => {
 	return recurringExpense;
 };
 
-// Batch normalize an array of Firestore documents
-export const normalizeRecurringExpenses = (docs: any[]): RecurringExpense[] => {
-	return docs.map(normalizeRecurringExpense);
-};
+export const normalizeRecurringExpenses = (docs: any[]): RecurringExpense[] =>
+	docs.map(normalizeRecurringExpense);
 
-// Validation helpers
 export const validateRecurringExpense = (expense: Partial<RecurringExpense>): string[] => {
 	const errors: string[] = [];
 
@@ -62,4 +61,3 @@ export const validateRecurringExpense = (expense: Partial<RecurringExpense>): st
 
 	return errors;
 };
-
