@@ -89,11 +89,11 @@ const RecurringExpensesList: React.FC = () => {
 				</div>
 			</div>
 
-			{isFormOpen && (
-				<div className="rounded-xl border-2 bg-card p-4 md:p-6 shadow-sm">
+			<Dialog open={isFormOpen} onOpenChange={(open) => { if (!open) handleCloseForm(); }}>
+				<DialogContent className="sm:max-w-lg">
 					<RecurringExpenseForm expense={editingExpense} onClose={handleCloseForm} />
-				</div>
-			)}
+				</DialogContent>
+			</Dialog>
 
 			{recurringExpenses.length === 0 ? (
 				<div className="rounded-lg border border-dashed p-8 text-center">
