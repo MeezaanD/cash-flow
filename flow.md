@@ -98,7 +98,8 @@ Legacy top-level `transactions` and `recurringExpenses` collections exist as **r
 |---|---|---|
 | `AccountsController` | `useAccounts` | `getAccountById`, `getAccountsByType`, `calculateTotalBalance`, `calculateNetWorth` |
 | `BudgetsController` | `useBudgets` | `getBudgetProgress(budgetId, txs)`, `getAllBudgetProgress(txs)` |
-| `TransactionsController` | `useTransactions` | `getExpenses`, `getIncome`, `getTransfers`, `getByAccount`, `getByCategory`, `sortByDateDesc`, `calculateTotals` |
+| `TransactionsController` | `useTransactions` | `getExpenses`, `getIncome`, `getTransfers`, `getByAccount`, `getByCategory`, `getByType`, `getAll`, `getUniqueCategories`, `sortByDateDesc`, `calculateTotals`, `groupByCategory`, `deleteAllTransactions` |
+| `RecurringExpensesController` | `useRecurringExpenses` | CRUD passthrough (`addRecurringExpense`, `updateRecurringExpense`, `deleteRecurringExpense`) |
 | `ReportsController` | Pure functions (no Firestore) | `getSpendingByCategory`, `getSpendingByAccount`, `getMonthlyTrend`, `getNetWorth` |
 
 **Context Layer** (`src/context/`)
