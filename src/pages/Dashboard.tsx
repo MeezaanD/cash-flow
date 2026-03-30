@@ -14,6 +14,7 @@ import ReconcileForm from '../views/Accounts/ReconcileForm';
 import BudgetsList from '../views/Budgets/BudgetsList';
 import ReportsView from '../views/Reports/ReportsView';
 import AuthModals from '../components/app/AuthModals';
+import AiAssistant from '../components/app/AiAssistant';
 import {
 	Dialog,
 	DialogContent,
@@ -342,6 +343,8 @@ const Dashboard: React.FC = () => {
 				mode={authMode}
 				onModeChange={setAuthMode}
 			/>
+
+			<AiAssistant />
 
 			<div
 				className={`flex-1 flex flex-col h-screen-safe md:h-auto overflow-y-auto transition-all duration-300 ease-in-out ${sidebarVisible ? 'md:ml-8' : 'md:ml-0'

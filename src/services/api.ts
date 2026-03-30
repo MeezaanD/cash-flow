@@ -145,6 +145,20 @@ class ApiService {
 		return response.data || [];
 	}
 
+	// Ask the AI assistant a question about the user's finances
+	async askAI(question: string): Promise<string> {
+		const response = await this.makeRequest<{ answer: string }>('/askAI', {
+			method: 'POST',
+			body: JSON.stringify({ question }),
+		});
+
+		if (!response.success) {
+			throw new Error(response.error || 'AI request failed');
+		}
+
+		return response.data?.answer ?? '';
+	}
+
 	// Health check
 	async healthCheck(): Promise<{
 		success: boolean;
