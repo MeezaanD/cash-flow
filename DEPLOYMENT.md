@@ -119,22 +119,38 @@ This guide provides step-by-step instructions for deploying the Firebase Cloud F
     rules_version = '2';
     service cloud.firestore {
       match /databases/{database}/documents {
-        // Transactions collection
-        match /transactions/{document} {
-          // Allow read and write only if the user is authenticated and owns the document
-          allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-          
-          // Allow create only if the user is authenticated and sets their own userId
-          allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+        // User document and subcollections
+        match /users/{userId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+
+          match /transactions/{transactionId} {
+            allow read, write: if request.auth != null && request.auth.uid == userId;
+            allow create: if request.auth != null && request.auth.uid == userId;
+          }
+
+          match /recurringTransactions/{id} {
+            allow read, write: if request.auth != null && request.auth.uid == userId;
+            allow create: if request.auth != null && request.auth.uid == userId;
+          }
+
+          match /accounts/{accountId} {
+            allow read, write: if request.auth != null && request.auth.uid == userId;
+            allow create: if request.auth != null && request.auth.uid == userId;
+          }
+
+          match /budgets/{budgetId} {
+            allow read, write: if request.auth != null && request.auth.uid == userId;
+            allow create: if request.auth != null && request.auth.uid == userId;
+          }
         }
-        
-        // Recurring Expenses collection
+
+        // Legacy top-level collections (backward compatibility, read-only)
+        match /transactions/{document} {
+          allow read: if request.auth != null && request.auth.uid == resource.data.userId;
+        }
+
         match /recurringExpenses/{document} {
-          // Allow read and write only if the user is authenticated and owns the document
-          allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
-          
-          // Allow create only if the user is authenticated and sets their own userId
-          allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+          allow read: if request.auth != null && request.auth.uid == resource.data.userId;
         }
       }
     }

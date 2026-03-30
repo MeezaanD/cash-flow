@@ -78,13 +78,14 @@ Authorization: Bearer <firebase_id_token>
 		{
 			"id": "transaction_id",
 			"userId": "user_uid",
+			"accountId": "account_id",
+			"title": "Grocery shopping",
 			"amount": 100.5,
-			"description": "Grocery shopping",
-			"category": "Food",
 			"type": "expense",
+			"category": "Food",
+			"description": "Weekly groceries",
 			"date": "2024-01-15",
-			"createdAt": "2024-01-15T10:30:00.000Z",
-			"updatedAt": "2024-01-15T10:30:00.000Z"
+			"createdAt": "2024-01-15T10:30:00.000Z"
 		}
 	],
 	"message": "Successfully retrieved 1 transactions"
@@ -113,15 +114,17 @@ Authorization: Bearer <firebase_id_token>
 
 ```typescript
 interface Transaction {
-	id: string;
-	userId: string;
+	id?: string;
+	userId?: string;
+	accountId: string;
+	title: string;
 	amount: number;
-	description: string;
+	type: 'income' | 'expense' | 'transfer';
 	category: string;
-	type: 'income' | 'expense';
-	date: string;
-	createdAt: string;
-	updatedAt: string;
+	description?: string;
+	date?: string;
+	createdAt?: string;
+	transferAccountId?: string;
 }
 ```
 
