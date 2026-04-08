@@ -3,6 +3,8 @@ import AuthModals from '../components/app/AuthModals';
 import Navbar from '../components/website/Navbar';
 import Hero from '../components/website/Hero';
 import Features from '../components/website/Features';
+import ProblemSolution from '../components/website/ProblemSolution';
+import FAQ from '../components/website/FAQ';
 import Contact from '../components/website/Contact';
 import Footer from '../components/website/Footer';
 
@@ -46,6 +48,8 @@ const Home: React.FC = () => {
 			<Navbar onAuthClick={handleAuthClick} />
 			<Hero onAuthClick={handleAuthClick} />
 			<Features />
+			<ProblemSolution />
+			<FAQ />
 			<Contact />
 			<Footer />
 

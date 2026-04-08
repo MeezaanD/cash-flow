@@ -1,37 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, X, Check, CodeXml } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 import dashboard from '@/assets/images/previews/dashboard.png';
 
 interface HeroProps {
 	onAuthClick: (mode: 'login' | 'register') => void;
 }
-
-const steps = [
-	{
-		step: 1,
-		title: 'The Problem',
-		description: 'Manual tracking is slow and error-prone',
-		icon: <X size={20} />,
-		color: 'bg-red-500/10 text-red-400',
-		iconColor: 'text-red-400',
-	},
-	{
-		step: 2,
-		title: 'The Solution',
-		description: 'Real-time sync with insights',
-		icon: <Check size={20} />,
-		color: 'bg-green-500/10 text-green-400',
-		iconColor: 'text-green-400',
-	},
-	{
-		step: 3,
-		title: 'The Tech',
-		description: 'React, TypeScript & Firebase',
-		icon: <CodeXml size={20} />,
-		color: 'bg-blue-500/10 text-blue-400',
-		iconColor: 'text-blue-400',
-	},
-];
 
 const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
 	const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -45,7 +19,10 @@ const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
 	}, []);
 
 	return (
-		<section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 lg:pt-32 pb-12 lg:pb-20 px-4 sm:px-6 lg:px-8">
+		<section
+			id="home"
+			className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 lg:pt-32 pb-12 lg:pb-20 px-4 sm:px-6 lg:px-8"
+		>
 			{/* Animated gradient background */}
 			<div className="absolute inset-0 bg-gray-950">
 				<div className="absolute inset-0 opacity-20">
@@ -77,7 +54,12 @@ const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
 
 			<div className="relative max-w-7xl mx-auto w-full">
 				{/* Easter egg badge */}
-				<div className="text-center mb-8">
+				<motion.div
+					className="text-center mb-8"
+					initial={{ opacity: 0, y: -20 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={{ duration: 0.5 }}
+				>
 					<span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900/80 backdrop-blur-xl border border-gray-800 rounded-full text-sm font-medium text-gray-300 transition-all duration-300 hover:scale-105">
 						<span className="relative flex h-2 w-2">
 							<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
@@ -85,10 +67,15 @@ const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
 						</span>
 						Click Login for a free test account!
 					</span>
-				</div>
+				</motion.div>
 
 				<div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-8 lg:mb-12">
-					<div className="space-y-4 lg:space-y-6">
+					<motion.div
+						className="space-y-4 lg:space-y-6"
+						initial={{ opacity: 0, x: -40 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ duration: 0.7, delay: 0.1 }}
+					>
 						<div className="space-y-3 lg:space-y-4">
 							<h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight">
 								<span className="block text-white">Take Control of</span>
@@ -96,65 +83,51 @@ const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
 							</h1>
 							<p className="text-base lg:text-lg xl:text-xl text-gray-400 leading-relaxed max-w-xl">
 								Track income, monitor expenses, and achieve your financial goals
-								with CashFlow - the simple, fast, and secure budgeting app.
+								with CashFlow — the simple, fast, and secure budgeting app built
+								with React, TypeScript &amp; Firebase.
 							</p>
 						</div>
 
 						<div className="flex flex-wrap gap-3 lg:gap-4">
-							<button
+							<motion.button
 								onClick={() => onAuthClick('register')}
+								whileHover={{ scale: 1.03 }}
+								whileTap={{ scale: 0.97 }}
 								className="group px-6 py-3 lg:px-8 lg:py-4 text-sm lg:text-base font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-300"
 							>
 								<span className="flex items-center gap-2">
-									Get Started Free
+									Get Started For Free
 									<ArrowRight
 										size={18}
 										className="group-hover:translate-x-1 transition-transform"
 									/>
 								</span>
-							</button>
+							</motion.button>
 
-							<button
+							<motion.button
 								onClick={() => onAuthClick('login')}
+								whileHover={{ scale: 1.03 }}
+								whileTap={{ scale: 0.97 }}
 								className="px-6 py-3 lg:px-8 lg:py-4 text-sm lg:text-base font-semibold text-gray-300 bg-gray-900/80 backdrop-blur-xl border border-gray-800 rounded-xl hover:bg-gray-800/80 hover:text-white transition-all duration-300"
 							>
 								Login
-							</button>
+							</motion.button>
 						</div>
-					</div>
+					</motion.div>
 
-					<div className="relative flex justify-center">
+					<motion.div
+						className="relative flex justify-center"
+						initial={{ opacity: 0, x: 40 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ duration: 0.7, delay: 0.2 }}
+					>
 						<img
 							src={dashboard}
 							alt="Dashboard Preview"
 							className="w-full rounded-2xl"
+							loading="lazy"
 						/>
-					</div>
-				</div>
-
-				{/* Steps */}
-				<div className="relative">
-					<div className="grid md:grid-cols-3 gap-4 lg:gap-6 xl:gap-8">
-						{steps.map((step, i) => (
-							<div key={i} className="group relative">
-								<div className="relative bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-xl lg:rounded-2xl xl:rounded-3xl p-4 lg:p-6 xl:p-8 hover:bg-gray-900/70 transition-all duration-500 hover:scale-105">
-									<div className="flex flex-col items-center text-center space-y-2 lg:space-y-3">
-										<div
-											className={`inline-flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 xl:w-14 xl:h-14 rounded-xl lg:rounded-2xl ${step.color} group-hover:scale-110 transition-transform duration-300`}
-										>
-											<div className={step.iconColor}>{step.icon}</div>
-										</div>
-										<div>
-											<h3 className="text-base lg:text-lg xl:text-xl font-bold text-white mb-1 lg:mb-2">
-												{step.title}
-											</h3>
-											<p className="text-xs lg:text-sm xl:text-base text-gray-400">{step.description}</p>
-										</div>
-									</div>
-								</div>
-							</div>
-						))}
-					</div>
+					</motion.div>
 				</div>
 
 				{/* Scroll indicator */}
