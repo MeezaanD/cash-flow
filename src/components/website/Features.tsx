@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { FiClock, FiRefreshCw, FiPieChart, FiCalendar, FiFileText, FiCloud } from 'react-icons/fi';
 import { SiReact, SiTypescript, SiTailwindcss, SiFirebase } from 'react-icons/si';
 
@@ -89,7 +90,13 @@ const Features: React.FC = () => {
 				className="relative py-32 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gray-950"
 			>
 				<div className="relative max-w-7xl mx-auto">
-					<div className="text-center mb-20">
+					<motion.div
+						className="text-center mb-20"
+						initial={{ opacity: 0, y: 30 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						transition={{ duration: 0.6 }}
+					>
 						<span className="inline-block px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-sm font-medium mb-4">
 							Features
 						</span>
@@ -99,13 +106,17 @@ const Features: React.FC = () => {
 						<p className="text-xl text-gray-400 max-w-2xl mx-auto">
 							Powerful tools designed to make personal finance management simple
 						</p>
-					</div>
+					</motion.div>
 
 					<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 						{features.map((feature, i) => (
-							<div
+							<motion.div
 								key={i}
 								className="group relative bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 hover:bg-gray-900/70 transition-all duration-500 hover:-translate-y-2"
+								initial={{ opacity: 0, y: 30 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								viewport={{ once: true }}
+								transition={{ duration: 0.5, delay: i * 0.08 }}
 							>
 								<div className="flex flex-col items-center text-center space-y-4">
 									<div className="inline-flex p-4 rounded-2xl bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform duration-300">
@@ -120,31 +131,44 @@ const Features: React.FC = () => {
 										</p>
 									</div>
 								</div>
-							</div>
+							</motion.div>
 						))}
 					</div>
 				</div>
 			</section>
 
 			{/* Demo Sections */}
-			<section className="relative py-32 px-4 sm:px-6 lg:px-8 bg-gray-950">
+			<section
+				id="demo"
+				className="relative py-32 px-4 sm:px-6 lg:px-8 bg-gray-950"
+			>
 				<div className="max-w-7xl mx-auto">
-					<div className="text-center mb-24">
+					<motion.div
+						className="text-center mb-24"
+						initial={{ opacity: 0, y: 30 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						transition={{ duration: 0.6 }}
+					>
 						<span className="inline-block px-4 py-2 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-full text-sm font-medium mb-4">
 							See It in Action
 						</span>
 						<h2 className="text-4xl md:text-6xl font-bold text-white">
 							Experience It Yourself
 						</h2>
-					</div>
+					</motion.div>
 
 					<div className="space-y-32">
 						{demoSections.map((item, i) => (
-							<div
+							<motion.div
 								key={i}
 								className={`grid lg:grid-cols-2 gap-16 items-center ${
 									i % 2 === 1 ? 'lg:flex-row-reverse' : ''
 								}`}
+								initial={{ opacity: 0, y: 40 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								viewport={{ once: true }}
+								transition={{ duration: 0.6, delay: 0.1 }}
 							>
 								<div className={`${i % 2 === 1 ? 'lg:order-2' : ''}`}>
 									<h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
@@ -160,10 +184,11 @@ const Features: React.FC = () => {
 											src={item.image}
 											alt={item.title}
 											className="w-full rounded-2xl"
+											loading="lazy"
 										/>
 									</div>
 								</div>
-							</div>
+							</motion.div>
 						))}
 					</div>
 				</div>
@@ -175,17 +200,27 @@ const Features: React.FC = () => {
 				className="relative py-32 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gray-950"
 			>
 				<div className="relative max-w-5xl mx-auto">
-					<div className="text-center mb-20">
+					<motion.div
+						className="text-center mb-20"
+						initial={{ opacity: 0, y: 30 }}
+						whileInView={{ opacity: 1, y: 0 }}
+						viewport={{ once: true }}
+						transition={{ duration: 0.6 }}
+					>
 						<h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
 							Built With Modern Tech
 						</h2>
-					</div>
+					</motion.div>
 
 					<div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
 						{techStack.map((tech, i) => (
-							<div
+							<motion.div
 								key={i}
 								className="group relative bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 hover:bg-gray-900/70 transition-all duration-500 hover:-translate-y-2"
+								initial={{ opacity: 0, y: 30 }}
+								whileInView={{ opacity: 1, y: 0 }}
+								viewport={{ once: true }}
+								transition={{ duration: 0.5, delay: i * 0.1 }}
 							>
 								<div className="flex flex-col items-center text-center space-y-4">
 									<div className="text-blue-400 group-hover:scale-110 transition-transform duration-300">
@@ -198,7 +233,7 @@ const Features: React.FC = () => {
 										<p className="text-gray-400">{tech.desc}</p>
 									</div>
 								</div>
-							</div>
+							</motion.div>
 						))}
 					</div>
 				</div>
