@@ -1,38 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, X, Check, CodeXml } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import dashboard from '@/assets/images/previews/dashboard.png';
 
 interface HeroProps {
 	onAuthClick: (mode: 'login' | 'register') => void;
 }
-
-const steps = [
-	{
-		step: 1,
-		title: 'The Problem',
-		description: 'Manual tracking is slow and error-prone',
-		icon: <X size={20} />,
-		color: 'bg-red-500/10 text-red-400',
-		iconColor: 'text-red-400',
-	},
-	{
-		step: 2,
-		title: 'The Solution',
-		description: 'Real-time sync with insights',
-		icon: <Check size={20} />,
-		color: 'bg-green-500/10 text-green-400',
-		iconColor: 'text-green-400',
-	},
-	{
-		step: 3,
-		title: 'The Tech',
-		description: 'React, TypeScript & Firebase',
-		icon: <CodeXml size={20} />,
-		color: 'bg-blue-500/10 text-blue-400',
-		iconColor: 'text-blue-400',
-	},
-];
 
 const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
 	const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -123,7 +96,7 @@ const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
 								className="group px-6 py-3 lg:px-8 lg:py-4 text-sm lg:text-base font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-300"
 							>
 								<span className="flex items-center gap-2">
-									Get Started Free
+									Get Started For Free
 									<ArrowRight
 										size={18}
 										className="group-hover:translate-x-1 transition-transform"
@@ -155,39 +128,6 @@ const Hero: React.FC<HeroProps> = ({ onAuthClick }) => {
 							loading="lazy"
 						/>
 					</motion.div>
-				</div>
-
-				{/* Steps */}
-				<div className="relative">
-					<div className="grid md:grid-cols-3 gap-4 lg:gap-6 xl:gap-8">
-						{steps.map((step, i) => (
-							<motion.div
-								key={i}
-								className="group relative"
-								initial={{ opacity: 0, y: 30 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
-							>
-								<div className="relative bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-xl lg:rounded-2xl xl:rounded-3xl p-4 lg:p-6 xl:p-8 hover:bg-gray-900/70 transition-all duration-500 hover:scale-105">
-									<div className="flex flex-col items-center text-center space-y-2 lg:space-y-3">
-										<div
-											className={`inline-flex items-center justify-center w-10 h-10 lg:w-12 lg:h-12 xl:w-14 xl:h-14 rounded-xl lg:rounded-2xl ${step.color} group-hover:scale-110 transition-transform duration-300`}
-										>
-											<div className={step.iconColor}>{step.icon}</div>
-										</div>
-										<div>
-											<h3 className="text-base lg:text-lg xl:text-xl font-bold text-white mb-1 lg:mb-2">
-												{step.title}
-											</h3>
-											<p className="text-xs lg:text-sm xl:text-base text-gray-400">
-												{step.description}
-											</p>
-										</div>
-									</div>
-								</div>
-							</motion.div>
-						))}
-					</div>
 				</div>
 
 				{/* Scroll indicator */}

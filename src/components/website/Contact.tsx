@@ -20,7 +20,7 @@ const Contact: React.FC = () => {
 					<span className="inline-block px-4 py-2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full text-sm font-medium mb-4">
 						Meet the Developer
 					</span>
-					<h2 className="text-4xl md:text-5xl font-bold text-white">Built by Meezaan</h2>
+					<h2 className="text-4xl md:text-5xl font-bold text-white">Meet The Developer</h2>
 				</motion.div>
 
 				<motion.div
@@ -40,17 +40,12 @@ const Contact: React.FC = () => {
 							/>
 						</div>
 
-						<div className="space-y-4 max-w-xl">
+						<div className="space-y-4 max-w-2xl">
 							<h3 className="text-3xl font-bold text-white">Meezaan Davids</h3>
-							<p className="text-xl text-gray-400">Full Stack Developer</p>
-							<p className="text-gray-400 leading-relaxed text-lg">
-								Passionate about building practical tools that solve real problems.
-								I focus on creating clean, user-friendly applications with modern
-								web technologies.
-							</p>
+							<p className="text-xl text-gray-400">Software Developer</p>
 						</div>
 
-						<div className="flex flex-wrap gap-4 justify-center">
+						<div className="flex flex-col-reverse md:flex-row gap-3 justify-center">
 							{[
 								{
 									href: 'https://github.com/MeezaanD',
@@ -80,7 +75,7 @@ const Contact: React.FC = () => {
 									rel={link.href.startsWith('mailto') ? undefined : 'noopener noreferrer'}
 									whileHover={{ y: -4, scale: 1.05 }}
 									transition={{ duration: 0.2 }}
-									className="group/link inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gray-900/80 backdrop-blur-xl border border-gray-800 hover:bg-gray-800/80 transition-all duration-300"
+									className="group/link inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-gray-900/80 backdrop-blur-xl border border-gray-800 hover:bg-gray-800/80 transition-all duration-300"
 								>
 									<span className="text-gray-400 group-hover/link:text-blue-400 transition-colors">
 										{link.icon}

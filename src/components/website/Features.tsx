@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FiClock, FiRefreshCw, FiPieChart, FiCalendar, FiFileText, FiCloud } from 'react-icons/fi';
-import { SiReact, SiTypescript, SiTailwindcss, SiFirebase } from 'react-icons/si';
 
 import expenses from '@/assets/images/previews/recurring-expenses.png';
 import reports from '@/assets/images/previews/reports.png';
@@ -56,29 +55,6 @@ const Features: React.FC = () => {
 			title: 'Visual Analytics',
 			desc: 'Beautiful charts to understand your spending patterns',
 			image: reports,
-		},
-	];
-
-	const techStack = [
-		{
-			name: 'React',
-			desc: 'Component-based UI',
-			icon: <SiReact size={32} />,
-		},
-		{
-			name: 'TypeScript',
-			desc: 'Type-safe code',
-			icon: <SiTypescript size={32} />,
-		},
-		{
-			name: 'Tailwind CSS',
-			desc: 'Modern styling',
-			icon: <SiTailwindcss size={32} />,
-		},
-		{
-			name: 'Firebase',
-			desc: 'Real-time database',
-			icon: <SiFirebase size={32} />,
 		},
 	];
 
@@ -186,51 +162,6 @@ const Features: React.FC = () => {
 											className="w-full rounded-2xl"
 											loading="lazy"
 										/>
-									</div>
-								</div>
-							</motion.div>
-						))}
-					</div>
-				</div>
-			</section>
-
-			{/* Tech Stack */}
-			<section
-				id="tech"
-				className="relative py-32 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gray-950"
-			>
-				<div className="relative max-w-5xl mx-auto">
-					<motion.div
-						className="text-center mb-20"
-						initial={{ opacity: 0, y: 30 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
-						transition={{ duration: 0.6 }}
-					>
-						<h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-							Built With Modern Tech
-						</h2>
-					</motion.div>
-
-					<div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-						{techStack.map((tech, i) => (
-							<motion.div
-								key={i}
-								className="group relative bg-gray-900/50 backdrop-blur-xl border border-gray-800 rounded-3xl p-8 hover:bg-gray-900/70 transition-all duration-500 hover:-translate-y-2"
-								initial={{ opacity: 0, y: 30 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ duration: 0.5, delay: i * 0.1 }}
-							>
-								<div className="flex flex-col items-center text-center space-y-4">
-									<div className="text-blue-400 group-hover:scale-110 transition-transform duration-300">
-										{tech.icon}
-									</div>
-									<div>
-										<h3 className="text-xl font-bold text-white mb-2">
-											{tech.name}
-										</h3>
-										<p className="text-gray-400">{tech.desc}</p>
 									</div>
 								</div>
 							</motion.div>
