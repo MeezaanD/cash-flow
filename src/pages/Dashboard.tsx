@@ -13,6 +13,7 @@ import TransferForm from '../views/Accounts/TransferForm';
 import ReconcileForm from '../views/Accounts/ReconcileForm';
 import BudgetsList from '../views/Budgets/BudgetsList';
 import ReportsView from '../views/Reports/ReportsView';
+import RecurringTransactionsView from '../views/RecurringTransactions/RecurringTransactionsView';
 import AuthModals from '../components/app/AuthModals';
 import {
 	Dialog,
@@ -158,12 +159,14 @@ const Dashboard: React.FC = () => {
 				return <ReconcileForm onClose={() => setActiveView('accounts')} />;
 			case 'budgets':
 				return <BudgetsList />;
+			case 'recurring':
+				return <RecurringTransactionsView />;
 			case 'reports':
 				return <ReportsView />;
 			default:
 				return (
 					<div className="flex flex-1 items-center justify-center px-6">
-						<div className="w-full max-w-2xl text-center">
+						<div className="w-full max-w-5xl text-center">
 							<div className="mx-auto mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
 								<span className="text-primary text-lg">&#10022;</span>
 							</div>
@@ -189,7 +192,7 @@ const Dashboard: React.FC = () => {
 								</Button>
 							</div>
 							{transactions.length > 0 && (
-								<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+								<div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
 									<button
 										onClick={() => setActiveView('accounts')}
 										className="rounded-2xl border bg-background p-4 text-left transition-colors hover:bg-muted/50"
@@ -226,6 +229,18 @@ const Dashboard: React.FC = () => {
 										</div>
 										<p className="text-sm text-muted-foreground">
 											All transactions
+										</p>
+									</button>
+									<button
+										onClick={() => setActiveView('recurring')}
+										className="rounded-2xl border bg-background p-4 text-left transition-colors hover:bg-muted/50"
+									>
+										<div className="flex items-center gap-2 mb-1">
+											<span className="text-sm">&#8635;</span>
+											<span className="font-medium">Recurring</span>
+										</div>
+										<p className="text-sm text-muted-foreground">
+											Manage recurring transactions
 										</p>
 									</button>
 								</div>

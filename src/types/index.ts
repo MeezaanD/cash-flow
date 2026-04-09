@@ -16,7 +16,8 @@ export type ViewType =
 	| 'accounts'
 	| 'budgets'
 	| 'transfer'
-	| 'reconcile';
+	| 'reconcile'
+	| 'recurring';
 
 // Category
 export interface Category {
