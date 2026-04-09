@@ -344,7 +344,7 @@ const RecurringExpensesView: React.FC = () => {
 			)}
 
 			{/* Add / Edit Form Dialog */}
-			<Dialog open={isFormOpen} onOpenChange={(open) => { if (!open) handleCloseForm(); }}>
+			<Dialog open={isFormOpen} onOpenChange={handleCloseForm}>
 				<DialogContent className="sm:max-w-lg">
 					<RecurringExpenseForm expense={editingExpense} onClose={handleCloseForm} />
 				</DialogContent>
