@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiDollarSign, FiTag, FiInfo, FiSave, FiX, FiRefreshCw, FiArrowUpCircle, FiArrowDownCircle } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
-import { RecurringExpense } from '../../models/RecurringExpenseModel';
+import { RecurringTransaction } from '../../models/RecurringTransactionModel';
 import { Category } from '../../types';
 import { Button } from '../../components/app/ui/button';
 import { Input } from '../../components/app/ui/input';
@@ -16,9 +16,9 @@ import {
 } from '../../components/app/ui/select';
 import { Loader2 } from 'lucide-react';
 
-interface RecurringExpenseFormProps {
+interface RecurringTransactionFormProps {
 	onClose: () => void;
-	expense?: RecurringExpense;
+	transaction?: RecurringTransaction;
 }
 
 const CATEGORIES: Category[] = [
@@ -37,8 +37,8 @@ const FREQUENCIES = [
 	{ value: 'yearly', label: 'Yearly' },
 ];
 
-const RecurringExpenseForm: React.FC<RecurringExpenseFormProps> = ({ onClose, expense }) => {
-	const { addRecurringExpense, updateRecurringExpense } = useTransactionsContext();
+const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onClose, transaction: expense }) => {
+	const { addRecurringTransaction, updateRecurringTransaction } = useTransactionsContext();
 	const [title, setTitle] = useState('');
 	const [amount, setAmount] = useState(0);
 	const [transactionType, setTransactionType] = useState<'expense' | 'income'>('expense');
@@ -81,9 +81,9 @@ const RecurringExpenseForm: React.FC<RecurringExpenseFormProps> = ({ onClose, ex
 			};
 
 			if (expense && expense.id) {
-				await updateRecurringExpense(expense.id, data);
+				await updateRecurringTransaction(expense.id, data);
 			} else {
-				await addRecurringExpense(data);
+				await addRecurringTransaction(data);
 			}
 			onClose();
 		} catch (error) {
@@ -304,4 +304,4 @@ const RecurringExpenseForm: React.FC<RecurringExpenseFormProps> = ({ onClose, ex
 	);
 };
 
-export default RecurringExpenseForm;
+export default RecurringTransactionForm;

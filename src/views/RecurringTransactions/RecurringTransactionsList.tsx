@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { FiEdit, FiTrash2, FiPlus, FiDollarSign } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
-import { RecurringExpense } from '../../models/RecurringExpenseModel';
+import { RecurringTransaction } from '../../models/RecurringTransactionModel';
 import { Button } from '../../components/app/ui/button';
-import RecurringExpenseForm from './RecurringExpenseForm';
+import RecurringTransactionForm from './RecurringTransactionForm';
 import {
 	Dialog,
 	DialogContent,
@@ -14,30 +14,30 @@ import {
 } from '../../components/app/ui/dialog';
 import { formatCurrency } from '../../utils/formatCurrency';
 
-const RecurringExpensesList: React.FC = () => {
-	const { recurringExpenses, deleteRecurringExpense, recurringExpensesLoading } =
+const RecurringTransactionsList: React.FC = () => {
+	const { recurringTransactions, deleteRecurringTransaction, recurringTransactionsLoading } =
 		useTransactionsContext();
-	const [editingExpense, setEditingExpense] = useState<RecurringExpense | undefined>(undefined);
+	const [editingTransaction, setEditingTransaction] = useState<RecurringTransaction | undefined>(undefined);
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-	const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
+	const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
 
-	const handleEdit = (expense: RecurringExpense) => {
-		setEditingExpense(expense);
+	const handleEdit = (transaction: RecurringTransaction) => {
+		setEditingTransaction(transaction);
 		setIsFormOpen(true);
 	};
 
 	const handleDelete = (id: string) => {
-		setExpenseToDelete(id);
+		setTransactionToDelete(id);
 		setDeleteDialogOpen(true);
 	};
 
 	const handleConfirmDelete = async () => {
-		if (expenseToDelete) {
+		if (transactionToDelete) {
 			try {
-				await deleteRecurringExpense(expenseToDelete);
+				await deleteRecurringTransaction(transactionToDelete);
 				setDeleteDialogOpen(false);
-				setExpenseToDelete(null);
+				setTransactionToDelete(null);
 			} catch (error) {
 				console.error('Error deleting recurring transaction:', error);
 			}
@@ -45,13 +45,13 @@ const RecurringExpensesList: React.FC = () => {
 	};
 
 	const handleAddNew = () => {
-		setEditingExpense(undefined);
+		setEditingTransaction(undefined);
 		setIsFormOpen(true);
 	};
 
 	const handleCloseForm = () => {
 		setIsFormOpen(false);
-		setEditingExpense(undefined);
+		setEditingTransaction(undefined);
 	};
 
 	const getFrequencyLabel = (frequency?: string) => {
@@ -69,7 +69,7 @@ const RecurringExpensesList: React.FC = () => {
 		}
 	};
 
-	if (recurringExpensesLoading) {
+	if (recurringTransactionsLoading) {
 		return (
 			<div className="flex items-center justify-center py-8" aria-live="polite">
 				<div className="text-sm text-muted-foreground">Loading recurring transactions...</div>
@@ -91,11 +91,11 @@ const RecurringExpensesList: React.FC = () => {
 
 			<Dialog open={isFormOpen} onOpenChange={(open) => { if (!open) handleCloseForm(); }}>
 				<DialogContent className="sm:max-w-lg">
-					<RecurringExpenseForm expense={editingExpense} onClose={handleCloseForm} />
+					<RecurringTransactionForm transaction={editingTransaction} onClose={handleCloseForm} />
 				</DialogContent>
 			</Dialog>
 
-			{recurringExpenses.length === 0 ? (
+			{recurringTransactions.length === 0 ? (
 				<div className="rounded-lg border border-dashed p-8 text-center">
 					<FiDollarSign className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
 					<p className="text-sm text-muted-foreground">
@@ -104,27 +104,27 @@ const RecurringExpensesList: React.FC = () => {
 				</div>
 			) : (
 				<div role="list" className="space-y-2">
-					{recurringExpenses.map((expense) => (
+					{recurringTransactions.map((transaction) => (
 						<div
-							key={expense.id}
+							key={transaction.id}
 							role="listitem"
 							className="flex flex-col gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center sm:justify-between"
 						>
 							<div className="min-w-0 flex-1">
 								<div className="flex flex-wrap items-center gap-2">
-									<h4 className="font-medium">{expense.title}</h4>
+									<h4 className="font-medium">{transaction.title}</h4>
 									<span className="text-xs text-muted-foreground">
-										({getFrequencyLabel(expense.frequency)})
+										({getFrequencyLabel(transaction.frequency)})
 									</span>
 								</div>
 								<div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-									<span>{formatCurrency(expense.amount)}</span>
+									<span>{formatCurrency(transaction.amount)}</span>
 									<span className="hidden sm:inline">•</span>
-									<span>{expense.category}</span>
-									{expense.description && (
+									<span>{transaction.category}</span>
+									{transaction.description && (
 										<>
 											<span className="hidden sm:inline">•</span>
-											<span className="truncate">{expense.description}</span>
+											<span className="truncate">{transaction.description}</span>
 										</>
 									)}
 								</div>
@@ -133,7 +133,7 @@ const RecurringExpensesList: React.FC = () => {
 								<Button
 									variant="ghost"
 									size="icon"
-									onClick={() => handleEdit(expense)}
+									onClick={() => handleEdit(transaction)}
 									className="h-9 w-9"
 									aria-label="Edit recurring transaction"
 								>
@@ -142,7 +142,7 @@ const RecurringExpensesList: React.FC = () => {
 								<Button
 									variant="ghost"
 									size="icon"
-									onClick={() => handleDelete(expense.id!)}
+									onClick={() => handleDelete(transaction.id!)}
 									className="h-9 w-9 text-destructive hover:text-destructive"
 									aria-label="Delete recurring transaction"
 								>
@@ -177,4 +177,4 @@ const RecurringExpensesList: React.FC = () => {
 	);
 };
 
-export default RecurringExpensesList;
+export default RecurringTransactionsList;

@@ -3,7 +3,7 @@ import { FiRefreshCw } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import { useAccountsContext } from '../../context/AccountsContext';
 import { Transaction } from '../../models/TransactionModel';
-import { RecurringExpense } from '../../models/RecurringExpenseModel';
+import { RecurringTransaction } from '../../models/RecurringTransactionModel';
 import { Category, TransactionType } from '../../types';
 import { Button } from '../../components/app/ui/button';
 import { Input } from '../../components/app/ui/input';
@@ -20,7 +20,7 @@ import { formatCurrency } from '../../utils/formatCurrency';
 interface TransactionFormProps {
 	onClose: () => void;
 	transaction?: Transaction;
-	recurringExpense?: RecurringExpense;
+	recurringTransaction?: RecurringTransaction;
 }
 
 const CATEGORIES: Category[] = [
@@ -35,9 +35,9 @@ const CATEGORIES: Category[] = [
 const TransactionForm: React.FC<TransactionFormProps> = ({
 	onClose,
 	transaction,
-	recurringExpense: initialRecurringExpense,
+	recurringTransaction: initialRecurringTransaction,
 }) => {
-	const { addTransaction, addTransfer, updateTransaction, recurringExpenses } = useTransactionsContext();
+	const { addTransaction, addTransfer, updateTransaction, recurringTransactions } = useTransactionsContext();
 	const { accounts } = useAccountsContext();
 
 	const [title, setTitle] = useState('');
@@ -49,7 +49,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 	const [description, setDescription] = useState('');
 	const [date, setDate] = useState<string>('');
 	const [selectedRecurringId, setSelectedRecurringId] = useState<string | null>(
-		initialRecurringExpense?.id || null
+		initialRecurringTransaction?.id || null
 	);
 
 	// Default to first account
@@ -80,15 +80,15 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 			}
 
 			setDate(transactionDate ? transactionDate.toISOString().split('T')[0] : '');
-		} else if (initialRecurringExpense) {
-			setTitle(initialRecurringExpense.title);
-			setAmount(initialRecurringExpense.amount);
-			setType((initialRecurringExpense.type as TransactionType) ?? 'expense');
-			if (initialRecurringExpense.accountId) setAccountId(initialRecurringExpense.accountId);
-			setCategory(initialRecurringExpense.category ?? '');
-			setDescription(initialRecurringExpense.description ?? '');
+		} else if (initialRecurringTransaction) {
+			setTitle(initialRecurringTransaction.title);
+			setAmount(initialRecurringTransaction.amount);
+			setType((initialRecurringTransaction.type as TransactionType) ?? 'expense');
+			if (initialRecurringTransaction.accountId) setAccountId(initialRecurringTransaction.accountId);
+			setCategory(initialRecurringTransaction.category ?? '');
+			setDescription(initialRecurringTransaction.description ?? '');
 			setDate(new Date().toISOString().split('T')[0]);
-			setSelectedRecurringId(initialRecurringExpense.id || null);
+			setSelectedRecurringId(initialRecurringTransaction.id || null);
 		} else {
 			setTitle('');
 			setAmount(0);
@@ -98,11 +98,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 			setDate(new Date().toISOString().split('T')[0]);
 			setSelectedRecurringId(null);
 		}
-	}, [transaction, initialRecurringExpense]);
+	}, [transaction, initialRecurringTransaction]);
 
 	useEffect(() => {
 		if (selectedRecurringId && !transaction) {
-			const selectedExpense = recurringExpenses.find((e) => e.id === selectedRecurringId);
+			const selectedExpense = recurringTransactions.find((e) => e.id === selectedRecurringId);
 			if (selectedExpense) {
 				setTitle(selectedExpense.title);
 				setAmount(selectedExpense.amount);
@@ -111,13 +111,13 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 				setCategory(selectedExpense.category ?? '');
 				setDescription(selectedExpense.description ?? '');
 			}
-		} else if (selectedRecurringId === null && !transaction && !initialRecurringExpense) {
+		} else if (selectedRecurringId === null && !transaction && !initialRecurringTransaction) {
 			setTitle('');
 			setAmount(0);
 			setCategory('');
 			setDescription('');
 		}
-	}, [selectedRecurringId, recurringExpenses, transaction, initialRecurringExpense]);
+	}, [selectedRecurringId, recurringTransactions, transaction, initialRecurringTransaction]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -181,7 +181,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 				</div>
 
 				{/* Recurring – Smart Autofill */}
-				{!transaction && recurringExpenses.length > 0 && (
+				{!transaction && recurringTransactions.length > 0 && (
 					<div className="mb-8 rounded-xl border border-dashed bg-muted/40 p-4">
 						<div className="mb-3 flex items-center gap-2 text-sm font-medium">
 							<FiRefreshCw className="h-4 w-4 text-primary" />
@@ -198,7 +198,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="__none__">Start fresh</SelectItem>
-								{recurringExpenses.map((expense) => (
+								{recurringTransactions.map((expense) => (
 									<SelectItem key={expense.id} value={expense.id!}>
 										<span className="font-medium">{expense.title}</span>
 										<span className="text-muted-foreground"> • {formatCurrency(expense.amount)}</span>

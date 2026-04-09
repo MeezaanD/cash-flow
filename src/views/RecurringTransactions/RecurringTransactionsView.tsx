@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { FiEdit, FiTrash2, FiPlus, FiDollarSign, FiRefreshCw, FiX } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
-import { RecurringExpense } from '../../models/RecurringExpenseModel';
+import { RecurringTransaction } from '../../models/RecurringTransactionModel';
 import { Button } from '../../components/app/ui/button';
 import { Badge } from '../../components/app/ui/badge';
-import RecurringExpenseForm from './RecurringExpenseForm';
+import RecurringTransactionForm from './RecurringTransactionForm';
 import {
 	Dialog,
 	DialogContent,
@@ -78,36 +78,36 @@ const buildFilterLabel = (
 	return parts.length > 0 ? parts.join(' · ') : 'All recurring';
 };
 
-const RecurringExpensesView: React.FC = () => {
-	const { recurringExpenses, deleteRecurringExpense, recurringExpensesLoading } =
+const RecurringTransactionsView: React.FC = () => {
+	const { recurringTransactions, deleteRecurringTransaction, recurringTransactionsLoading } =
 		useTransactionsContext();
 
 	const [frequencyFilter, setFrequencyFilter] = useState('all');
 	const [categoryFilter, setCategoryFilter] = useState('all');
 	const [typeFilter, setTypeFilter] = useState('all');
 	const [isFormOpen, setIsFormOpen] = useState(false);
-	const [editingExpense, setEditingExpense] = useState<RecurringExpense | undefined>(undefined);
+	const [editingTransaction, setEditingTransaction] = useState<RecurringTransaction | undefined>(undefined);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-	const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
+	const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
 
 	const hasActiveFilters =
 		frequencyFilter !== 'all' || categoryFilter !== 'all' || typeFilter !== 'all';
 
-	const filteredExpenses = useMemo(() => {
-		return recurringExpenses.filter((expense) => {
-			if (frequencyFilter !== 'all' && expense.frequency !== frequencyFilter) return false;
-			if (categoryFilter !== 'all' && expense.category !== categoryFilter) return false;
+	const filteredTransactions = useMemo(() => {
+		return recurringTransactions.filter((transaction) => {
+			if (frequencyFilter !== 'all' && transaction.frequency !== frequencyFilter) return false;
+			if (categoryFilter !== 'all' && transaction.category !== categoryFilter) return false;
 			if (typeFilter !== 'all') {
-				const expenseType = expense.type ?? 'expense';
-				if (expenseType !== typeFilter) return false;
+				const transactionType = transaction.type ?? 'expense';
+				if (transactionType !== typeFilter) return false;
 			}
 			return true;
 		});
-	}, [recurringExpenses, frequencyFilter, categoryFilter, typeFilter]);
+	}, [recurringTransactions, frequencyFilter, categoryFilter, typeFilter]);
 
 	const filteredTotal = useMemo(
-		() => filteredExpenses.reduce((sum, e) => sum + e.amount, 0),
-		[filteredExpenses]
+		() => filteredTransactions.reduce((sum, e) => sum + e.amount, 0),
+		[filteredTransactions]
 	);
 
 	const filterLabel = useMemo(
@@ -115,22 +115,22 @@ const RecurringExpensesView: React.FC = () => {
 		[frequencyFilter, categoryFilter, typeFilter]
 	);
 
-	const handleEdit = (expense: RecurringExpense) => {
-		setEditingExpense(expense);
+	const handleEdit = (transaction: RecurringTransaction) => {
+		setEditingTransaction(transaction);
 		setIsFormOpen(true);
 	};
 
 	const handleDeleteClick = (id: string) => {
-		setExpenseToDelete(id);
+		setTransactionToDelete(id);
 		setDeleteDialogOpen(true);
 	};
 
 	const handleConfirmDelete = async () => {
-		if (expenseToDelete) {
+		if (transactionToDelete) {
 			try {
-				await deleteRecurringExpense(expenseToDelete);
+				await deleteRecurringTransaction(transactionToDelete);
 				setDeleteDialogOpen(false);
-				setExpenseToDelete(null);
+				setTransactionToDelete(null);
 			} catch (error) {
 				console.error('Error deleting recurring transaction:', error);
 			}
@@ -138,13 +138,13 @@ const RecurringExpensesView: React.FC = () => {
 	};
 
 	const handleAddNew = () => {
-		setEditingExpense(undefined);
+		setEditingTransaction(undefined);
 		setIsFormOpen(true);
 	};
 
 	const handleCloseForm = () => {
 		setIsFormOpen(false);
-		setEditingExpense(undefined);
+		setEditingTransaction(undefined);
 	};
 
 	const handleResetFilters = () => {
@@ -153,7 +153,7 @@ const RecurringExpensesView: React.FC = () => {
 		setTypeFilter('all');
 	};
 
-	if (recurringExpensesLoading) {
+	if (recurringTransactionsLoading) {
 		return (
 			<div className="flex flex-1 items-center justify-center" aria-live="polite">
 				<div className="text-sm text-muted-foreground">Loading recurring transactions...</div>
@@ -249,14 +249,14 @@ const RecurringExpensesView: React.FC = () => {
 						</div>
 					</div>
 					<Badge variant="secondary" className="text-sm">
-						{filteredExpenses.length}{' '}
-						{filteredExpenses.length === 1 ? 'item' : 'items'}
+						{filteredTransactions.length}{' '}
+						{filteredTransactions.length === 1 ? 'item' : 'items'}
 					</Badge>
 				</div>
 			</div>
 
 			{/* Transaction List */}
-			{filteredExpenses.length === 0 ? (
+			{filteredTransactions.length === 0 ? (
 				<div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
 					<FiDollarSign className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
 					<p className="font-medium text-muted-foreground">
@@ -282,7 +282,7 @@ const RecurringExpensesView: React.FC = () => {
 				</div>
 			) : (
 				<div role="list" className="space-y-3">
-					{filteredExpenses.map((expense) => (
+					{filteredTransactions.map((expense) => (
 						<div
 							key={expense.id}
 							role="listitem"
@@ -346,7 +346,7 @@ const RecurringExpensesView: React.FC = () => {
 			{/* Add / Edit Form Dialog */}
 			<Dialog open={isFormOpen} onOpenChange={handleCloseForm}>
 				<DialogContent className="sm:max-w-lg">
-					<RecurringExpenseForm expense={editingExpense} onClose={handleCloseForm} />
+					<RecurringTransactionForm transaction={editingTransaction} onClose={handleCloseForm} />
 				</DialogContent>
 			</Dialog>
 
@@ -374,4 +374,4 @@ const RecurringExpensesView: React.FC = () => {
 	);
 };
 
-export default RecurringExpensesView;
+export default RecurringTransactionsView;
