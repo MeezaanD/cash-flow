@@ -39,7 +39,7 @@ const RecurringExpensesList: React.FC = () => {
 				setDeleteDialogOpen(false);
 				setExpenseToDelete(null);
 			} catch (error) {
-				console.error('Error deleting recurring expense:', error);
+				console.error('Error deleting recurring transaction:', error);
 			}
 		}
 	};
@@ -72,7 +72,7 @@ const RecurringExpensesList: React.FC = () => {
 	if (recurringExpensesLoading) {
 		return (
 			<div className="flex items-center justify-center py-8" aria-live="polite">
-				<div className="text-sm text-muted-foreground">Loading recurring expenses...</div>
+				<div className="text-sm text-muted-foreground">Loading recurring transactions...</div>
 			</div>
 		);
 	}
@@ -81,7 +81,7 @@ const RecurringExpensesList: React.FC = () => {
 		<div className="space-y-4 max-h-modal-list overflow-y-auto">
 			<div className="sticky top-0 z-10 bg-card pb-2">
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-					<h3 className="text-lg font-semibold">Recurring Expenses</h3>
+					<h3 className="text-lg font-semibold">Recurring Transactions</h3>
 					<Button onClick={handleAddNew} size="sm" className="w-full sm:w-auto">
 						<FiPlus className="mr-2 h-4 w-4" />
 						Add New
@@ -99,7 +99,7 @@ const RecurringExpensesList: React.FC = () => {
 				<div className="rounded-lg border border-dashed p-8 text-center">
 					<FiDollarSign className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
 					<p className="text-sm text-muted-foreground">
-						No recurring expenses yet. Add one to get started.
+						No recurring transactions yet. Add one to get started.
 					</p>
 				</div>
 			) : (
@@ -135,7 +135,7 @@ const RecurringExpensesList: React.FC = () => {
 									size="icon"
 									onClick={() => handleEdit(expense)}
 									className="h-9 w-9"
-									aria-label="Edit recurring expense"
+									aria-label="Edit recurring transaction"
 								>
 									<FiEdit className="h-4 w-4" />
 								</Button>
@@ -144,7 +144,7 @@ const RecurringExpensesList: React.FC = () => {
 									size="icon"
 									onClick={() => handleDelete(expense.id!)}
 									className="h-9 w-9 text-destructive hover:text-destructive"
-									aria-label="Delete recurring expense"
+									aria-label="Delete recurring transaction"
 								>
 									<FiTrash2 className="h-4 w-4" />
 								</Button>
@@ -159,7 +159,7 @@ const RecurringExpensesList: React.FC = () => {
 					<DialogHeader>
 						<DialogTitle>Confirm Deletion</DialogTitle>
 						<DialogDescription>
-							Are you sure you want to delete this recurring expense? This action
+							Are you sure you want to delete this recurring transaction? This action
 							cannot be undone.
 						</DialogDescription>
 					</DialogHeader>

@@ -132,7 +132,7 @@ const RecurringExpensesView: React.FC = () => {
 				setDeleteDialogOpen(false);
 				setExpenseToDelete(null);
 			} catch (error) {
-				console.error('Error deleting recurring expense:', error);
+				console.error('Error deleting recurring transaction:', error);
 			}
 		}
 	};
@@ -156,7 +156,7 @@ const RecurringExpensesView: React.FC = () => {
 	if (recurringExpensesLoading) {
 		return (
 			<div className="flex flex-1 items-center justify-center" aria-live="polite">
-				<div className="text-sm text-muted-foreground">Loading recurring expenses...</div>
+				<div className="text-sm text-muted-foreground">Loading recurring transactions...</div>
 			</div>
 		);
 	}
@@ -168,10 +168,10 @@ const RecurringExpensesView: React.FC = () => {
 				<div>
 					<div className="flex items-center gap-2">
 						<FiRefreshCw className="h-6 w-6 text-primary" />
-						<h1 className="text-2xl font-bold tracking-tight">Recurring Expenses</h1>
+						<h1 className="text-2xl font-bold tracking-tight">Recurring Transactions</h1>
 					</div>
 					<p className="mt-1 text-sm text-muted-foreground">
-						Manage your subscriptions, debit orders, and other recurring costs.
+						Manage your subscriptions, debit orders, salary, and other recurring transactions.
 					</p>
 				</div>
 				<Button onClick={handleAddNew} className="flex-shrink-0">
@@ -255,18 +255,18 @@ const RecurringExpensesView: React.FC = () => {
 				</div>
 			</div>
 
-			{/* Expense List */}
+			{/* Transaction List */}
 			{filteredExpenses.length === 0 ? (
 				<div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
 					<FiDollarSign className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
 					<p className="font-medium text-muted-foreground">
 						{hasActiveFilters
-							? 'No expenses match the current filters'
-							: 'No recurring expenses yet'}
+							? 'No transactions match the current filters'
+							: 'No recurring transactions yet'}
 					</p>
 					{!hasActiveFilters && (
 						<p className="mt-1 text-sm text-muted-foreground">
-							Add one to track your subscriptions and debit orders.
+							Add one to track your subscriptions, debit orders, and income.
 						</p>
 					)}
 					{hasActiveFilters && (
@@ -324,7 +324,7 @@ const RecurringExpensesView: React.FC = () => {
 									size="icon"
 									onClick={() => handleEdit(expense)}
 									className="h-9 w-9"
-									aria-label="Edit recurring expense"
+									aria-label="Edit recurring transaction"
 								>
 									<FiEdit className="h-4 w-4" />
 								</Button>
@@ -333,7 +333,7 @@ const RecurringExpensesView: React.FC = () => {
 									size="icon"
 									onClick={() => handleDeleteClick(expense.id!)}
 									className="h-9 w-9 text-destructive hover:text-destructive"
-									aria-label="Delete recurring expense"
+									aria-label="Delete recurring transaction"
 								>
 									<FiTrash2 className="h-4 w-4" />
 								</Button>
@@ -356,7 +356,7 @@ const RecurringExpensesView: React.FC = () => {
 					<DialogHeader>
 						<DialogTitle>Confirm Deletion</DialogTitle>
 						<DialogDescription>
-							Are you sure you want to delete this recurring expense? This action
+							Are you sure you want to delete this recurring transaction? This action
 							cannot be undone.
 						</DialogDescription>
 					</DialogHeader>
