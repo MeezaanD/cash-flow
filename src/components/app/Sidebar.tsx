@@ -10,6 +10,7 @@ import {
 	FiTarget,
 	FiBarChart2,
 	FiList,
+	FiRefreshCw,
 } from 'react-icons/fi';
 import { useAuth } from '../../hooks/useAuth';
 import { Transaction } from '../../types';
@@ -55,6 +56,7 @@ const NAV_ITEMS: NavItem[] = [
 	{ id: 'dashboard', label: 'Dashboard', icon: FiGrid },
 	{ id: 'accounts', label: 'Accounts', icon: FiList },
 	{ id: 'budgets', label: 'Budgets', icon: FiTarget },
+	{ id: 'recurring', label: 'Recurring', icon: FiRefreshCw },
 	{ id: 'reports', label: 'Reports', icon: FiBarChart2 },
 ];
 

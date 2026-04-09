@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiSettings, FiDatabase, FiRefreshCw } from 'react-icons/fi';
+import { FiSettings, FiDatabase } from 'react-icons/fi';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../hooks/useAuth';
 import { signOut } from 'firebase/auth';
@@ -16,7 +16,6 @@ import { Button } from '../app/ui/button';
 import { Switch } from '../app/ui/switch';
 import { Label } from '../app/ui/label';
 import { useTransactionsContext } from '@/context/TransactionsContext';
-import RecurringExpensesList from '../../views/RecurringExpenses/RecurringExpensesList';
 
 interface SettingsModalProps {
 	open: boolean;
@@ -39,7 +38,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	const { currentUser } = useAuth();
 	const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 	const [deleteAllConfirmOpen, setDeleteAllConfirmOpen] = useState(false);
-	const [activeTab, setActiveTab] = useState<'general' | 'data' | 'recurring'>('general');
+	const [activeTab, setActiveTab] = useState<'general' | 'data'>('general');
 
 	useEffect(() => {
 		setLocalTheme(theme);
@@ -112,19 +111,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 								>
 									<FiDatabase className="h-4 w-4" />
 									Data
-								</button>
-								<button
-									role="tab"
-									aria-selected={activeTab === 'recurring'}
-									aria-controls="settings-tab-recurring"
-									onClick={() => setActiveTab('recurring')}
-									className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'recurring'
-										? 'bg-accent text-accent-foreground'
-										: 'text-muted-foreground hover:bg-muted'
-										}`}
-								>
-									<FiRefreshCw className="h-4 w-4" />
-									Recurring
 								</button>
 							</div>
 						</div>
@@ -226,18 +212,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 								</div>
 							)}
 
-							{activeTab === 'recurring' && (
-								<div className="space-y-4" id="settings-tab-recurring" role="tabpanel">
-									<div>
-										<h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-											Recurring Expenses
-										</h3>
-										<div className="rounded-lg border bg-card p-4 sm:p-6">
-											<RecurringExpensesList />
-										</div>
-									</div>
-								</div>
-							)}
 						</div>
 					</div>
 

@@ -13,6 +13,7 @@ import TransferForm from '../views/Accounts/TransferForm';
 import ReconcileForm from '../views/Accounts/ReconcileForm';
 import BudgetsList from '../views/Budgets/BudgetsList';
 import ReportsView from '../views/Reports/ReportsView';
+import RecurringExpensesView from '../views/RecurringExpenses/RecurringExpensesView';
 import AuthModals from '../components/app/AuthModals';
 import {
 	Dialog,
@@ -158,6 +159,8 @@ const Dashboard: React.FC = () => {
 				return <ReconcileForm onClose={() => setActiveView('accounts')} />;
 			case 'budgets':
 				return <BudgetsList />;
+			case 'recurring':
+				return <RecurringExpensesView />;
 			case 'reports':
 				return <ReportsView />;
 			default:
