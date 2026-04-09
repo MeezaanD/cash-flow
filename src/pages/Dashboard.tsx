@@ -240,7 +240,7 @@ const Dashboard: React.FC = () => {
 											<span className="font-medium">Recurring</span>
 										</div>
 										<p className="text-sm text-muted-foreground">
-											Manage recurring expenses
+											Manage recurring transactions
 										</p>
 									</button>
 								</div>
