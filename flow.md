@@ -41,7 +41,7 @@ A transfer is represented as **two Transaction documents** — both with `type: 
 - `period: 'monthly'`
 - `createdAt?: Date | { toDate: () => Date }`
 
-**RecurringExpense (template):**
+**RecurringTransaction:**
 
 - `id?: string`
 - `userId?: string`
@@ -65,7 +65,7 @@ users/{userId}/
   transactions/{transactionId}   — income, expense, and transfer records
   accounts/{accountId}           — financial accounts (debit, credit, savings, cash)
   budgets/{budgetId}             — monthly category budgets
-  recurringTransactions/{id}     — recurring expense templates
+  recurringTransactions/{id}     — recurring transaction templates (income or expense)
 ```
 
 Legacy top-level `transactions` and `recurringExpenses` collections exist as **read-only** for backward compatibility.
@@ -81,7 +81,7 @@ Legacy top-level `transactions` and `recurringExpenses` collections exist as **r
 | `AccountModel.ts` | `Account` interface, `normalizeAccount()`, `calculateNetWorth()`, `ACCOUNT_TYPE_LABELS`, `ACCOUNT_COLORS` |
 | `BudgetModel.ts` | `Budget` interface, `normalizeBudget()`, `calculateBudgetUsage(budget, transactions)` |
 | `TransactionModel.ts` | `Transaction` interface, `normalizeTransaction()`, filter helpers (`filterExpenses`, `filterIncome`, `filterTransfers`, `filterByAccount`, `filterByCategory`, `groupByCategory`, `calculateTotals`) |
-| `RecurringExpenseModel.ts` | `RecurringExpense` interface, `normalizeRecurringExpenses()` |
+| `RecurringTransactionModel.ts` | `RecurringTransaction` interface, `normalizeRecurringTransaction()`, `normalizeRecurringTransactions()`, `validateRecurringTransaction()` (validates title, amount > 0, category, frequency enum) |
 
 **Hook (Data) Layer** (`src/hooks/`)
 
@@ -90,7 +90,7 @@ Legacy top-level `transactions` and `recurringExpenses` collections exist as **r
 | `useAccounts` | `users/{uid}/accounts` | `onSnapshot`, `addAccount`, `updateAccount`, `deleteAccount`, `updateBalance(delta)` |
 | `useBudgets` | `users/{uid}/budgets` | `onSnapshot`, `addBudget`, `updateBudget`, `deleteBudget` |
 | `useTransactions` | `users/{uid}/transactions` | `onSnapshot`, `addTransaction` (batch tx + balance), `addTransfer` (batch 2 tx + 2 balances), `deleteTransaction` (batch delete + reverse balance) |
-| `useRecurringExpenses` | `users/{uid}/recurringTransactions` | `onSnapshot`, `addRecurringExpense`, `updateRecurringExpense`, `deleteRecurringExpense` |
+| `useRecurringTransactions` | `users/{uid}/recurringTransactions` | `onSnapshot`, `addRecurringTransaction`, `updateRecurringTransaction`, `deleteRecurringTransaction` |
 
 **Controller Layer** (`src/controllers/`)
 
@@ -99,7 +99,7 @@ Legacy top-level `transactions` and `recurringExpenses` collections exist as **r
 | `AccountsController` | `useAccounts` | `getAccountById`, `getAccountsByType`, `calculateTotalBalance`, `calculateNetWorth` |
 | `BudgetsController` | `useBudgets` | `getBudgetProgress(budgetId, txs)`, `getAllBudgetProgress(txs)` |
 | `TransactionsController` | `useTransactions` | `getExpenses`, `getIncome`, `getTransfers`, `getByAccount`, `getByCategory`, `getByType`, `getAll`, `getUniqueCategories`, `sortByDateDesc`, `calculateTotals`, `groupByCategory`, `deleteAllTransactions` |
-| `RecurringExpensesController` | `useRecurringExpenses` | CRUD passthrough (`addRecurringExpense`, `updateRecurringExpense`, `deleteRecurringExpense`) |
+| `RecurringTransactionsController` | `useRecurringTransactions` | CRUD passthrough (`addRecurringTransaction`, `updateRecurringTransaction`, `deleteRecurringTransaction`) |
 | `ReportsController` | Pure functions (no Firestore) | `getSpendingByCategory`, `getSpendingByAccount`, `getMonthlyTrend`, `getNetWorth` |
 
 **Context Layer** (`src/context/`)
@@ -108,7 +108,7 @@ Legacy top-level `transactions` and `recurringExpenses` collections exist as **r
 |---|---|---|
 | `AccountsContext` | `AccountsProvider` | Sidebar, AccountsList, AccountForm, TransferForm, ReconcileForm, AccountDetail, ReportsView |
 | `BudgetsContext` | `BudgetsProvider` | BudgetsList, BudgetForm |
-| `TransactionsContext` | `TransactionsProvider` | All transaction views, RecurringExpensesController, BudgetProgress calculation |
+| `TransactionsContext` | `TransactionsProvider` | All transaction views, RecurringTransactionsView, RecurringTransactionsList, TransactionForm (Quick Fill), BudgetProgress calculation; exposes `recurringTransactions`, `recurringTransactionsLoading`, `addRecurringTransaction`, `updateRecurringTransaction`, `deleteRecurringTransaction` |
 | `ThemeContext` | `ThemeProvider` | Sidebar, SettingsModal |
 
 Provider nesting in `App.tsx`:
@@ -134,6 +134,9 @@ ThemeProvider
 | `TransactionForm` | `views/Transactions/` | Create / edit; supports income, expense, transfer types + account selector |
 | `TransactionsTable` | `views/Transactions/` | Tabular transaction list |
 | `TransactionsList` | `views/Transactions/` | Card-style list |
+| `RecurringTransactionsView` | `views/RecurringTransactions/` | Full-page recurring list with frequency/category/type filters, total summary card, add/edit/delete |
+| `RecurringTransactionsList` | `views/RecurringTransactions/` | Compact recurring list used in embedded/Settings contexts |
+| `RecurringTransactionForm` | `views/RecurringTransactions/` | Create/edit form with income/expense type toggle, category, frequency, description |
 | `AccountDetail` | `pages/` | Route `/accounts/:accountId` — per-account history |
 | `Dashboard` | `pages/` | Main app shell, view routing |
 
@@ -186,6 +189,31 @@ ReportsView --render--> ReportsController functions (pure, no Firestore)
   getNetWorth(accounts)                            --> NetWorthData
 ```
 
+### Adding / Managing a Recurring Transaction
+
+```
+RecurringTransactionForm --submit--> TransactionsContext.addRecurringTransaction(data)
+  --> useRecurringTransactions.addRecurringTransaction(data)
+      addDoc(users/{uid}/recurringTransactions, { ...data, createdAt: Timestamp.now(), userId })
+  --> onSnapshot fires --> setRecurringTransactions([...]) --> RecurringTransactionsView, RecurringTransactionsList update
+
+RecurringTransactionForm (edit) --submit--> TransactionsContext.updateRecurringTransaction(id, updates)
+  --> useRecurringTransactions.updateRecurringTransaction(id, updates)
+      updateDoc(users/{uid}/recurringTransactions/{id}, updates)
+
+RecurringTransactionsView (delete) --confirm--> TransactionsContext.deleteRecurringTransaction(id)
+  --> useRecurringTransactions.deleteRecurringTransaction(id)
+      deleteDoc(users/{uid}/recurringTransactions/{id})
+```
+
+### Quick Fill (Recurring → New Transaction)
+
+```
+TransactionForm Quick Fill selector --> recurringTransactions.find(id)
+  --> auto-fills: title, amount, category, type (income | expense)
+  --> user adjusts remaining fields (account, date, description) and submits as a normal transaction
+```
+
 ---
 
 ## 5. Textual Flow Diagram
@@ -198,7 +226,7 @@ MVC Architecture:
   +--> [AccountsContext]   --> [AccountsController]   --> [useAccounts]    --> Firestore accounts
   +--> [BudgetsContext]    --> [BudgetsController]    --> [useBudgets]     --> Firestore budgets
   +--> [TransactionsContext]--> [TransactionsController]--> [useTransactions]--> Firestore transactions
-                            --> [RecurringExpenses]   --> [useRecurringExpenses]--> Firestore recurringTransactions
+                            --> [RecurringTransactions]--> [useRecurringTransactions]--> Firestore recurringTransactions
 
 All hooks use onSnapshot() for real-time updates.
 All writes to transactions also update account.balance via writeBatch + increment().

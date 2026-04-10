@@ -12,7 +12,7 @@
 - **Budgets:** Set monthly spending limits per category with color-coded progress bars (green / yellow / red).
 - **Reports:** Spending by category (pie chart), spending by account (bar chart), income vs expense trend (area chart), and net worth breakdown.
 - **Account Detail Page:** Per-account transaction history with income/expense totals and category breakdown.
-- **Recurring Expenses:** Create templates for frequently used transactions with Quick Fill support in the form.
+- **Recurring Transactions:** Create income or expense recurring templates accessible from the dedicated "Recurring" sidebar view, with filtering by frequency, category, and type, and Quick Fill support in the transaction form.
 - **Import/Export:** Import transactions from CSV/JSON with validation and deduping; export all data as CSV/JSON.
 - **MVC Architecture:** Clean separation of concerns — models, hooks, controllers, contexts, views.
 - **Theme Support:** Dark and light mode throughout.
@@ -72,13 +72,14 @@ src/
 ├── views/
 │   ├── Accounts/    # AccountsList, AccountForm, TransferForm, ReconcileForm
 │   ├── Budgets/     # BudgetsList, BudgetForm
+│   ├── RecurringTransactions/ # RecurringTransactionsView, RecurringTransactionsList, RecurringTransactionForm
 │   ├── Reports/     # ReportsView (4 chart sections)
 │   └── Transactions/# TransactionForm, TransactionsTable, TransactionsList
 ├── components/app/  # Reusable app components (Sidebar, SettingsModal, ui primitives)
 ├── context/         # Global state — Accounts, Budgets, Transactions, Theme
-├── hooks/           # Data layer — useAccounts, useBudgets, useTransactions, useRecurringExpenses, useAuth
-├── controllers/     # Business logic — AccountsController, BudgetsController, TransactionsController, ReportsController
-├── models/          # Domain models, normalization — Account, Budget, Transaction, RecurringExpense
+├── hooks/           # Data layer — useAccounts, useBudgets, useTransactions, useRecurringTransactions, useAuth
+├── controllers/     # Business logic — AccountsController, BudgetsController, TransactionsController, RecurringTransactionsController, ReportsController
+├── models/          # Domain models, normalization — Account, Budget, Transaction, RecurringTransaction
 ├── services/        # Firebase init
 ├── utils/           # Pure utilities (date, formatting, import/export, dateRangeFilter)
 └── types/           # Shared TypeScript interfaces
@@ -95,7 +96,7 @@ All data is stored under user-scoped subcollections:
 | `users/{userId}/transactions/{id}` | All transactions (income, expense, transfer) |
 | `users/{userId}/accounts/{id}` | User's financial accounts |
 | `users/{userId}/budgets/{id}` | Monthly spending budgets |
-| `users/{userId}/recurringTransactions/{id}` | Recurring expense templates |
+| `users/{userId}/recurringTransactions/{id}` | Recurring transaction templates (income or expense) |
 
 ### MVC Layers
 
@@ -115,7 +116,7 @@ All data is stored under user-scoped subcollections:
 
 - **AccountsContext** — accounts list, CRUD, net worth calculation
 - **BudgetsContext** — budgets list, CRUD, budget progress
-- **TransactionsContext** — transactions list, recurring expenses, add/update/delete/transfer
+- **TransactionsContext** — transactions list, recurring transactions (CRUD + real-time), add/update/delete/transfer; exposes `recurringTransactions`, `recurringTransactionsLoading`, `addRecurringTransaction`, `updateRecurringTransaction`, `deleteRecurringTransaction`
 - **ThemeContext** — dark/light mode
 
 Provider nesting order in `App.tsx`:
@@ -138,24 +139,29 @@ ThemeProvider → TransactionsProvider → AccountsProvider → BudgetsProvider 
 - Make budgeting easy and accessible.
 - Keep data secure, consistent, and always up to date.
 
-## Recurring Expenses Usage
+## Recurring Transactions Usage
 
-1. **Creating a Recurring Expense:**
-   - Open Settings (bottom-left in the sidebar)
-   - Navigate to the "Recurring Expenses" tab
+1. **Creating a Recurring Transaction:**
+   - Click "Recurring" in the left sidebar to open the Recurring Transactions view
    - Click "Add New"
+   - Select the transaction type (Expense or Income)
    - Fill in title, amount, category, frequency, and optional description
-   - Click "Add Expense"
+   - Click "Add Transaction"
 
 2. **Using Quick Fill:**
    - Click "New Transaction"
-   - In the "Quick Fill" section, select a recurring expense
-   - The form auto-fills title, amount, and category
+   - In the "Quick Fill" section, select a recurring transaction
+   - The form auto-fills title, amount, category, and type
    - Adjust any fields as needed, then submit
 
-3. **Managing Recurring Expenses:**
-   - Edit: click the edit icon next to any recurring expense
-   - Delete: click the delete icon (confirmation required)
+3. **Managing Recurring Transactions:**
+   - Edit: click the edit icon next to any recurring transaction; update fields and save
+   - Delete: click the delete icon (a confirmation dialog is required before deletion)
+
+4. **Filtering Recurring Transactions:**
+   - Use the Frequency, Category, and Type dropdowns at the top of the Recurring view to narrow the list
+   - The total summary card updates to reflect the filtered results
+   - Click "Reset" to clear all active filters
 
 ## Import/Export Usage
 
