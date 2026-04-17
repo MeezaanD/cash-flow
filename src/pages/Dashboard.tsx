@@ -46,6 +46,7 @@ const Dashboard: React.FC = () => {
 	const [authModalOpen, setAuthModalOpen] = useState(false);
 	const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 	const [settingsOpen, setSettingsOpen] = useState(false);
+	const [settingsInitialTab, setSettingsInitialTab] = useState<'general' | 'data' | 'filters'>('general');
 	const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
 	React.useEffect(() => {
@@ -118,6 +119,11 @@ const Dashboard: React.FC = () => {
 
 	const toggleSidebar = () => setSidebarVisible((prev) => !prev);
 
+	const handleOpenSettings = (tab: 'general' | 'data' | 'filters' = 'general') => {
+		setSettingsInitialTab(tab);
+		setSettingsOpen(true);
+	};
+
 	const handleViewChange = (view: string) => {
 		// If switching away from transaction detail, clear selection
 		if (view !== 'transaction') {
@@ -142,6 +148,7 @@ const Dashboard: React.FC = () => {
 						onDelete={handleDeleteClick}
 						onSelect={handleSelect}
 						selectedId={selectedTransactionId}
+						onOpenSettings={() => handleOpenSettings('filters')}
 					/>
 				);
 			case 'list':
@@ -149,6 +156,7 @@ const Dashboard: React.FC = () => {
 					<TransactionsList
 						onSelect={handleSelect}
 						selectedId={selectedTransactionId}
+						onOpenSettings={() => handleOpenSettings('filters')}
 					/>
 				);
 			case 'accounts':
@@ -160,7 +168,7 @@ const Dashboard: React.FC = () => {
 			case 'budgets':
 				return <BudgetsList />;
 			case 'recurring':
-				return <RecurringTransactionsView />;
+				return <RecurringTransactionsView onOpenSettings={() => handleOpenSettings('filters')} />;
 			case 'reports':
 				return <ReportsView />;
 			default:
@@ -264,7 +272,7 @@ const Dashboard: React.FC = () => {
 				activeView={activeView}
 				onViewChange={handleViewChange}
 				onOpenLogin={() => setAuthModalOpen(true)}
-				onOpenSettings={() => setSettingsOpen(true)}
+				onOpenSettings={() => handleOpenSettings('general')}
 			/>
 
 			<Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -290,6 +298,7 @@ const Dashboard: React.FC = () => {
 			<SettingsModal
 				open={settingsOpen}
 				onClose={() => setSettingsOpen(false)}
+				initialTab={settingsInitialTab}
 				onImport={async (file) => {
 					try {
 						const result = await importTransactionsFromFile(

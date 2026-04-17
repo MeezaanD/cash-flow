@@ -1,15 +1,17 @@
 import React, { useMemo, useState } from 'react';
-import { FiArrowUp, FiArrowDown, FiSearch, FiCalendar } from 'react-icons/fi';
+import { FiArrowUp, FiArrowDown, FiSearch, FiCalendar, FiSettings } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { Input } from '../../components/app/ui/input';
 import { Badge } from '../../components/app/ui/badge';
 import { Avatar, AvatarFallback } from '../../components/app/ui/avatar';
 import { Card } from '../../components/app/ui/card';
+import { useFilterPreferences } from '../../context/FilterPreferencesContext';
 
 interface TransactionsListProps {
 	onSelect?: (tx: any) => void;
 	selectedId?: string | null;
+	onOpenSettings?: () => void;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -21,8 +23,10 @@ const CATEGORY_COLORS: Record<string, string> = {
 	travel: '#0088FE',
 };
 
-const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedId }) => {
+const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedId, onOpenSettings }) => {
 	const { transactions } = useTransactionsContext();
+	const { prefs } = useFilterPreferences();
+	const listPrefs = prefs.transactionsList;
 	const [search, setSearch] = useState('');
 
 	const sorted = useMemo(() => {
@@ -71,17 +75,30 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 		<div className="flex min-h-full w-full items-start justify-center p-4 md:p-5">
 			<div className="w-full max-w-3xl space-y-6">
 				{/* Search Bar */}
-				<Card className="p-4">
-					<div className="relative">
-						<FiSearch className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-						<Input
-							placeholder="Search transactions..."
-							value={search}
-							onChange={(e) => setSearch(e.target.value)}
-							className="w-full pl-10 h-11 text-base"
-						/>
+				{listPrefs.search ? (
+					<Card className="p-4">
+						<div className="relative">
+							<FiSearch className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+							<Input
+								placeholder="Search transactions..."
+								value={search}
+								onChange={(e) => setSearch(e.target.value)}
+								className="w-full pl-10 h-11 text-base"
+							/>
+						</div>
+					</Card>
+				) : (
+					<div className="flex items-center gap-2 rounded-xl border border-dashed p-3 text-sm text-muted-foreground">
+						<FiSettings className="h-4 w-4 shrink-0" />
+						<span>Search is hidden.</span>
+						<button
+							className="ml-1 underline underline-offset-2 hover:text-foreground"
+							onClick={() => onOpenSettings?.()}
+						>
+							Manage in Settings
+						</button>
 					</div>
-				</Card>
+				)}
 
 				{/* Transactions List */}
 				<div className="max-h-[calc(var(--vh-screen)-200px)] space-y-6 overflow-y-auto scroll-smooth pr-2">

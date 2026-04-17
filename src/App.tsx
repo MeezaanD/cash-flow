@@ -3,6 +3,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { TransactionsProvider } from './context/TransactionsContext';
 import { AccountsProvider } from './context/AccountsContext';
 import { BudgetsProvider } from './context/BudgetsContext';
+import { FilterPreferencesProvider } from './context/FilterPreferencesContext';
 import ProtectedRoute from './components/app/ProtectedRoute';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
@@ -11,6 +12,7 @@ import AccountDetailPage from './pages/AccountDetail';
 function App() {
 	return (
 		<ThemeProvider>
+			<FilterPreferencesProvider>
 			<TransactionsProvider>
 				<AccountsProvider>
 					<BudgetsProvider>
@@ -38,6 +40,7 @@ function App() {
 					</BudgetsProvider>
 				</AccountsProvider>
 			</TransactionsProvider>
+			</FilterPreferencesProvider>
 		</ThemeProvider>
 	);
 }

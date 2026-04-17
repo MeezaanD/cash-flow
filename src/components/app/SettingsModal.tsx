@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiSettings, FiDatabase } from 'react-icons/fi';
+import { FiSettings, FiDatabase, FiFilter } from 'react-icons/fi';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../hooks/useAuth';
 import { signOut } from 'firebase/auth';
@@ -16,6 +16,7 @@ import { Button } from '../app/ui/button';
 import { Switch } from '../app/ui/switch';
 import { Label } from '../app/ui/label';
 import { useTransactionsContext } from '@/context/TransactionsContext';
+import { useFilterPreferences, FilterPreferences } from '../../context/FilterPreferencesContext';
 
 interface SettingsModalProps {
 	open: boolean;
@@ -23,6 +24,7 @@ interface SettingsModalProps {
 	onImport?: (file: File) => Promise<void> | void;
 	onExportCSV?: () => void;
 	onExportJSON?: () => void;
+	initialTab?: 'general' | 'data' | 'filters';
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -31,18 +33,24 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	onImport,
 	onExportCSV,
 	onExportJSON,
+	initialTab,
 }) => {
 	const { deleteAllTransactions } = useTransactionsContext();
 	const { theme, setTheme } = useTheme();
+	const { prefs, setFilterVisible } = useFilterPreferences();
 	const [localTheme, setLocalTheme] = useState(theme);
 	const { currentUser } = useAuth();
 	const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 	const [deleteAllConfirmOpen, setDeleteAllConfirmOpen] = useState(false);
-	const [activeTab, setActiveTab] = useState<'general' | 'data'>('general');
+	const [activeTab, setActiveTab] = useState<'general' | 'data' | 'filters'>(initialTab ?? 'general');
 
 	useEffect(() => {
 		setLocalTheme(theme);
 	}, [theme]);
+
+	useEffect(() => {
+		if (open) setActiveTab(initialTab ?? 'general');
+	}, [open, initialTab]);
 
 	const handleApply = () => {
 		if (localTheme !== theme) setTheme(localTheme);
@@ -111,6 +119,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 								>
 									<FiDatabase className="h-4 w-4" />
 									Data
+								</button>
+								<button
+									role="tab"
+									aria-selected={activeTab === 'filters'}
+									aria-controls="settings-tab-filters"
+									onClick={() => setActiveTab('filters')}
+									className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'filters'
+										? 'bg-accent text-accent-foreground'
+										: 'text-muted-foreground hover:bg-muted'
+										}`}
+								>
+									<FiFilter className="h-4 w-4" />
+									Filters
 								</button>
 							</div>
 						</div>
@@ -207,6 +228,96 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 											>
 												Delete All Transactions
 											</Button>
+										</div>
+									</div>
+								</div>
+							)}
+
+							{activeTab === 'filters' && (
+								<div className="space-y-6" id="settings-tab-filters" role="tabpanel">
+									<p className="text-sm text-muted-foreground">
+										Choose which filters to show in each section. Hidden filters can always be re-enabled here.
+									</p>
+
+									{/* Recurring Transactions */}
+									<div>
+										<h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+											Recurring Transactions
+										</h3>
+										<div className="space-y-3 rounded-lg border p-4 sm:p-5">
+											{(
+												[
+													['frequency', 'Frequency filter'],
+													['category', 'Category filter'],
+													['type', 'Type filter (Income / Expense)'],
+													['sortBy', 'Sort by'],
+												] as [keyof FilterPreferences['recurring'], string][]
+											).map(([key, label]) => (
+												<div key={key} className="flex items-center justify-between">
+													<Label htmlFor={`rec-${key}`} className="cursor-pointer">
+														{label}
+													</Label>
+													<Switch
+														id={`rec-${key}`}
+														checked={prefs.recurring[key]}
+														onCheckedChange={(checked: boolean) =>
+															setFilterVisible('recurring', key, checked)
+														}
+													/>
+												</div>
+											))}
+										</div>
+									</div>
+
+									{/* Transaction History (table) */}
+									<div>
+										<h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+											Transaction History
+										</h3>
+										<div className="space-y-3 rounded-lg border p-4 sm:p-5">
+											{(
+												[
+													['search', 'Search bar'],
+													['type', 'Type filter (Income / Expense)'],
+													['category', 'Category filter'],
+													['month', 'Month filter'],
+													['dateRange', 'Date range filter'],
+												] as [keyof FilterPreferences['transactionsTable'], string][]
+											).map(([key, label]) => (
+												<div key={key} className="flex items-center justify-between">
+													<Label htmlFor={`tt-${key}`} className="cursor-pointer">
+														{label}
+													</Label>
+													<Switch
+														id={`tt-${key}`}
+														checked={prefs.transactionsTable[key]}
+														onCheckedChange={(checked: boolean) =>
+															setFilterVisible('transactionsTable', key, checked)
+														}
+													/>
+												</div>
+											))}
+										</div>
+									</div>
+
+									{/* Transaction List */}
+									<div>
+										<h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+											Transaction List
+										</h3>
+										<div className="space-y-3 rounded-lg border p-4 sm:p-5">
+											<div className="flex items-center justify-between">
+												<Label htmlFor="tl-search" className="cursor-pointer">
+													Search bar
+												</Label>
+												<Switch
+													id="tl-search"
+													checked={prefs.transactionsList.search}
+													onCheckedChange={(checked: boolean) =>
+														setFilterVisible('transactionsList', 'search', checked)
+													}
+												/>
+											</div>
 										</div>
 									</div>
 								</div>
