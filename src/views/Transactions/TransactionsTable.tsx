@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { FiTrash2 } from 'react-icons/fi';
+import { FiTrash2, FiSettings } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import DateRangeFilter from '../../components/app/DateRangeFilter';
 import { filterTransactionsByDateRangeObject } from '../../utils/dateRangeFilter';
@@ -23,11 +23,13 @@ import {
 } from '../../components/app/ui/select';
 import { Button } from '../../components/app/ui/button';
 import { Badge } from '../../components/app/ui/badge';
+import { useFilterPreferences } from '../../context/FilterPreferencesContext';
 
 interface TransactionsTableProps {
 	onDelete: (id: string) => void;
 	onSelect: (tx: any) => void;
 	selectedId: string | null;
+	onOpenSettings?: () => void;
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -63,8 +65,11 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 	onDelete,
 	onSelect,
 	selectedId,
+	onOpenSettings,
 }) => {
 	const { transactions } = useTransactionsContext();
+	const { prefs } = useFilterPreferences();
+	const tablePrefs = prefs.transactionsTable;
 	const [search, setSearch] = useState('');
 	const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
 	const [filterCategory, setFilterCategory] = useState('all');
@@ -136,6 +141,13 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 
 	const resetVisibleCount = () => setVisibleCount(INITIAL_VISIBLE_COUNT);
 
+	const allFiltersHidden =
+		!tablePrefs.search &&
+		!tablePrefs.type &&
+		!tablePrefs.category &&
+		!tablePrefs.month &&
+		!tablePrefs.dateRange;
+
 	const amountHeader =
 		filterType === 'all'
 			? `Amount (Total: ${formatCurrency(totals.totalAmount)}, Income: ${formatCurrency(totals.totalIncome)}, Expense: ${formatCurrency(totals.totalExpense)})`
@@ -154,93 +166,116 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 			</div>
 
 			{/* Control Bar */}
-			<div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-3">
-				<Input
-					placeholder="Search transactions…"
-					value={search}
-					onChange={(e) => {
-						setSearch(e.target.value);
-						resetVisibleCount();
-					}}
-					className="h-10 flex-1 min-w-[220px] border-none focus-visible:ring-0"
-				/>
+			{allFiltersHidden ? (
+				<div className="flex items-center gap-2 rounded-2xl border border-dashed p-3 text-sm text-muted-foreground">
+					<FiSettings className="h-4 w-4 shrink-0" />
+					<span>All filters are hidden.</span>
+					<button
+						className="ml-1 underline underline-offset-2 hover:text-foreground"
+						onClick={() => onOpenSettings?.()}
+					>
+						Manage in Settings
+					</button>
+				</div>
+			) : (
+				<div className="flex flex-wrap items-center gap-2 rounded-2xl border bg-card p-3">
+					{tablePrefs.search && (
+						<Input
+							placeholder="Search transactions…"
+							value={search}
+							onChange={(e) => {
+								setSearch(e.target.value);
+								resetVisibleCount();
+							}}
+							className="h-10 flex-1 min-w-[220px] border-none focus-visible:ring-0"
+						/>
+					)}
 
-				<Select
-					value={filterType}
-					onValueChange={(value: string) => {
-						setFilterType(value as 'all' | 'income' | 'expense');
-						resetVisibleCount();
-					}}
-				>
-					<SelectTrigger className="h-10 w-[120px] rounded-xl">
-						<SelectValue placeholder="Type" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All</SelectItem>
-						<SelectItem value="income">Income</SelectItem>
-						<SelectItem value="expense">Expense</SelectItem>
-					</SelectContent>
-				</Select>
+					{tablePrefs.type && (
+						<Select
+							value={filterType}
+							onValueChange={(value: string) => {
+								setFilterType(value as 'all' | 'income' | 'expense');
+								resetVisibleCount();
+							}}
+						>
+							<SelectTrigger className="h-10 w-[120px] rounded-xl">
+								<SelectValue placeholder="Type" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All</SelectItem>
+								<SelectItem value="income">Income</SelectItem>
+								<SelectItem value="expense">Expense</SelectItem>
+							</SelectContent>
+						</Select>
+					)}
 
-				<Select
-					value={filterCategory}
-					onValueChange={(value: string) => {
-						setFilterCategory(value);
-						resetVisibleCount();
-					}}
-				>
-					<SelectTrigger className="h-10 w-[150px] rounded-xl">
-						<SelectValue placeholder="Category" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All categories</SelectItem>
-						{allCategories.map((category) => (
-							<SelectItem key={category} value={category}>
-								<div className="flex items-center gap-2">
-									<span
-										className="h-2.5 w-2.5 rounded-full"
-										style={{
-											backgroundColor: CATEGORY_COLORS[category] || '#9CA3AF',
-										}}
-									/>
-									{category}
-								</div>
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+					{tablePrefs.category && (
+						<Select
+							value={filterCategory}
+							onValueChange={(value: string) => {
+								setFilterCategory(value);
+								resetVisibleCount();
+							}}
+						>
+							<SelectTrigger className="h-10 w-[150px] rounded-xl">
+								<SelectValue placeholder="Category" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">All categories</SelectItem>
+								{allCategories.map((category) => (
+									<SelectItem key={category} value={category}>
+										<div className="flex items-center gap-2">
+											<span
+												className="h-2.5 w-2.5 rounded-full"
+												style={{
+													backgroundColor: CATEGORY_COLORS[category] || '#9CA3AF',
+												}}
+											/>
+											{category}
+										</div>
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
 
-				<Select
-					value={filterMonth}
-					onValueChange={(value: string) => {
-						setFilterMonth(value);
-						resetVisibleCount();
-					}}
-				>
-					<SelectTrigger className="h-10 w-[130px] rounded-xl">
-						<SelectValue placeholder="Month" />
-					</SelectTrigger>
-					<SelectContent>
-						{MONTHS.map((month) => (
-							<SelectItem key={month.value} value={month.value}>
-								{month.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
+					{tablePrefs.month && (
+						<Select
+							value={filterMonth}
+							onValueChange={(value: string) => {
+								setFilterMonth(value);
+								resetVisibleCount();
+							}}
+						>
+							<SelectTrigger className="h-10 w-[130px] rounded-xl">
+								<SelectValue placeholder="Month" />
+							</SelectTrigger>
+							<SelectContent>
+								{MONTHS.map((month) => (
+									<SelectItem key={month.value} value={month.value}>
+										{month.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
 
-				<DateRangeFilter
-					dateRange={dateRange}
-					onDateRangeChange={(newRange) => {
-						setDateRange(newRange);
-						resetVisibleCount();
-					}}
-					onClear={() => {
-						setDateRange({ startDate: '', endDate: '' });
-						resetVisibleCount();
-					}}
-				/>
-			</div>
+					{tablePrefs.dateRange && (
+						<DateRangeFilter
+							dateRange={dateRange}
+							onDateRangeChange={(newRange) => {
+								setDateRange(newRange);
+								resetVisibleCount();
+							}}
+							onClear={() => {
+								setDateRange({ startDate: '', endDate: '' });
+								resetVisibleCount();
+							}}
+						/>
+					)}
+				</div>
+			)}
 
 			{/* Table Surface */}
 			<div className="rounded-2xl border bg-card">

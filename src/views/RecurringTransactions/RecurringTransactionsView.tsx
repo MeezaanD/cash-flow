@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { FiEdit, FiTrash2, FiPlus, FiDollarSign, FiRefreshCw, FiX } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiPlus, FiDollarSign, FiRefreshCw, FiX, FiSettings } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import { RecurringTransaction } from '../../models/RecurringTransactionModel';
 import { Button } from '../../components/app/ui/button';
@@ -21,6 +21,7 @@ import {
 	SelectValue,
 } from '../../components/app/ui/select';
 import { formatCurrency } from '../../utils/formatCurrency';
+import { useFilterPreferences } from '../../context/FilterPreferencesContext';
 
 const FREQUENCY_OPTIONS = [
 	{ value: 'all', label: 'All Frequencies' },
@@ -46,6 +47,16 @@ const TYPE_OPTIONS = [
 	{ value: 'income', label: 'Income' },
 ];
 
+type SortBy = 'default' | 'alpha-asc' | 'alpha-desc' | 'price-asc' | 'price-desc';
+
+const SORT_OPTIONS: { value: SortBy; label: string }[] = [
+	{ value: 'default', label: 'Default order' },
+	{ value: 'alpha-asc', label: 'Name A → Z' },
+	{ value: 'alpha-desc', label: 'Name Z → A' },
+	{ value: 'price-asc', label: 'Price: Low → High' },
+	{ value: 'price-desc', label: 'Price: High → Low' },
+];
+
 const getFrequencyLabel = (frequency?: string) => {
 	switch (frequency) {
 		case 'daily':
@@ -64,7 +75,8 @@ const getFrequencyLabel = (frequency?: string) => {
 const buildFilterLabel = (
 	frequencyFilter: string,
 	categoryFilter: string,
-	typeFilter: string
+	typeFilter: string,
+	sortBy: SortBy
 ): string => {
 	const parts: string[] = [];
 	if (frequencyFilter !== 'all') parts.push(getFrequencyLabel(frequencyFilter));
@@ -75,26 +87,40 @@ const buildFilterLabel = (
 	if (typeFilter !== 'all') {
 		parts.push(typeFilter === 'expense' ? 'Expenses' : 'Income');
 	}
+	if (sortBy !== 'default') {
+		const sortOpt = SORT_OPTIONS.find((o) => o.value === sortBy);
+		if (sortOpt) parts.push(sortOpt.label);
+	}
 	return parts.length > 0 ? parts.join(' · ') : 'All recurring';
 };
 
-const RecurringTransactionsView: React.FC = () => {
+const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ onOpenSettings }) => {
 	const { recurringTransactions, deleteRecurringTransaction, recurringTransactionsLoading } =
 		useTransactionsContext();
+
+	const { prefs } = useFilterPreferences();
+	const recurringPrefs = prefs.recurring;
 
 	const [frequencyFilter, setFrequencyFilter] = useState('all');
 	const [categoryFilter, setCategoryFilter] = useState('all');
 	const [typeFilter, setTypeFilter] = useState('all');
+	const [sortBy, setSortBy] = useState<SortBy>('default');
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [editingTransaction, setEditingTransaction] = useState<RecurringTransaction | undefined>(undefined);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
 
 	const hasActiveFilters =
-		frequencyFilter !== 'all' || categoryFilter !== 'all' || typeFilter !== 'all';
+		frequencyFilter !== 'all' || categoryFilter !== 'all' || typeFilter !== 'all' || sortBy !== 'default';
+
+	const allFiltersHidden =
+		!recurringPrefs.frequency &&
+		!recurringPrefs.category &&
+		!recurringPrefs.type &&
+		!recurringPrefs.sortBy;
 
 	const filteredTransactions = useMemo(() => {
-		return recurringTransactions.filter((transaction) => {
+		const filtered = recurringTransactions.filter((transaction) => {
 			if (frequencyFilter !== 'all' && transaction.frequency !== frequencyFilter) return false;
 			if (categoryFilter !== 'all' && transaction.category !== categoryFilter) return false;
 			if (typeFilter !== 'all') {
@@ -103,7 +129,19 @@ const RecurringTransactionsView: React.FC = () => {
 			}
 			return true;
 		});
-	}, [recurringTransactions, frequencyFilter, categoryFilter, typeFilter]);
+
+		if (sortBy === 'alpha-asc') {
+			filtered.sort((a, b) => a.title.localeCompare(b.title));
+		} else if (sortBy === 'alpha-desc') {
+			filtered.sort((a, b) => b.title.localeCompare(a.title));
+		} else if (sortBy === 'price-asc') {
+			filtered.sort((a, b) => a.amount - b.amount);
+		} else if (sortBy === 'price-desc') {
+			filtered.sort((a, b) => b.amount - a.amount);
+		}
+
+		return filtered;
+	}, [recurringTransactions, frequencyFilter, categoryFilter, typeFilter, sortBy]);
 
 	const filteredTotal = useMemo(
 		() => filteredTransactions.reduce((sum, e) => sum + e.amount, 0),
@@ -111,8 +149,8 @@ const RecurringTransactionsView: React.FC = () => {
 	);
 
 	const filterLabel = useMemo(
-		() => buildFilterLabel(frequencyFilter, categoryFilter, typeFilter),
-		[frequencyFilter, categoryFilter, typeFilter]
+		() => buildFilterLabel(frequencyFilter, categoryFilter, typeFilter, sortBy),
+		[frequencyFilter, categoryFilter, typeFilter, sortBy]
 	);
 
 	const handleEdit = (transaction: RecurringTransaction) => {
@@ -151,6 +189,7 @@ const RecurringTransactionsView: React.FC = () => {
 		setFrequencyFilter('all');
 		setCategoryFilter('all');
 		setTypeFilter('all');
+		setSortBy('default');
 	};
 
 	if (recurringTransactionsLoading) {
@@ -181,58 +220,92 @@ const RecurringTransactionsView: React.FC = () => {
 			</div>
 
 			{/* Filter Bar */}
-			<div className="mb-4 flex flex-wrap items-center gap-3">
-				<Select value={frequencyFilter} onValueChange={setFrequencyFilter}>
-					<SelectTrigger className="h-9 w-44 text-sm">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						{FREQUENCY_OPTIONS.map((opt) => (
-							<SelectItem key={opt.value} value={opt.value}>
-								{opt.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-
-				<Select value={categoryFilter} onValueChange={setCategoryFilter}>
-					<SelectTrigger className="h-9 w-44 text-sm">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						{CATEGORY_OPTIONS.map((opt) => (
-							<SelectItem key={opt.value} value={opt.value}>
-								{opt.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-
-				<Select value={typeFilter} onValueChange={setTypeFilter}>
-					<SelectTrigger className="h-9 w-36 text-sm">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						{TYPE_OPTIONS.map((opt) => (
-							<SelectItem key={opt.value} value={opt.value}>
-								{opt.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-
-				{hasActiveFilters && (
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={handleResetFilters}
-						className="h-9 gap-1 text-muted-foreground hover:text-foreground"
+			{allFiltersHidden ? (
+				<div className="mb-4 flex items-center gap-2 rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
+					<FiSettings className="h-4 w-4 shrink-0" />
+					<span>All filters are hidden.</span>
+					<button
+						className="ml-1 underline underline-offset-2 hover:text-foreground"
+						onClick={() => onOpenSettings?.()}
 					>
-						<FiX className="h-4 w-4" />
-						Reset
-					</Button>
-				)}
-			</div>
+						Manage in Settings
+					</button>
+				</div>
+			) : (
+				<div className="mb-4 flex flex-wrap items-center gap-3">
+					{recurringPrefs.frequency && (
+						<Select value={frequencyFilter} onValueChange={setFrequencyFilter}>
+							<SelectTrigger className="h-9 w-44 text-sm">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{FREQUENCY_OPTIONS.map((opt) => (
+									<SelectItem key={opt.value} value={opt.value}>
+										{opt.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
+
+					{recurringPrefs.category && (
+						<Select value={categoryFilter} onValueChange={setCategoryFilter}>
+							<SelectTrigger className="h-9 w-44 text-sm">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{CATEGORY_OPTIONS.map((opt) => (
+									<SelectItem key={opt.value} value={opt.value}>
+										{opt.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
+
+					{recurringPrefs.type && (
+						<Select value={typeFilter} onValueChange={setTypeFilter}>
+							<SelectTrigger className="h-9 w-36 text-sm">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{TYPE_OPTIONS.map((opt) => (
+									<SelectItem key={opt.value} value={opt.value}>
+										{opt.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
+
+					{recurringPrefs.sortBy && (
+						<Select value={sortBy} onValueChange={(v) => setSortBy(v as SortBy)}>
+							<SelectTrigger className="h-9 w-48 text-sm">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{SORT_OPTIONS.map((opt) => (
+									<SelectItem key={opt.value} value={opt.value}>
+										{opt.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
+
+					{hasActiveFilters && (
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={handleResetFilters}
+							className="h-9 gap-1 text-muted-foreground hover:text-foreground"
+						>
+							<FiX className="h-4 w-4" />
+							Reset
+						</Button>
+					)}
+				</div>
+			)}
 
 			{/* Total Summary Card */}
 			<div className="mb-6 rounded-xl border bg-card p-4 shadow-sm">
