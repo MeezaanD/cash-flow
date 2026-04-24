@@ -17,7 +17,7 @@ This guide provides step-by-step instructions for deploying the Firebase Cloud F
     firebase projects:list
     ```
 
-3. **Node.js**: Ensure you have Node.js 18+ installed
+3. **Node.js**: Ensure you have Node.js 22+ installed
 
 ## Step 1: Initialize Firebase Functions
 
