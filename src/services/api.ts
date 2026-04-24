@@ -148,7 +148,7 @@ class ApiService {
 				return new Error('Network error. Please check your connection and try again.');
 			}
 
-			return new Error(error.message || fallbackMessage);
+			return new Error(error.message.trim() || fallbackMessage);
 		}
 
 		return new Error(fallbackMessage);
