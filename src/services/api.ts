@@ -191,7 +191,7 @@ class ApiService {
 
 		try {
 			const token = await this.getAuthToken();
-			const response = await fetch(`${API_BASE_URL}/api/askAI`, {
+			const response = await fetch(`${API_BASE_URL}/askAI`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -203,15 +203,45 @@ class ApiService {
 				}),
 			});
 
-			const responseBody = (await response.json().catch(() => ({}))) as Partial<
+			const executionId = response.headers.get('function-execution-id');
+			const traceContext = response.headers.get('x-cloud-trace-context');
+			const rawResponse = await response.text();
+
+			let responseBody: Partial<
 				AskAIResponse & { error?: string; message?: string; data?: AskAIResponse }
-			>;
+			> = {};
+
+			if (rawResponse) {
+				try {
+					responseBody = JSON.parse(rawResponse) as Partial<
+						AskAIResponse & { error?: string; message?: string; data?: AskAIResponse }
+					>;
+				} catch {
+					// Keep fallback empty when backend returns non-JSON content.
+				}
+			}
 
 			if (!response.ok) {
+				const backendMessage =
+					responseBody.error || responseBody.message || rawResponse.trim();
+				const requestIdSuffix = executionId
+					? ` (request id: ${executionId})`
+					: traceContext
+						? ` (trace: ${traceContext})`
+						: '';
+
+				if (response.status >= 500) {
+					console.error('askAI server error', {
+						status: response.status,
+						executionId,
+						traceContext,
+						body: rawResponse,
+					});
+				}
+
 				throw new Error(
-					responseBody.error ||
-						responseBody.message ||
-						`Unable to reach the AI assistant (HTTP ${response.status}).`
+					backendMessage ||
+					`Unable to reach the AI assistant (HTTP ${response.status})${requestIdSuffix}.`
 				);
 			}
 
