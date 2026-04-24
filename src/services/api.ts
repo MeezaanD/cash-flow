@@ -1,5 +1,6 @@
 import { auth } from './firebase';
 import { getIdToken } from 'firebase/auth';
+import { AskAIRequest, AskAIResponse } from '../types';
 
 // API response interface
 export interface ApiResponse<T> {
@@ -129,6 +130,30 @@ class ApiService {
 		}
 	}
 
+	private normalizeRequestError(error: unknown, fallbackMessage: string): Error {
+		if (error instanceof Error) {
+			if (error.message.includes('No authenticated user')) {
+				return new Error('Please log in to access this feature');
+			}
+			if (
+				error.message.includes('Failed to get authentication token') ||
+				error.message.includes('Authentication quota exceeded')
+			) {
+				return new Error('Authentication failed. Please try logging in again.');
+			}
+			if (error.message.includes('Invalid or expired token')) {
+				return new Error('Your session has expired. Please log in again.');
+			}
+			if (error.message.includes('Network error')) {
+				return new Error('Network error. Please check your connection and try again.');
+			}
+
+			return new Error(error.message.trim() || fallbackMessage);
+		}
+
+		return new Error(fallbackMessage);
+	}
+
 	// Clear token cache (useful for logout or errors)
 	public clearTokenCache(): void {
 		this.tokenCache = null;
@@ -153,6 +178,89 @@ class ApiService {
 	}> {
 		const response = await fetch(`${API_BASE_URL}/healthCheck`);
 		return response.json();
+	}
+
+	async askAI(payload: AskAIRequest): Promise<AskAIResponse> {
+		if (!payload.question.trim()) {
+			throw new Error('Please enter a question before sending.');
+		}
+
+		if (!payload.userId.trim()) {
+			throw new Error('Please log in to use the AI assistant.');
+		}
+
+		try {
+			const token = await this.getAuthToken();
+			const response = await fetch(`${API_BASE_URL}/askAI`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({
+					question: payload.question.trim(),
+					userId: payload.userId,
+				}),
+			});
+
+			const executionId = response.headers.get('function-execution-id');
+			const traceContext = response.headers.get('x-cloud-trace-context');
+			const rawResponse = await response.text();
+
+			let responseBody: Partial<
+				AskAIResponse & { error?: string; message?: string; data?: AskAIResponse }
+			> = {};
+
+			if (rawResponse) {
+				try {
+					responseBody = JSON.parse(rawResponse) as Partial<
+						AskAIResponse & { error?: string; message?: string; data?: AskAIResponse }
+					>;
+				} catch {
+					// Keep fallback empty when backend returns non-JSON content.
+				}
+			}
+
+			if (!response.ok) {
+				const backendMessage =
+					responseBody.error || responseBody.message || rawResponse.trim();
+				const requestIdSuffix = executionId
+					? ` (request id: ${executionId})`
+					: traceContext
+						? ` (trace: ${traceContext})`
+						: '';
+
+				if (response.status >= 500) {
+					console.error('askAI server error', {
+						status: response.status,
+						executionId,
+						traceContext,
+						body: rawResponse,
+					});
+				}
+
+				throw new Error(
+					backendMessage ||
+					`Unable to reach the AI assistant (HTTP ${response.status})${requestIdSuffix}.`
+				);
+			}
+
+			const answer =
+				typeof responseBody.answer === 'string'
+					? responseBody.answer
+					: responseBody.data?.answer;
+
+			if (!answer) {
+				throw new Error('AI service returned an invalid response.');
+			}
+
+			return { answer };
+		} catch (error) {
+			throw this.normalizeRequestError(
+				error,
+				'Unable to get an AI response right now. Please try again.'
+			);
+		}
 	}
 }
 

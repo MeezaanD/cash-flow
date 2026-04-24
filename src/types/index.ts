@@ -173,3 +173,23 @@ export interface SerializableTransaction {
 	date?: string;
 	accountId?: string;
 }
+
+// AI Chatbot
+export type ChatMessageRole = 'user' | 'assistant';
+
+export interface AIChatMessage {
+	id: string;
+	role: ChatMessageRole;
+	content: string;
+	isError?: boolean;
+	createdAt: number;
+}
+
+export interface AskAIRequest {
+	question: string;
+	userId: string;
+}
+
+export interface AskAIResponse {
+	answer: string;
+}

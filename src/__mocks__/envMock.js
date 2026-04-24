@@ -1,5 +1,5 @@
 module.exports = {
-	VITE_API_BASE_URL: 'http://localhost:5001/test-project/us-central1/api',
+	VITE_API_BASE_URL: 'http://localhost:5001/test-project/us-central1',
 	VITE_FIREBASE_API_KEY: 'test-api-key',
 	VITE_FIREBASE_AUTH_DOMAIN: 'test-project.firebaseapp.com',
 	VITE_FIREBASE_PROJECT_ID: 'test-project',
