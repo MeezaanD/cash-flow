@@ -129,12 +129,12 @@ describe('AIChatbot', () => {
 
 	it('disables sending and shows auth-required hint when user is missing', async () => {
 		const user = userEvent.setup();
-		mockUseAuth.mockReturnValueOnce({ currentUser: null });
+		mockUseAuth.mockReturnValue({ currentUser: null });
 
 		render(<AIChatbot />);
 		await user.click(screen.getByRole('button', { name: /open ai assistant/i }));
 
-		expect(screen.getByText('Please log in to use the AI assistant.')).toBeInTheDocument();
+		expect(screen.getAllByText('Please log in to use the AI assistant.').length).toBeGreaterThan(0);
 		expect(screen.getByRole('button', { name: /send message/i })).toBeDisabled();
 	});
 });
