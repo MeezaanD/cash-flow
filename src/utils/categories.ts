@@ -1,5 +1,6 @@
 import { Category, CategoryDefinition } from '../types';
 import { DEFAULT_CATEGORY_TEMPLATES, TRANSFER_CATEGORY_VALUE } from '../constants/categories';
+import { parseDbDateOrNull } from './date';
 
 export const slugifyCategoryLabel = (label: string): string =>
 	label
@@ -15,31 +16,29 @@ export const formatCategoryLabel = (value: string): string =>
 		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
 		.join(' ');
 
-export const normalizeCategoryDefinition = (doc: any): CategoryDefinition => {
+type CategoryDoc = {
+	id: string;
+	value?: string;
+	label?: string;
+	createdAt?: unknown;
+	updatedAt?: unknown;
+};
+
+export const normalizeCategoryDefinition = (doc: CategoryDoc): CategoryDefinition => {
 	const category: CategoryDefinition = {
 		id: doc.id,
 		value: doc.value ?? doc.id,
 		label: doc.label ?? formatCategoryLabel(doc.value ?? doc.id ?? ''),
 	};
 
-	if (doc.createdAt) {
-		if (typeof doc.createdAt === 'object' && 'toDate' in doc.createdAt) {
-			category.createdAt = doc.createdAt.toDate();
-		} else if (doc.createdAt instanceof Date) {
-			category.createdAt = doc.createdAt;
-		} else {
-			category.createdAt = new Date(doc.createdAt);
-		}
+	const createdParsed = doc.createdAt != null ? parseDbDateOrNull(doc.createdAt) : null;
+	if (createdParsed) {
+		category.createdAt = createdParsed;
 	}
 
-	if (doc.updatedAt) {
-		if (typeof doc.updatedAt === 'object' && 'toDate' in doc.updatedAt) {
-			category.updatedAt = doc.updatedAt.toDate();
-		} else if (doc.updatedAt instanceof Date) {
-			category.updatedAt = doc.updatedAt;
-		} else {
-			category.updatedAt = new Date(doc.updatedAt);
-		}
+	const updatedParsed = doc.updatedAt != null ? parseDbDateOrNull(doc.updatedAt) : null;
+	if (updatedParsed) {
+		category.updatedAt = updatedParsed;
 	}
 
 	return category;

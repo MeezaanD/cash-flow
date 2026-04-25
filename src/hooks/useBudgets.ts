@@ -9,6 +9,7 @@ import {
 	query,
 	onSnapshot,
 	Timestamp,
+	type UpdateData,
 } from 'firebase/firestore';
 import { Budget, DateRange } from '../types';
 import { normalizeBudget } from '../models/BudgetModel';
@@ -64,7 +65,7 @@ export const useBudgets = () => {
 	const updateBudget = async (id: string, updates: Partial<Budget>) => {
 		if (!user) throw new Error('User not authenticated');
 		const ref = doc(db, 'users', user.uid, 'budgets', id);
-		await updateDoc(ref, updates as any);
+		await updateDoc(ref, updates as UpdateData<Budget>);
 	};
 
 	const startBudget = async (id: string, actualRange: DateRange) => {

@@ -16,7 +16,12 @@ const getMonthBounds = (baseDate: Date): DateRange => {
 	};
 };
 
-const getLegacyBudgetRange = (doc: any): DateRange => {
+type BudgetDocForLegacy = {
+	createdAt?: unknown;
+	updatedAt?: unknown;
+};
+
+const getLegacyBudgetRange = (doc: BudgetDocForLegacy): DateRange => {
 	const createdAt =
 		parseDbDateOrNull(doc.createdAt) ??
 		parseDbDateOrNull(doc.updatedAt) ??
@@ -25,12 +30,26 @@ const getLegacyBudgetRange = (doc: any): DateRange => {
 	return getMonthBounds(createdAt);
 };
 
-export const normalizeBudget = (doc: any): Budget => {
+type BudgetDoc = {
+	id: string;
+	userId?: string;
+	category?: string;
+	amount?: number;
+	period?: Budget['period'];
+	plannedStartDate?: string;
+	plannedEndDate?: string;
+	actualStartDate?: string;
+	actualEndDate?: string;
+	createdAt?: unknown;
+	updatedAt?: unknown;
+};
+
+export const normalizeBudget = (doc: BudgetDoc): Budget => {
 	const legacyRange = getLegacyBudgetRange(doc);
 	const budget: Budget = {
 		id: doc.id,
 		userId: doc.userId,
-		category: doc.category,
+		category: doc.category ?? '',
 		amount: doc.amount ?? 0,
 		period: doc.period ?? 'monthly',
 		plannedStartDate: doc.plannedStartDate ?? legacyRange.startDate,
@@ -39,20 +58,15 @@ export const normalizeBudget = (doc: any): Budget => {
 		actualEndDate: doc.actualEndDate ?? undefined,
 	};
 
-	if (doc.createdAt) {
-		if (typeof doc.createdAt === 'object' && 'toDate' in doc.createdAt) {
-			budget.createdAt = doc.createdAt.toDate();
-		} else if (doc.createdAt instanceof Date) {
-			budget.createdAt = doc.createdAt;
-		} else {
-			budget.createdAt = new Date(doc.createdAt);
-		}
+	const createdParsed = doc.createdAt != null ? parseDbDateOrNull(doc.createdAt) : null;
+	if (createdParsed) {
+		budget.createdAt = createdParsed;
 	}
 
 	return budget;
 };
 
-export const normalizeBudgets = (docs: any[]): Budget[] => docs.map(normalizeBudget);
+export const normalizeBudgets = (docs: BudgetDoc[]): Budget[] => docs.map(normalizeBudget);
 
 export const calculateBudgetUsage = (
 	budget: Budget,

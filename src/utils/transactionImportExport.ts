@@ -56,6 +56,10 @@ export const importTransactionsFromFile = async (
 	addTransaction: (data: { type: 'income' | 'expense'; accountId: string; title: string; category: string; description?: string; amount: number }) => Promise<void>,
 	defaultAccountId: string = ''
 ): Promise<ImportResult> => {
+	if (!defaultAccountId) {
+		throw new Error('Create an account before importing transactions.');
+	}
+
 	const text = await file.text();
 	let records: SerializableTransaction[] = [];
 
@@ -97,13 +101,16 @@ export const importTransactionsFromFile = async (
 		}
 
 		try {
+			const resolvedAccountId = row.accountId
+				? String(row.accountId)
+				: defaultAccountId;
 			await addTransaction({
 				title: String(row.title),
 				amount: amountNum,
 				type: row.type as 'income' | 'expense',
 				category: String(row.category),
 				description: row.description ? String(row.description) : '',
-				accountId: row.accountId ? String(row.accountId) : defaultAccountId,
+				accountId: resolvedAccountId,
 			});
 			importedCount++;
 			existingSignatures.add(signature);

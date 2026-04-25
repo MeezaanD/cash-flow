@@ -10,6 +10,7 @@ import {
 	onSnapshot,
 	Timestamp,
 	increment,
+	type UpdateData,
 } from 'firebase/firestore';
 import { Account } from '../types';
 import { normalizeAccount } from '../models/AccountModel';
@@ -65,7 +66,7 @@ export const useAccounts = () => {
 	const updateAccount = async (id: string, updates: Partial<Account>) => {
 		if (!user) throw new Error('User not authenticated');
 		const ref = doc(db, 'users', user.uid, 'accounts', id);
-		await updateDoc(ref, updates as any);
+		await updateDoc(ref, updates as UpdateData<Account>);
 	};
 
 	const deleteAccount = async (id: string) => {

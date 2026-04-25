@@ -93,8 +93,8 @@ const BudgetForm: React.FC<BudgetFormProps> = ({ onClose, budget }) => {
 				await addBudget(data);
 			}
 			onClose();
-		} catch (err: any) {
-			setError(err?.message || 'Failed to save budget. Please try again.');
+		} catch (err: unknown) {
+			setError(err instanceof Error ? err.message : 'Failed to save budget. Please try again.');
 		} finally {
 			setLoading(false);
 		}

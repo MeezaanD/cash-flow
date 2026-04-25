@@ -149,8 +149,9 @@ const AccountsList: React.FC = () => {
 									account.id && navigate(`/accounts/${account.id}`)
 								}
 								onKeyDown={(e) => {
-									if (e.key === 'Enter' || e.key === ' ')
-										account.id && navigate(`/accounts/${account.id}`);
+									if (e.key === 'Enter' || e.key === ' ') {
+										if (account.id) navigate(`/accounts/${account.id}`);
+									}
 								}}
 								className="group relative cursor-pointer rounded-2xl border bg-card overflow-hidden transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 							>

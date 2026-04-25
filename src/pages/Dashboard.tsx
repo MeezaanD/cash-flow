@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { FiMenu } from 'react-icons/fi';
 import { useTransactionsContext } from '../context/TransactionsContext';
 import { useAccountsContext } from '../context/AccountsContext';
-import { ViewType } from '../types';
+import { Transaction, ViewType } from '../types';
 import Sidebar from '../components/app/Sidebar';
 import SettingsModal from '../components/app/SettingsModal';
 import TransactionForm from '../views/Transactions/TransactionForm';
@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
 	const { accounts } = useAccountsContext();
 	const { toast } = useToast();
 
-	const [selectedTx, setSelectedTx] = useState<any | null>(null);
+	const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 	const [selectedTransactionId, setSelectedTransactionId] = useState<string | null>(null);
 	const [sidebarVisible, setSidebarVisible] = useState(true);
 	const [activeView, setActiveView] = useState<ViewType>('dashboard');
@@ -62,16 +62,29 @@ const Dashboard: React.FC = () => {
 		};
 	}, []);
 
-	const handleCreate = () => {
+	const handleCreate = useCallback(() => {
 		setSelectedTx(null);
 		setSelectedTransactionId(null);
 		setActiveView('transaction');
-	};
+	}, []);
 
-	const handleSelect = (tx: any | null) => {
+	useEffect(() => {
+		const onKeyDown = (e: KeyboardEvent) => {
+			if (e.key.toLowerCase() !== 'k') return;
+			if (!e.ctrlKey && !e.metaKey) return;
+			const target = e.target as HTMLElement | null;
+			if (target?.closest('input, textarea, [contenteditable="true"]')) return;
+			e.preventDefault();
+			handleCreate();
+		};
+		window.addEventListener('keydown', onKeyDown);
+		return () => window.removeEventListener('keydown', onKeyDown);
+	}, [handleCreate]);
+
+	const handleSelect = (tx: Transaction | null) => {
 		if (tx) {
 			setSelectedTx(tx);
-			setSelectedTransactionId(tx.id);
+			setSelectedTransactionId(tx.id ?? null);
 			setActiveView('transaction');
 		} else {
 			setSelectedTx(null);
@@ -94,7 +107,7 @@ const Dashboard: React.FC = () => {
 					setSelectedTransactionId(null);
 				}
 				toast({ title: 'Success', description: 'Transaction deleted successfully' });
-			} catch (err: any) {
+			} catch {
 				toast({
 					title: 'Error',
 					description: 'Failed to delete transaction. Please try again.',
@@ -124,13 +137,13 @@ const Dashboard: React.FC = () => {
 		setSettingsOpen(true);
 	};
 
-	const handleViewChange = (view: string) => {
+	const handleViewChange = (view: ViewType) => {
 		// If switching away from transaction detail, clear selection
 		if (view !== 'transaction') {
 			setSelectedTx(null);
 			setSelectedTransactionId(null);
 		}
-		setActiveView(view as ViewType);
+		setActiveView(view);
 	};
 
 	const renderMainContent = () => {
@@ -300,12 +313,21 @@ const Dashboard: React.FC = () => {
 				onClose={() => setSettingsOpen(false)}
 				initialTab={settingsInitialTab}
 				onImport={async (file) => {
+					if (accounts.length === 0) {
+						toast({
+							title: 'Import unavailable',
+							description: 'Create an account before importing transactions.',
+							variant: 'destructive',
+						});
+						return;
+					}
+
 					try {
 						const result = await importTransactionsFromFile(
 							file,
 							transactions,
 							addTransaction,
-							accounts[0]?.id ?? ""
+							accounts[0].id ?? ''
 						);
 						if (result.errors.length) {
 							toast({
@@ -321,10 +343,11 @@ const Dashboard: React.FC = () => {
 								description: `Imported ${result.importedCount}, skipped ${result.skippedDuplicates}.`,
 							});
 						}
-					} catch (e: any) {
+					} catch (e: unknown) {
 						toast({
 							title: 'Import failed',
-							description: e.message || 'Failed to import file.',
+							description:
+								e instanceof Error ? e.message : 'Failed to import file.',
 							variant: 'destructive',
 						});
 					}
@@ -368,13 +391,13 @@ const Dashboard: React.FC = () => {
 			/>
 
 			<div
-				className={`flex-1 flex flex-col h-screen-safe md:h-auto overflow-y-auto transition-all duration-300 ease-in-out ${sidebarVisible ? 'md:ml-8' : 'md:ml-0'
-					}`}
+				className={`relative flex min-h-0 flex-1 flex-col overflow-y-auto transition-all duration-300 ease-in-out h-screen-safe md:h-auto ${sidebarVisible ? 'md:ml-8' : 'md:ml-0'
+					} ${!sidebarVisible ? 'pt-[4.5rem]' : ''}`}
 			>
 				{!sidebarVisible && (
 					<Button
 						variant="outline"
-						className="absolute left-4 top-4 z-50"
+						className="absolute left-4 top-4 z-50 shadow-sm"
 						onClick={toggleSidebar}
 						aria-label="Open menu"
 					>

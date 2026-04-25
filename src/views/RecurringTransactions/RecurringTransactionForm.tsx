@@ -68,7 +68,10 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 		e.preventDefault();
 		setIsSubmitting(true);
 		try {
-			const data: any = {
+			const data: Pick<
+				RecurringTransaction,
+				'title' | 'amount' | 'type' | 'category' | 'description' | 'frequency'
+			> = {
 				title,
 				amount: Number(amount),
 				type: transactionType,
@@ -228,7 +231,9 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 						</Label>
 						<Select
 							value={frequency}
-							onValueChange={(value) => setFrequency(value as any)}
+							onValueChange={(value) =>
+								setFrequency(value as 'daily' | 'weekly' | 'monthly' | 'yearly')
+							}
 						>
 							<SelectTrigger
 								id="re-frequency"

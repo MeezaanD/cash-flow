@@ -56,7 +56,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 		if (!accountId && accounts.length > 0) {
 			setAccountId(accounts[0].id!);
 		}
-	}, [accounts]);
+	}, [accountId, accounts]);
 
 	useEffect(() => {
 		if (transaction) {
@@ -123,7 +123,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 		if (type === 'transfer' && !transferAccountId) return;
 		try {
 			if (transaction && transaction.id) {
-				const data: any = {
+				const data: Partial<Transaction> = {
 					title,
 					amount: Number(amount),
 					type,

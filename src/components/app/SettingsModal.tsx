@@ -563,7 +563,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 									onClick={onClose}
 									className="w-full sm:w-auto"
 								>
-									Sign In
+									Close
 								</Button>
 							)}
 							<Button

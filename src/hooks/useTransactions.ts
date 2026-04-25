@@ -10,6 +10,7 @@ import {
 	getDocs,
 	getDoc,
 	increment,
+	type DocumentData,
 } from 'firebase/firestore';
 import { Transaction } from '../types';
 import { normalizeTransaction } from '../models/TransactionModel';
@@ -78,14 +79,15 @@ export const useTransactions = () => {
 		const txCol = collection(db, 'users', user.uid, 'transactions');
 		const txRef = doc(txCol);
 
-		const txData: any = {
-			...data,
+		const { date, ...rest } = data;
+		const txData: DocumentData = {
+			...rest,
 			createdAt: Timestamp.now(),
 			userId: user.uid,
 		};
 
-		if (data.date) {
-			txData.date = Timestamp.fromDate(data.date);
+		if (date) {
+			txData.date = Timestamp.fromDate(date);
 		}
 
 		batch.set(txRef, txData);
@@ -154,9 +156,9 @@ export const useTransactions = () => {
 
 			// Read current state so we can compute balance delta
 			const snap = await getDoc(txRef);
-			const old = snap.exists() ? (snap.data() as any) : null;
+			const old: DocumentData | null = snap.exists() ? snap.data() : null;
 
-			const updateData: any = { ...updates };
+			const updateData: DocumentData = { ...updates };
 			if (updates.date instanceof Date) {
 				updateData.date = Timestamp.fromDate(updates.date);
 			}

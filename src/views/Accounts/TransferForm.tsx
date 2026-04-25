@@ -62,8 +62,10 @@ const TransferForm: React.FC<TransferFormProps> = ({ onClose }) => {
 				date: date ? new Date(date) : new Date(),
 			});
 			onClose();
-		} catch (err: any) {
-			setError(err?.message || 'Failed to complete transfer. Please try again.');
+		} catch (err: unknown) {
+			setError(
+				err instanceof Error ? err.message : 'Failed to complete transfer. Please try again.'
+			);
 		} finally {
 			setLoading(false);
 		}

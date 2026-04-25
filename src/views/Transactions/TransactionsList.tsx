@@ -8,9 +8,11 @@ import { Badge } from '../../components/app/ui/badge';
 import { Avatar, AvatarFallback } from '../../components/app/ui/avatar';
 import { Card } from '../../components/app/ui/card';
 import { useFilterPreferences } from '../../context/FilterPreferencesContext';
+import { Transaction } from '../../types';
+import { compareTransactionsByDateDesc, getTransactionDateOrEpoch } from '../../utils/date';
 
 interface TransactionsListProps {
-	onSelect?: (tx: any) => void;
+	onSelect?: (tx: Transaction) => void;
 	selectedId?: string | null;
 	onOpenSettings?: () => void;
 }
@@ -32,17 +34,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 	const [search, setSearch] = useState('');
 
 	const sorted = useMemo(() => {
-		return [...transactions].sort((a, b) => {
-			const getValidDate = (val: any) => {
-				if (!val) return new Date(0);
-				if (typeof val === 'object' && 'toDate' in val) return val.toDate();
-				return new Date(val);
-			};
-			return (
-				getValidDate(b.date ?? b.createdAt).getTime() -
-				getValidDate(a.date ?? a.createdAt).getTime()
-			);
-		});
+		return [...transactions].sort(compareTransactionsByDateDesc);
 	}, [transactions]);
 
 	const filtered = useMemo(() => {
@@ -50,13 +42,8 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 	}, [sorted, search]);
 
 	const grouped = useMemo(() => {
-		return filtered.reduce((acc: Record<string, any[]>, tx) => {
-			const dateVal = tx.date ?? tx.createdAt;
-			let dateObj: Date;
-			if (!dateVal) dateObj = new Date(0);
-			else if (typeof dateVal === 'object' && 'toDate' in dateVal) dateObj = dateVal.toDate();
-			else dateObj = new Date(dateVal);
-
+		return filtered.reduce((acc: Record<string, Transaction[]>, tx) => {
+			const dateObj = getTransactionDateOrEpoch(tx.date, tx.createdAt);
 			const dateKey = dateObj.toLocaleDateString('en-GB', {
 				day: 'numeric',
 				month: 'long',

@@ -61,8 +61,8 @@ const AccountForm: React.FC<AccountFormProps> = ({ onClose, account }) => {
 				await addAccount(data);
 			}
 			onClose();
-		} catch (err: any) {
-			setError(err?.message || 'Failed to save account. Please try again.');
+		} catch (err: unknown) {
+			setError(err instanceof Error ? err.message : 'Failed to save account. Please try again.');
 		} finally {
 			setLoading(false);
 		}

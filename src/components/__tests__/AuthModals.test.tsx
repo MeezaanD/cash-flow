@@ -57,7 +57,7 @@ describe('AuthModals - Authentication', () => {
 	it('should render register modal when mode is register', () => {
 		render(<AuthModals {...defaultProps} mode="register" />);
 
-		expect(screen.getByText('Create Account', { selector: 'span' })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: 'Create Account' })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Create Account' })).toBeInTheDocument();
 	});
 
@@ -75,9 +75,7 @@ describe('AuthModals - Authentication', () => {
 		const user = userEvent.setup();
 		render(<AuthModals {...defaultProps} />);
 
-		const passwordInput = screen
-			.getAllByDisplayValue('')
-			.find((element) => element.getAttribute('name') === 'password') as HTMLInputElement;
+		const passwordInput = screen.getByLabelText(/^Password$/) as HTMLInputElement;
 		await user.type(passwordInput, 'password123');
 
 		expect(passwordInput).toHaveValue('password123');
@@ -87,10 +85,8 @@ describe('AuthModals - Authentication', () => {
 		const user = userEvent.setup();
 		render(<AuthModals {...defaultProps} />);
 
-		const passwordInput = screen
-			.getAllByDisplayValue('')
-			.find((element) => element.getAttribute('name') === 'password') as HTMLInputElement;
-		const toggleButton = screen.getByLabelText('toggle password visibility');
+		const passwordInput = screen.getByLabelText(/^Password$/) as HTMLInputElement;
+		const toggleButton = screen.getByLabelText('Toggle password visibility');
 
 		// Password should be hidden by default
 		expect(passwordInput).toHaveAttribute('type', 'password');
@@ -111,9 +107,7 @@ describe('AuthModals - Authentication', () => {
 		render(<AuthModals {...defaultProps} />);
 
 		const emailInput = screen.getByRole('textbox', { name: /email/i });
-		const passwordInput = screen
-			.getAllByDisplayValue('')
-			.find((element) => element.getAttribute('name') === 'password') as HTMLInputElement;
+		const passwordInput = screen.getByLabelText(/^Password$/) as HTMLInputElement;
 		const submitButton = screen.getByRole('button', { name: 'Sign In' });
 
 		await user.type(emailInput, 'test@example.com');
@@ -139,9 +133,7 @@ describe('AuthModals - Authentication', () => {
 		render(<AuthModals {...defaultProps} mode="register" />);
 
 		const emailInput = screen.getByRole('textbox', { name: /email/i });
-		const passwordInput = screen
-			.getAllByDisplayValue('')
-			.find((element) => element.getAttribute('name') === 'password') as HTMLInputElement;
+		const passwordInput = screen.getByLabelText(/^Password$/) as HTMLInputElement;
 		const submitButton = screen.getByRole('button', { name: 'Create Account' });
 
 		await user.type(emailInput, 'test@example.com');
@@ -168,9 +160,7 @@ describe('AuthModals - Authentication', () => {
 		render(<AuthModals {...defaultProps} />);
 
 		const emailInput = screen.getByRole('textbox', { name: /email/i });
-		const passwordInput = screen
-			.getAllByDisplayValue('')
-			.find((element) => element.getAttribute('name') === 'password') as HTMLInputElement;
+		const passwordInput = screen.getByLabelText(/^Password$/) as HTMLInputElement;
 		const submitButton = screen.getByRole('button', { name: 'Sign In' });
 
 		await user.type(emailInput, 'test@example.com');
@@ -243,9 +233,7 @@ describe('AuthModals - Authentication', () => {
 		render(<AuthModals {...defaultProps} />);
 
 		const emailInput = screen.getByRole('textbox', { name: /email/i });
-		const passwordInput = screen
-			.getAllByDisplayValue('')
-			.find((element) => element.getAttribute('name') === 'password') as HTMLInputElement;
+		const passwordInput = screen.getByLabelText(/^Password$/) as HTMLInputElement;
 
 		// Fill form
 		await user.type(emailInput, 'test@example.com');
@@ -265,9 +253,7 @@ describe('AuthModals - Authentication', () => {
 		render(<AuthModals {...defaultProps} />);
 
 		const emailInput = screen.getByRole('textbox', { name: /email/i });
-		const passwordInput = screen
-			.getAllByDisplayValue('')
-			.find((element) => element.getAttribute('name') === 'password') as HTMLInputElement;
+		const passwordInput = screen.getByLabelText(/^Password$/) as HTMLInputElement;
 		const submitButton = screen.getByRole('button', { name: 'Sign In' });
 
 		await user.type(emailInput, 'test@example.com');
