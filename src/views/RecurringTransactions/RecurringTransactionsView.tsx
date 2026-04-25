@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { FiEdit, FiTrash2, FiPlus, FiDollarSign, FiRefreshCw, FiX, FiSettings } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
+import { useCategoriesContext } from '../../context/CategoriesContext';
 import { RecurringTransaction } from '../../models/RecurringTransactionModel';
 import { Button } from '../../components/app/ui/button';
 import { Badge } from '../../components/app/ui/badge';
@@ -22,6 +23,7 @@ import {
 } from '../../components/app/ui/select';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { useFilterPreferences } from '../../context/FilterPreferencesContext';
+import { mergeCategoryOptions } from '../../utils/categories';
 
 const FREQUENCY_OPTIONS = [
 	{ value: 'all', label: 'All Frequencies' },
@@ -29,16 +31,6 @@ const FREQUENCY_OPTIONS = [
 	{ value: 'weekly', label: 'Weekly' },
 	{ value: 'monthly', label: 'Monthly' },
 	{ value: 'yearly', label: 'Yearly' },
-];
-
-const CATEGORY_OPTIONS = [
-	{ value: 'all', label: 'All Categories' },
-	{ value: 'personal', label: 'Personal' },
-	{ value: 'food', label: 'Food' },
-	{ value: 'travel', label: 'Travel' },
-	{ value: 'entertainment', label: 'Entertainment' },
-	{ value: 'debit_order', label: 'Debit Order' },
-	{ value: 'other', label: 'Other' },
 ];
 
 const TYPE_OPTIONS = [
@@ -76,12 +68,13 @@ const buildFilterLabel = (
 	frequencyFilter: string,
 	categoryFilter: string,
 	typeFilter: string,
-	sortBy: SortBy
+	sortBy: SortBy,
+	categoryOptions: Array<{ value: string; label: string }>
 ): string => {
 	const parts: string[] = [];
 	if (frequencyFilter !== 'all') parts.push(getFrequencyLabel(frequencyFilter));
 	if (categoryFilter !== 'all') {
-		const opt = CATEGORY_OPTIONS.find((o) => o.value === categoryFilter);
+		const opt = categoryOptions.find((o) => o.value === categoryFilter);
 		if (opt) parts.push(opt.label);
 	}
 	if (typeFilter !== 'all') {
@@ -97,6 +90,7 @@ const buildFilterLabel = (
 const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ onOpenSettings }) => {
 	const { recurringTransactions, deleteRecurringTransaction, recurringTransactionsLoading } =
 		useTransactionsContext();
+	const { categoryOptions, getCategoryLabel } = useCategoriesContext();
 
 	const { prefs } = useFilterPreferences();
 	const recurringPrefs = prefs.recurring;
@@ -109,6 +103,16 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 	const [editingTransaction, setEditingTransaction] = useState<RecurringTransaction | undefined>(undefined);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
+	const filterCategoryOptions = useMemo(
+		() => [
+			{ value: 'all', label: 'All Categories' },
+			...mergeCategoryOptions(
+				categoryOptions,
+				recurringTransactions.map((transaction) => transaction.category)
+			),
+		],
+		[categoryOptions, recurringTransactions]
+	);
 
 	const hasActiveFilters =
 		frequencyFilter !== 'all' || categoryFilter !== 'all' || typeFilter !== 'all' || sortBy !== 'default';
@@ -149,8 +153,15 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 	);
 
 	const filterLabel = useMemo(
-		() => buildFilterLabel(frequencyFilter, categoryFilter, typeFilter, sortBy),
-		[frequencyFilter, categoryFilter, typeFilter, sortBy]
+		() =>
+			buildFilterLabel(
+				frequencyFilter,
+				categoryFilter,
+				typeFilter,
+				sortBy,
+				filterCategoryOptions
+			),
+		[frequencyFilter, categoryFilter, typeFilter, sortBy, filterCategoryOptions]
 	);
 
 	const handleEdit = (transaction: RecurringTransaction) => {
@@ -254,7 +265,7 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								{CATEGORY_OPTIONS.map((opt) => (
+								{filterCategoryOptions.map((opt) => (
 									<SelectItem key={opt.value} value={opt.value}>
 										{opt.label}
 									</SelectItem>
@@ -382,7 +393,7 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 										{formatCurrency(expense.amount)}
 									</span>
 									<span>•</span>
-									<span>{expense.category}</span>
+									<span>{getCategoryLabel(expense.category)}</span>
 									{expense.description && (
 										<>
 											<span>•</span>

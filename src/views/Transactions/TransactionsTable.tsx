@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { FiTrash2, FiSettings } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
+import { useCategoriesContext } from '../../context/CategoriesContext';
 import DateRangeFilter from '../../components/app/DateRangeFilter';
 import { filterTransactionsByDateRangeObject } from '../../utils/dateRangeFilter';
 import { formatCurrency } from '../../utils/formatCurrency';
@@ -24,6 +25,7 @@ import {
 import { Button } from '../../components/app/ui/button';
 import { Badge } from '../../components/app/ui/badge';
 import { useFilterPreferences } from '../../context/FilterPreferencesContext';
+import { mergeCategoryOptions } from '../../utils/categories';
 
 interface TransactionsTableProps {
 	onDelete: (id: string) => void;
@@ -68,6 +70,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 	onOpenSettings,
 }) => {
 	const { transactions } = useTransactionsContext();
+	const { categoryOptions, getCategoryLabel } = useCategoriesContext();
 	const { prefs } = useFilterPreferences();
 	const tablePrefs = prefs.transactionsTable;
 	const [search, setSearch] = useState('');
@@ -124,10 +127,11 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 
 	const allCategories = useMemo(
 		() =>
-			Array.from(
-				new Set(transactions.map((tx) => tx.category?.trim() || 'Uncategorized'))
-			).sort(),
-		[transactions]
+			mergeCategoryOptions(
+				categoryOptions,
+				transactions.map((tx) => tx.category?.trim() || '')
+			),
+		[categoryOptions, transactions]
 	);
 
 	const visibleTransactions = filtered.slice(0, visibleCount);
@@ -224,15 +228,16 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 							<SelectContent>
 								<SelectItem value="all">All categories</SelectItem>
 								{allCategories.map((category) => (
-									<SelectItem key={category} value={category}>
+									<SelectItem key={category.value} value={category.value}>
 										<div className="flex items-center gap-2">
 											<span
 												className="h-2.5 w-2.5 rounded-full"
 												style={{
-													backgroundColor: CATEGORY_COLORS[category] || '#9CA3AF',
+													backgroundColor:
+														CATEGORY_COLORS[category.value] || '#9CA3AF',
 												}}
 											/>
-											{category}
+											{category.label}
 										</div>
 									</SelectItem>
 								))}
@@ -342,7 +347,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 													CATEGORY_COLORS[tx.category] || '#9CA3AF',
 											}}
 										>
-											{tx.category}
+											{getCategoryLabel(tx.category)}
 										</Badge>
 									</TableCell>
 

@@ -1,5 +1,5 @@
 import { useBudgets } from '../hooks/useBudgets';
-import { Budget, BudgetProgress, Transaction } from '../types';
+import { Budget, BudgetProgress, DateRange, Transaction } from '../types';
 import { calculateBudgetUsage } from '../models/BudgetModel';
 
 interface BudgetsControllerReturn {
@@ -7,19 +7,22 @@ interface BudgetsControllerReturn {
 	loading: boolean;
 	addBudget: (budget: Omit<Budget, 'id' | 'createdAt' | 'userId'>) => Promise<void>;
 	updateBudget: (id: string, updates: Partial<Budget>) => Promise<void>;
+	startBudget: (id: string, actualRange: DateRange) => Promise<void>;
 	deleteBudget: (id: string) => Promise<void>;
 	getBudgetProgress: (budgetId: string, transactions: Transaction[]) => BudgetProgress | null;
 	getAllBudgetProgress: (transactions: Transaction[]) => BudgetProgress[];
 }
 
 export const useBudgetsController = (): BudgetsControllerReturn => {
-	const { budgets, addBudget, updateBudget, deleteBudget, loading } = useBudgets();
+	const { budgets, addBudget, updateBudget, startBudget, deleteBudget, loading } =
+		useBudgets();
 
 	return {
 		budgets,
 		loading,
 		addBudget,
 		updateBudget,
+		startBudget,
 		deleteBudget,
 		getBudgetProgress: (budgetId, transactions) => {
 			const budget = budgets.find((b) => b.id === budgetId);

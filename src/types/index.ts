@@ -25,6 +25,14 @@ export interface Category {
 	label: string;
 }
 
+export interface CategoryDefinition {
+	id: string;
+	value: string;
+	label: string;
+	createdAt?: Date | { toDate: () => Date };
+	updatedAt?: Date | { toDate: () => Date };
+}
+
 // Account
 export type AccountType = 'debit' | 'credit' | 'savings' | 'cash';
 
@@ -65,13 +73,24 @@ export interface Budget {
 	category: string;
 	amount: number;
 	period: 'monthly';
+	plannedStartDate: string;
+	plannedEndDate: string;
+	actualStartDate?: string;
+	actualEndDate?: string;
 	createdAt?: Date | { toDate: () => Date };
 }
 
 export interface BudgetProgress {
 	budget: Budget;
-	spent: number;
+	plannedAmount: number;
+	plannedStartDate: string;
+	plannedEndDate: string;
+	actualStartDate?: string;
+	actualEndDate?: string;
+	started: boolean;
+	actualSpent: number;
 	remaining: number;
+	overBudget: number;
 	percent: number;
 }
 

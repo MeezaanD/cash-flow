@@ -4,7 +4,8 @@ import { useTransactionsContext } from '../../context/TransactionsContext';
 import { useAccountsContext } from '../../context/AccountsContext';
 import { Transaction } from '../../models/TransactionModel';
 import { RecurringTransaction } from '../../models/RecurringTransactionModel';
-import { Category, TransactionType } from '../../types';
+import { TransactionType } from '../../types';
+import { useCategoriesContext } from '../../context/CategoriesContext';
 import { Button } from '../../components/app/ui/button';
 import { Input } from '../../components/app/ui/input';
 import { Textarea } from '../../components/app/ui/textarea';
@@ -16,21 +17,13 @@ import {
 	SelectValue,
 } from '../../components/app/ui/select';
 import { formatCurrency } from '../../utils/formatCurrency';
+import { mergeCategoryOptions } from '../../utils/categories';
 
 interface TransactionFormProps {
 	onClose: () => void;
 	transaction?: Transaction;
 	recurringTransaction?: RecurringTransaction;
 }
-
-const CATEGORIES: Category[] = [
-	{ value: 'personal', label: 'Personal' },
-	{ value: 'food', label: 'Food' },
-	{ value: 'travel', label: 'Travel' },
-	{ value: 'entertainment', label: 'Entertainment' },
-	{ value: 'debit_order', label: 'Debit Order' },
-	{ value: 'other', label: 'Other' },
-];
 
 const TransactionForm: React.FC<TransactionFormProps> = ({
 	onClose,
@@ -39,6 +32,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 }) => {
 	const { addTransaction, addTransfer, updateTransaction, recurringTransactions } = useTransactionsContext();
 	const { accounts } = useAccountsContext();
+	const { categoryOptions } = useCategoriesContext();
 
 	const [title, setTitle] = useState('');
 	const [amount, setAmount] = useState(0);
@@ -50,6 +44,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 	const [date, setDate] = useState<string>('');
 	const [selectedRecurringId, setSelectedRecurringId] = useState<string | null>(
 		initialRecurringTransaction?.id || null
+	);
+
+	const availableCategories = React.useMemo(
+		() => mergeCategoryOptions(categoryOptions, category ? [category] : []),
+		[categoryOptions, category]
 	);
 
 	// Default to first account
@@ -300,14 +299,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 					<div className="grid gap-6 md:grid-cols-2">
 						{type !== 'transfer' && (
 							<Select value={category} onValueChange={setCategory}>
-								<SelectTrigger>
-									<SelectValue placeholder="Category" />
-								</SelectTrigger>
-								<SelectContent>
-									{CATEGORIES.map((cat) => (
-										<SelectItem key={cat.value} value={cat.value}>
-											{cat.label}
-										</SelectItem>
+							<SelectTrigger>
+								<SelectValue placeholder="Category" />
+							</SelectTrigger>
+							<SelectContent>
+								{availableCategories.map((cat) => (
+									<SelectItem key={cat.value} value={cat.value}>
+										{cat.label}
+									</SelectItem>
 									))}
 								</SelectContent>
 							</Select>

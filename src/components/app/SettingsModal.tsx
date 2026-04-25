@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiSettings, FiDatabase, FiFilter } from 'react-icons/fi';
+import { FiSettings, FiDatabase, FiFilter, FiTag, FiEdit2, FiTrash2, FiPlus } from 'react-icons/fi';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../hooks/useAuth';
 import { signOut } from 'firebase/auth';
@@ -15,7 +15,9 @@ import {
 import { Button } from '../app/ui/button';
 import { Switch } from '../app/ui/switch';
 import { Label } from '../app/ui/label';
+import { Input } from '../app/ui/input';
 import { useTransactionsContext } from '@/context/TransactionsContext';
+import { useCategoriesContext } from '../../context/CategoriesContext';
 import { useFilterPreferences, FilterPreferences } from '../../context/FilterPreferencesContext';
 
 interface SettingsModalProps {
@@ -24,7 +26,7 @@ interface SettingsModalProps {
 	onImport?: (file: File) => Promise<void> | void;
 	onExportCSV?: () => void;
 	onExportJSON?: () => void;
-	initialTab?: 'general' | 'data' | 'filters';
+	initialTab?: 'general' | 'data' | 'filters' | 'categories';
 }
 
 const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -36,13 +38,27 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	initialTab,
 }) => {
 	const { deleteAllTransactions } = useTransactionsContext();
+	const {
+		categories,
+		loading: categoriesLoading,
+		addCategory,
+		renameCategory,
+		deleteCategory,
+	} = useCategoriesContext();
 	const { theme, setTheme } = useTheme();
 	const { prefs, setFilterVisible } = useFilterPreferences();
 	const [localTheme, setLocalTheme] = useState(theme);
 	const { currentUser } = useAuth();
 	const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 	const [deleteAllConfirmOpen, setDeleteAllConfirmOpen] = useState(false);
-	const [activeTab, setActiveTab] = useState<'general' | 'data' | 'filters'>(initialTab ?? 'general');
+	const [activeTab, setActiveTab] = useState<'general' | 'data' | 'filters' | 'categories'>(
+		initialTab ?? 'general'
+	);
+	const [newCategoryLabel, setNewCategoryLabel] = useState('');
+	const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+	const [editingCategoryLabel, setEditingCategoryLabel] = useState('');
+	const [categoryError, setCategoryError] = useState('');
+	const [categoryBusy, setCategoryBusy] = useState(false);
 
 	useEffect(() => {
 		setLocalTheme(theme);
@@ -51,6 +67,16 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	useEffect(() => {
 		if (open) setActiveTab(initialTab ?? 'general');
 	}, [open, initialTab]);
+
+	useEffect(() => {
+		if (!open) {
+			setNewCategoryLabel('');
+			setEditingCategoryId(null);
+			setEditingCategoryLabel('');
+			setCategoryError('');
+			setCategoryBusy(false);
+		}
+	}, [open]);
 
 	const handleApply = () => {
 		if (localTheme !== theme) setTheme(localTheme);
@@ -76,6 +102,64 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 		await deleteAllTransactions();
 		setDeleteAllConfirmOpen(false);
 		onClose();
+	};
+
+	const handleAddCategory = async () => {
+		setCategoryError('');
+		setCategoryBusy(true);
+		try {
+			await addCategory(newCategoryLabel);
+			setNewCategoryLabel('');
+		} catch (error) {
+			setCategoryError(
+				error instanceof Error
+					? error.message
+					: 'Unable to add category right now.'
+			);
+		} finally {
+			setCategoryBusy(false);
+		}
+	};
+
+	const handleStartRename = (id: string, label: string) => {
+		setEditingCategoryId(id);
+		setEditingCategoryLabel(label);
+		setCategoryError('');
+	};
+
+	const handleSaveRename = async () => {
+		if (!editingCategoryId) return;
+		setCategoryError('');
+		setCategoryBusy(true);
+		try {
+			await renameCategory(editingCategoryId, editingCategoryLabel);
+			setEditingCategoryId(null);
+			setEditingCategoryLabel('');
+		} catch (error) {
+			setCategoryError(
+				error instanceof Error
+					? error.message
+					: 'Unable to rename category right now.'
+			);
+		} finally {
+			setCategoryBusy(false);
+		}
+	};
+
+	const handleDeleteCategory = async (id: string) => {
+		setCategoryError('');
+		setCategoryBusy(true);
+		try {
+			await deleteCategory(id);
+		} catch (error) {
+			setCategoryError(
+				error instanceof Error
+					? error.message
+					: 'Unable to delete category right now.'
+			);
+		} finally {
+			setCategoryBusy(false);
+		}
 	};
 
 	return (
@@ -119,6 +203,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 								>
 									<FiDatabase className="h-4 w-4" />
 									Data
+								</button>
+								<button
+									role="tab"
+									aria-selected={activeTab === 'categories'}
+									aria-controls="settings-tab-categories"
+									onClick={() => setActiveTab('categories')}
+									className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${activeTab === 'categories'
+										? 'bg-accent text-accent-foreground'
+										: 'text-muted-foreground hover:bg-muted'
+										}`}
+								>
+									<FiTag className="h-4 w-4" />
+									Categories
 								</button>
 								<button
 									role="tab"
@@ -319,6 +416,130 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 												/>
 											</div>
 										</div>
+									</div>
+								</div>
+							)}
+
+							{activeTab === 'categories' && (
+								<div className="space-y-4" id="settings-tab-categories" role="tabpanel">
+									<p className="text-sm text-muted-foreground">
+										Manage the categories used by transactions, recurring transactions,
+										budgets, and category filters. Changes save immediately.
+									</p>
+
+									<div className="space-y-4 rounded-lg border p-4 sm:p-5">
+										<div className="flex flex-col gap-2 sm:flex-row">
+											<Input
+												value={newCategoryLabel}
+												onChange={(e) => setNewCategoryLabel(e.target.value)}
+												placeholder="Add a new category"
+												className="flex-1"
+											/>
+											<Button
+												type="button"
+												onClick={handleAddCategory}
+												disabled={categoryBusy || !newCategoryLabel.trim()}
+											>
+												<FiPlus className="mr-2 h-4 w-4" />
+												Add Category
+											</Button>
+										</div>
+
+										{categoryError && (
+											<div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+												{categoryError}
+											</div>
+										)}
+
+										{categoriesLoading ? (
+											<p className="text-sm text-muted-foreground">
+												Loading categories...
+											</p>
+										) : (
+											<div className="space-y-2">
+												{categories.map((category) => {
+													const isEditing = editingCategoryId === category.id;
+
+													return (
+														<div
+															key={category.id}
+															className="flex flex-col gap-2 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
+														>
+															{isEditing ? (
+																<Input
+																	value={editingCategoryLabel}
+																	onChange={(e) =>
+																		setEditingCategoryLabel(e.target.value)
+																	}
+																	className="flex-1"
+																/>
+															) : (
+																<div>
+																	<p className="font-medium">{category.label}</p>
+																	<p className="text-xs text-muted-foreground">
+																		{category.value}
+																	</p>
+																</div>
+															)}
+
+															<div className="flex items-center gap-2">
+																{isEditing ? (
+																	<>
+																		<Button
+																			type="button"
+																			size="sm"
+																			onClick={handleSaveRename}
+																			disabled={
+																				categoryBusy ||
+																				!editingCategoryLabel.trim()
+																			}
+																		>
+																			Save
+																		</Button>
+																		<Button
+																			type="button"
+																			size="sm"
+																			variant="outline"
+																			onClick={() => {
+																				setEditingCategoryId(null);
+																				setEditingCategoryLabel('');
+																				setCategoryError('');
+																			}}
+																		>
+																			Cancel
+																		</Button>
+																	</>
+																) : (
+																	<>
+																		<Button
+																			type="button"
+																			size="icon"
+																			variant="ghost"
+																			onClick={() =>
+																				handleStartRename(category.id, category.label)
+																			}
+																			aria-label={`Edit ${category.label}`}
+																		>
+																			<FiEdit2 className="h-4 w-4" />
+																		</Button>
+																		<Button
+																			type="button"
+																			size="icon"
+																			variant="ghost"
+																			onClick={() => handleDeleteCategory(category.id)}
+																			aria-label={`Delete ${category.label}`}
+																			className="text-destructive hover:text-destructive"
+																		>
+																			<FiTrash2 className="h-4 w-4" />
+																		</Button>
+																	</>
+																)}
+															</div>
+														</div>
+													);
+												})}
+											</div>
+										)}
 									</div>
 								</div>
 							)}

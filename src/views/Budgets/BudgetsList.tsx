@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
-import { FiPlus, FiEdit2, FiTrash2, FiAlertCircle } from 'react-icons/fi';
+import React, { useMemo, useState } from 'react';
+import {
+	FiAlertCircle,
+	FiCalendar,
+	FiEdit2,
+	FiPlay,
+	FiPlus,
+	FiTarget,
+	FiTrash2,
+} from 'react-icons/fi';
 import { useBudgetsContext } from '../../context/BudgetsContext';
 import { useTransactionsContext } from '../../context/TransactionsContext';
-import { Budget, BudgetProgress } from '../../types';
+import { Budget, BudgetProgress, DateRange } from '../../types';
 import { formatCurrency } from '../../utils/formatCurrency';
+import {
+	filterTransactionsByDateRangeObject,
+	formatDateRange,
+} from '../../utils/dateRangeFilter';
+import { parseDbDate } from '../../utils/date';
+import { useCategoriesContext } from '../../context/CategoriesContext';
 import { Button } from '../../components/app/ui/button';
+import DateRangeFilter from '../../components/app/DateRangeFilter';
 import {
 	Dialog,
 	DialogContent,
@@ -15,19 +30,6 @@ import {
 } from '../../components/app/ui/dialog';
 import BudgetForm from './BudgetForm';
 
-const CATEGORY_LABELS: Record<string, string> = {
-	personal: 'Personal',
-	food: 'Food',
-	travel: 'Travel',
-	entertainment: 'Entertainment',
-	debit_order: 'Debit Order',
-	housing: 'Housing',
-	transport: 'Transport',
-	health: 'Health',
-	education: 'Education',
-	other: 'Other',
-};
-
 const getBarColour = (percent: number): string => {
 	if (percent >= 90) return 'bg-red-500';
 	if (percent >= 70) return 'bg-amber-500';
@@ -35,15 +37,24 @@ const getBarColour = (percent: number): string => {
 };
 
 const BudgetsList: React.FC = () => {
-	const { budgets, deleteBudget, getAllBudgetProgress } = useBudgetsContext();
+	const { budgets, deleteBudget, getAllBudgetProgress, startBudget } = useBudgetsContext();
+	const { getCategoryLabel } = useCategoriesContext();
 	const { transactions } = useTransactionsContext();
 
 	const [showForm, setShowForm] = useState(false);
 	const [editingBudget, setEditingBudget] = useState<Budget | undefined>(undefined);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [budgetToDelete, setBudgetToDelete] = useState<string | null>(null);
+	const [dateRange, setDateRange] = useState<DateRange>({ startDate: '', endDate: '' });
+	const [actionError, setActionError] = useState('');
+	const [startingBudgetId, setStartingBudgetId] = useState<string | null>(null);
 
 	const allProgress: BudgetProgress[] = getAllBudgetProgress(transactions);
+	const startedBudgets = useMemo(
+		() => allProgress.filter((progress) => progress.started),
+		[allProgress]
+	);
+	const hasSelectedRange = Boolean(dateRange.startDate && dateRange.endDate);
 
 	const handleEdit = (budget: Budget) => {
 		setEditingBudget(budget);
@@ -66,20 +77,53 @@ const BudgetsList: React.FC = () => {
 		setEditingBudget(undefined);
 	};
 
+	const handleStartBudget = async (budgetId: string) => {
+		if (!dateRange.startDate || !dateRange.endDate) {
+			setActionError('Select a budget start and end date before starting a budget.');
+			return;
+		}
+
+		setActionError('');
+		setStartingBudgetId(budgetId);
+
+		try {
+			await startBudget(budgetId, dateRange);
+		} catch (error) {
+			setActionError(
+				error instanceof Error
+					? error.message
+					: 'Unable to start this budget right now. Please try again.'
+			);
+		} finally {
+			setStartingBudgetId(null);
+		}
+	};
+
 	if (showForm) {
 		return <BudgetForm onClose={handleCloseForm} budget={editingBudget} />;
 	}
 
-	const now = new Date();
-	const monthLabel = now.toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' });
-
-	const totalBudgeted = allProgress.reduce((sum, p) => sum + p.budget.amount, 0);
-	const totalSpent = allProgress.reduce((sum, p) => sum + p.spent, 0);
+	const totalPlanned = startedBudgets.reduce(
+		(sum, progress) => sum + progress.plannedAmount,
+		0
+	);
+	const totalActual = startedBudgets.reduce(
+		(sum, progress) => sum + progress.actualSpent,
+		0
+	);
+	const totalRemaining = startedBudgets.reduce(
+		(sum, progress) => sum + progress.remaining,
+		0
+	);
+	const totalOverBudget = startedBudgets.reduce(
+		(sum, progress) => sum + progress.overBudget,
+		0
+	);
 
 	return (
-		<div className="flex flex-col min-h-screen bg-background">
+		<div className="flex min-h-screen flex-col bg-background">
 			<Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-				<DialogContent className="w-[90vw] md:w-full rounded-lg">
+				<DialogContent className="w-[90vw] rounded-lg md:w-full">
 					<DialogHeader>
 						<DialogTitle>Delete Budget</DialogTitle>
 						<DialogDescription>
@@ -88,10 +132,7 @@ const BudgetsList: React.FC = () => {
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>
-						<Button
-							variant="outline"
-							onClick={() => setDeleteDialogOpen(false)}
-						>
+						<Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
 							Cancel
 						</Button>
 						<Button variant="destructive" onClick={handleConfirmDelete}>
@@ -102,13 +143,13 @@ const BudgetsList: React.FC = () => {
 			</Dialog>
 
 			<div className="flex-1 overflow-y-auto p-4 md:p-8">
-				{/* Header */}
-				<div className="mb-6 flex items-center justify-between">
+				<div className="mb-6 flex items-center justify-between gap-4">
 					<div>
-						<h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-							Budgets
-						</h1>
-						<p className="mt-1 text-sm text-muted-foreground">{monthLabel}</p>
+						<h1 className="text-2xl font-bold tracking-tight md:text-3xl">Budgets</h1>
+						<p className="mt-1 text-sm text-muted-foreground">
+							Plan a budget period, then capture an actual comparison period from
+							the filter below.
+						</p>
 					</div>
 					<Button onClick={() => setShowForm(true)}>
 						<FiPlus className="mr-2 h-4 w-4" />
@@ -116,37 +157,65 @@ const BudgetsList: React.FC = () => {
 					</Button>
 				</div>
 
-				{/* Summary */}
-				{allProgress.length > 0 && (
-					<div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+				<div className="mb-6 rounded-xl border bg-card p-4">
+					<div className="mb-3 flex items-center gap-2">
+						<FiCalendar className="h-4 w-4 text-muted-foreground" />
+						<p className="text-sm font-medium">Actual Budget Period</p>
+					</div>
+					<DateRangeFilter
+						dateRange={dateRange}
+						onDateRangeChange={setDateRange}
+						onClear={() => {
+							setDateRange({ startDate: '', endDate: '' });
+							setActionError('');
+						}}
+					/>
+					<p className="mt-3 text-xs text-muted-foreground">
+						Set the actual date range here, then click Start on a budget card to
+						capture that period.
+					</p>
+					{!hasSelectedRange && (
+						<div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
+							Select a start and end date to enable budget start tracking.
+						</div>
+					)}
+					{actionError && (
+						<div className="mt-3 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+							{actionError}
+						</div>
+					)}
+				</div>
+
+				{startedBudgets.length > 0 ? (
+					<div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 						<div className="rounded-xl border bg-card p-5">
-							<p className="text-sm text-muted-foreground">Total Budgeted</p>
-							<p className="mt-1 text-xl font-bold">
-								{formatCurrency(totalBudgeted)}
-							</p>
+							<p className="text-sm text-muted-foreground">Planned Total</p>
+							<p className="mt-1 text-xl font-bold">{formatCurrency(totalPlanned)}</p>
 						</div>
 						<div className="rounded-xl border bg-card p-5">
-							<p className="text-sm text-muted-foreground">Total Spent</p>
-							<p className="mt-1 text-xl font-bold">
-								{formatCurrency(totalSpent)}
-							</p>
+							<p className="text-sm text-muted-foreground">Actual Total</p>
+							<p className="mt-1 text-xl font-bold">{formatCurrency(totalActual)}</p>
 						</div>
 						<div className="rounded-xl border bg-card p-5">
 							<p className="text-sm text-muted-foreground">Remaining</p>
-							<p
-								className={`mt-1 text-xl font-bold ${
-									totalBudgeted - totalSpent >= 0
-										? 'text-green-600 dark:text-green-400'
-										: 'text-red-600 dark:text-red-400'
-								}`}
-							>
-								{formatCurrency(Math.max(0, totalBudgeted - totalSpent))}
+							<p className="mt-1 text-xl font-bold text-green-600 dark:text-green-400">
+								{formatCurrency(totalRemaining)}
+							</p>
+						</div>
+						<div className="rounded-xl border bg-card p-5">
+							<p className="text-sm text-muted-foreground">Over Budget</p>
+							<p className="mt-1 text-xl font-bold text-red-600 dark:text-red-400">
+								{formatCurrency(totalOverBudget)}
 							</p>
 						</div>
 					</div>
-				)}
+				) : budgets.length > 0 ? (
+					<div className="mb-8 rounded-xl border border-dashed bg-card px-4 py-5 text-sm text-muted-foreground">
+						No budgets have started yet. Pick an actual date range above and click
+						Start on any budget to compare plan vs actual.
+					</div>
+				) : null}
 
-				{/* Budget list */}
 				{budgets.length === 0 ? (
 					<div className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-16 text-center">
 						<div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
@@ -154,7 +223,7 @@ const BudgetsList: React.FC = () => {
 						</div>
 						<h3 className="text-lg font-semibold">No budgets yet</h3>
 						<p className="mt-1 text-sm text-muted-foreground">
-							Create a budget to track your monthly spending by category
+							Create a budget to track a custom planned period by category
 						</p>
 						<Button className="mt-4" onClick={() => setShowForm(true)}>
 							Create Budget
@@ -163,36 +232,75 @@ const BudgetsList: React.FC = () => {
 				) : (
 					<div className="space-y-4">
 						{allProgress.map((progress) => {
-							const { budget, spent, remaining, percent } = progress;
-							const isOverBudget = spent > budget.amount;
+							const {
+								budget,
+								plannedAmount,
+								plannedStartDate,
+								plannedEndDate,
+								actualStartDate,
+								actualEndDate,
+								started,
+								actualSpent,
+								remaining,
+								overBudget,
+								percent,
+							} = progress;
+							const label = getCategoryLabel(budget.category);
+							const isOverBudget = overBudget > 0;
 							const barColour = getBarColour(percent);
-							const label =
-								CATEGORY_LABELS[budget.category] ?? budget.category;
+							const matchingTransactions =
+								started && actualStartDate && actualEndDate
+									? filterTransactionsByDateRangeObject(
+											transactions.filter(
+												(transaction) =>
+													transaction.type === 'expense' &&
+													transaction.category === budget.category
+											),
+											{
+												startDate: actualStartDate,
+												endDate: actualEndDate,
+											}
+									  ).sort((left, right) => {
+											const leftDate = parseDbDate(left.date ?? left.createdAt);
+											const rightDate = parseDbDate(right.date ?? right.createdAt);
+											return rightDate.getTime() - leftDate.getTime();
+									  })
+									: [];
 
 							return (
-								<div
-									key={budget.id}
-									className="group rounded-2xl border bg-card p-5"
-								>
-									<div className="mb-3 flex items-start justify-between gap-3">
-										<div className="flex-1 min-w-0">
+								<div key={budget.id} className="group rounded-2xl border bg-card p-5">
+									<div className="mb-4 flex items-start justify-between gap-3">
+										<div className="min-w-0 flex-1">
 											<div className="flex items-center gap-2">
-												<h3 className="font-semibold truncate">
-													{label}
-												</h3>
+												<h3 className="truncate font-semibold">{label}</h3>
 												{isOverBudget && (
-													<FiAlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+													<FiAlertCircle className="h-4 w-4 flex-shrink-0 text-red-500" />
 												)}
 											</div>
 											<p className="mt-0.5 text-xs text-muted-foreground">
-												Monthly limit
+												Plan vs actual budget tracking
 											</p>
 										</div>
-										<div className="flex items-center gap-1 flex-shrink-0">
+										<div className="flex flex-shrink-0 items-center gap-1">
+											<Button
+												type="button"
+												size="sm"
+												variant={started ? 'outline' : 'default'}
+												className="h-8"
+												onClick={() => budget.id && handleStartBudget(budget.id)}
+												disabled={!hasSelectedRange || startingBudgetId === budget.id}
+											>
+												<FiPlay className="mr-1.5 h-3.5 w-3.5" />
+												{startingBudgetId === budget.id
+													? 'Starting...'
+													: started
+														? 'Restart'
+														: 'Start'}
+											</Button>
 											<Button
 												variant="ghost"
 												size="icon"
-												className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+												className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
 												onClick={() => handleEdit(budget)}
 												aria-label="Edit budget"
 											>
@@ -201,10 +309,8 @@ const BudgetsList: React.FC = () => {
 											<Button
 												variant="ghost"
 												size="icon"
-												className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
-												onClick={() =>
-													budget.id && handleDeleteClick(budget.id)
-												}
+												className="h-8 w-8 opacity-0 transition-opacity text-muted-foreground group-hover:opacity-100 hover:text-destructive"
+												onClick={() => budget.id && handleDeleteClick(budget.id)}
 												aria-label="Delete budget"
 											>
 												<FiTrash2 className="h-3.5 w-3.5" />
@@ -212,7 +318,54 @@ const BudgetsList: React.FC = () => {
 										</div>
 									</div>
 
-									{/* Progress bar */}
+									<div className="mb-4 grid gap-3 md:grid-cols-2">
+										<div className="rounded-xl border bg-muted/20 p-3">
+											<div className="mb-1 flex items-center gap-2">
+												<FiTarget className="h-4 w-4 text-primary" />
+												<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+													Planned
+												</p>
+											</div>
+											<p className="text-lg font-semibold">
+												{formatCurrency(plannedAmount)}
+											</p>
+											<p className="mt-1 text-sm text-muted-foreground">
+												{formatDateRange({
+													startDate: plannedStartDate,
+													endDate: plannedEndDate,
+												})}
+											</p>
+										</div>
+										<div className="rounded-xl border bg-muted/20 p-3">
+											<div className="mb-1 flex items-center gap-2">
+												<FiCalendar className="h-4 w-4 text-primary" />
+												<p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+													Actual
+												</p>
+											</div>
+											{started ? (
+												<>
+													<p className="text-lg font-semibold">
+														{formatCurrency(actualSpent)}
+													</p>
+													<p className="mt-1 text-sm text-muted-foreground">
+														{formatDateRange({
+															startDate: actualStartDate ?? '',
+															endDate: actualEndDate ?? '',
+														})}
+													</p>
+												</>
+											) : (
+												<>
+													<p className="text-lg font-semibold">Not started</p>
+													<p className="mt-1 text-sm text-muted-foreground">
+														Use the date filter and click Start.
+													</p>
+												</>
+											)}
+										</div>
+									</div>
+
 									<div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-muted">
 										<div
 											className={`h-full rounded-full transition-all ${barColour}`}
@@ -220,29 +373,88 @@ const BudgetsList: React.FC = () => {
 										/>
 									</div>
 
-									{/* Amounts */}
-									<div className="flex items-center justify-between text-sm">
-										<span className="text-muted-foreground">
-											{formatCurrency(spent)} spent
-										</span>
-										<span
-											className={`font-medium ${
-												isOverBudget
-													? 'text-red-600 dark:text-red-400'
-													: 'text-muted-foreground'
-											}`}
-										>
-											{isOverBudget
-												? `${formatCurrency(Math.abs(remaining))} over`
-												: `${formatCurrency(remaining)} remaining`}{' '}
-											of {formatCurrency(budget.amount)}
-										</span>
-									</div>
+									{started ? (
+										<>
+											<div className="flex items-center justify-between text-sm">
+												<span className="text-muted-foreground">
+													{formatCurrency(actualSpent)} actual spend
+												</span>
+												<span
+													className={`font-medium ${
+														isOverBudget
+															? 'text-red-600 dark:text-red-400'
+															: 'text-muted-foreground'
+													}`}
+												>
+													{isOverBudget
+														? `${formatCurrency(overBudget)} over`
+														: `${formatCurrency(remaining)} remaining`}{' '}
+													of {formatCurrency(plannedAmount)}
+												</span>
+											</div>
+											<div className="mt-1 text-right text-xs text-muted-foreground">
+												{percent.toFixed(0)}% used
+											</div>
+											<div className="mt-4 border-t pt-4">
+												<div className="mb-3 flex items-center justify-between">
+													<h4 className="text-sm font-semibold">
+														Matching Transactions
+													</h4>
+													<span className="text-xs text-muted-foreground">
+														{matchingTransactions.length}{' '}
+														{matchingTransactions.length === 1
+															? 'transaction'
+															: 'transactions'}
+													</span>
+												</div>
+												{matchingTransactions.length === 0 ? (
+													<div className="rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground">
+														No transactions matched this budget category in the
+														selected actual period.
+													</div>
+												) : (
+													<div className="space-y-2">
+														{matchingTransactions.map((transaction) => {
+															const transactionDate = parseDbDate(
+																transaction.date ?? transaction.createdAt
+															).toLocaleDateString('en-ZA', {
+																day: 'numeric',
+																month: 'short',
+																year: 'numeric',
+															});
 
-									{/* Percentage label */}
-									<div className="mt-1 text-xs text-muted-foreground text-right">
-										{percent.toFixed(0)}% used
-									</div>
+															return (
+																<div
+																	key={transaction.id}
+																	className="flex items-center justify-between rounded-xl border bg-background px-3 py-3"
+																>
+																	<div className="min-w-0">
+																		<p className="truncate text-sm font-medium">
+																			{transaction.title}
+																		</p>
+																		<p className="text-xs text-muted-foreground">
+																			{transactionDate}
+																			{transaction.description
+																				? ` • ${transaction.description}`
+																				: ''}
+																		</p>
+																	</div>
+																	<p className="ml-3 flex-shrink-0 font-semibold text-red-600 dark:text-red-400">
+																		{formatCurrency(transaction.amount)}
+																	</p>
+																</div>
+															);
+														})}
+													</div>
+												)}
+											</div>
+										</>
+									) : (
+										<div className="rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground">
+											This budget has a planned amount and period, but no actual
+											comparison period yet.
+										</div>
+									)}
 								</div>
 							);
 						})}

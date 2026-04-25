@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FiCheckCircle } from 'react-icons/fi';
 import { useAccountsContext } from '../../context/AccountsContext';
+import { useCategoriesContext } from '../../context/CategoriesContext';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import { ACCOUNT_TYPE_LABELS } from '../../models/AccountModel';
 import { formatCurrency } from '../../utils/formatCurrency';
@@ -23,6 +24,7 @@ type Step = 'select' | 'reconcile' | 'done';
 const ReconcileForm: React.FC<ReconcileFormProps> = ({ onClose }) => {
 	const { accounts } = useAccountsContext();
 	const { addTransaction } = useTransactionsContext();
+	const { categoryOptions } = useCategoriesContext();
 
 	const [step, setStep] = useState<Step>('select');
 	const [selectedAccountId, setSelectedAccountId] = useState('');
@@ -32,6 +34,10 @@ const ReconcileForm: React.FC<ReconcileFormProps> = ({ onClose }) => {
 	const [error, setError] = useState('');
 
 	const selectedAccount = accounts.find((a) => a.id === selectedAccountId);
+	const reconcileCategory =
+		categoryOptions.find((category) => category.value === 'other')?.value ??
+		categoryOptions[0]?.value ??
+		'other';
 	const discrepancy = selectedAccount
 		? Number(statementBalance) - selectedAccount.balance
 		: 0;
@@ -59,7 +65,7 @@ const ReconcileForm: React.FC<ReconcileFormProps> = ({ onClose }) => {
 					type: isPositive ? 'income' : 'expense',
 					accountId: selectedAccount.id,
 					title: 'Reconciliation Adjustment',
-					category: 'other',
+					category: reconcileCategory,
 					amount: Math.abs(discrepancy),
 					description: `Reconciled to statement balance of ${formatCurrency(statementBalance)}`,
 					date: date ? new Date(date) : new Date(),

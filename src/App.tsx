@@ -3,6 +3,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { TransactionsProvider } from './context/TransactionsContext';
 import { AccountsProvider } from './context/AccountsContext';
 import { BudgetsProvider } from './context/BudgetsContext';
+import { CategoriesProvider } from './context/CategoriesContext';
 import { FilterPreferencesProvider } from './context/FilterPreferencesContext';
 import ProtectedRoute from './components/app/ProtectedRoute';
 import Home from './pages/Home';
@@ -13,33 +14,35 @@ function App() {
 	return (
 		<ThemeProvider>
 			<FilterPreferencesProvider>
-			<TransactionsProvider>
-				<AccountsProvider>
-					<BudgetsProvider>
-						<Router>
-							<Routes>
-								<Route path="/" element={<Home />} />
-								<Route
-									path="/dashboard"
-									element={
-										<ProtectedRoute>
-											<Dashboard />
-										</ProtectedRoute>
-									}
-								/>
-								<Route
-									path="/accounts/:accountId"
-									element={
-										<ProtectedRoute>
-											<AccountDetailPage />
-										</ProtectedRoute>
-									}
-								/>
-							</Routes>
-						</Router>
-					</BudgetsProvider>
-				</AccountsProvider>
-			</TransactionsProvider>
+				<CategoriesProvider>
+					<TransactionsProvider>
+						<AccountsProvider>
+							<BudgetsProvider>
+								<Router>
+									<Routes>
+										<Route path="/" element={<Home />} />
+										<Route
+											path="/dashboard"
+											element={
+												<ProtectedRoute>
+													<Dashboard />
+												</ProtectedRoute>
+											}
+										/>
+										<Route
+											path="/accounts/:accountId"
+											element={
+												<ProtectedRoute>
+													<AccountDetailPage />
+												</ProtectedRoute>
+											}
+										/>
+									</Routes>
+								</Router>
+							</BudgetsProvider>
+						</AccountsProvider>
+					</TransactionsProvider>
+				</CategoriesProvider>
 			</FilterPreferencesProvider>
 		</ThemeProvider>
 	);

@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import { useAccountsContext } from '../../context/AccountsContext';
+import { useCategoriesContext } from '../../context/CategoriesContext';
 import { DateRange } from '../../types';
 import {
 	getSpendingByCategory,
@@ -30,6 +31,7 @@ import DateRangeFilter from '../../components/app/DateRangeFilter';
 const ReportsView: React.FC = () => {
 	const { transactions } = useTransactionsContext();
 	const { accounts } = useAccountsContext();
+	const { getCategoryLabel } = useCategoriesContext();
 
 	const [dateRange, setDateRange] = useState<DateRange>({ startDate: '', endDate: '' });
 
@@ -43,6 +45,14 @@ const ReportsView: React.FC = () => {
 	const categoryData = useMemo(
 		() => getSpendingByCategory(filteredTransactions, dateRange),
 		[filteredTransactions, dateRange]
+	);
+	const labeledCategoryData = useMemo(
+		() =>
+			categoryData.map((entry) => ({
+				...entry,
+				displayCategory: getCategoryLabel(entry.category),
+			})),
+		[categoryData, getCategoryLabel]
 	);
 
 	const accountData = useMemo(
@@ -232,23 +242,23 @@ const ReportsView: React.FC = () => {
 						<h2 className="mb-4 text-base font-semibold">
 							Spending by Category
 						</h2>
-						{categoryData.length > 0 ? (
+						{labeledCategoryData.length > 0 ? (
 							<>
 								<ResponsiveContainer width="100%" height={220}>
 									<PieChart>
 										<Pie
-											data={categoryData}
+											data={labeledCategoryData}
 											dataKey="amount"
-											nameKey="category"
+											nameKey="displayCategory"
 											cx="50%"
 											cy="50%"
 											outerRadius={80}
-											label={({ category, percent }) =>
-												`${category} ${(percent * 100).toFixed(0)}%`
+											label={({ displayCategory, percent }) =>
+												`${displayCategory} ${(percent * 100).toFixed(0)}%`
 											}
 											labelLine={false}
 										>
-											{categoryData.map((entry, index) => (
+											{labeledCategoryData.map((entry, index) => (
 												<Cell
 													key={`cell-${index}`}
 													fill={entry.color}
@@ -267,7 +277,7 @@ const ReportsView: React.FC = () => {
 									</PieChart>
 								</ResponsiveContainer>
 								<div className="mt-2 space-y-1">
-									{categoryData.slice(0, 5).map((d) => (
+									{labeledCategoryData.slice(0, 5).map((d) => (
 										<div
 											key={d.category}
 											className="flex items-center justify-between text-sm"
@@ -277,9 +287,7 @@ const ReportsView: React.FC = () => {
 													className="h-2.5 w-2.5 rounded-full flex-shrink-0"
 													style={{ backgroundColor: d.color }}
 												/>
-												<span className="capitalize">
-													{d.category}
-												</span>
+												<span>{d.displayCategory}</span>
 											</div>
 											<span className="font-medium">
 												{formatCurrency(d.amount)}
