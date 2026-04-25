@@ -22,3 +22,22 @@ export const parseDbDateOrNull = (dateInput: unknown): Date | null => {
 export const parseDbDate = (dateInput: unknown): Date => {
 	return parseDbDateOrNull(dateInput) ?? new Date();
 };
+
+export const getTransactionDateOrEpoch = (
+	dateInput: unknown,
+	fallbackInput?: unknown
+): Date => {
+	return parseDbDateOrNull(dateInput) ?? parseDbDateOrNull(fallbackInput) ?? new Date(0);
+};
+
+export const compareTransactionsByDateDesc = <
+	T extends { date?: unknown; createdAt?: unknown },
+>(
+	left: T,
+	right: T
+): number => {
+	return (
+		getTransactionDateOrEpoch(right.date, right.createdAt).getTime() -
+		getTransactionDateOrEpoch(left.date, left.createdAt).getTime()
+	);
+};

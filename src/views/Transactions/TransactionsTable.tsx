@@ -5,7 +5,8 @@ import { useCategoriesContext } from '../../context/CategoriesContext';
 import DateRangeFilter from '../../components/app/DateRangeFilter';
 import { filterTransactionsByDateRangeObject } from '../../utils/dateRangeFilter';
 import { formatCurrency } from '../../utils/formatCurrency';
-import { DateRange } from '../../types';
+import { DateRange, Transaction } from '../../types';
+import { compareTransactionsByDateDesc, getTransactionDateOrEpoch } from '../../utils/date';
 import {
 	Table,
 	TableBody,
@@ -29,7 +30,7 @@ import { mergeCategoryOptions } from '../../utils/categories';
 
 interface TransactionsTableProps {
 	onDelete: (id: string) => void;
-	onSelect: (tx: any) => void;
+	onSelect: (tx: Transaction) => void;
 	selectedId: string | null;
 	onOpenSettings?: () => void;
 }
@@ -103,16 +104,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 
 				return matchesSearch && matchesType && matchesCategory && matchesMonth;
 			})
-			.sort((a, b) => {
-				const getValidDate = (value: any) => {
-					if (!value) return new Date(0);
-					if (typeof value === 'object' && 'toDate' in value) return value.toDate();
-					return new Date(value);
-				};
-				const dateA = getValidDate(a.date ?? a.createdAt).getTime();
-				const dateB = getValidDate(b.date ?? b.createdAt).getTime();
-				return dateB - dateA;
-			});
+			.sort(compareTransactionsByDateDesc);
 
 		const totalAmount = filtered.reduce((sum, tx) => sum + tx.amount, 0);
 		const totalIncome = filtered
@@ -325,13 +317,10 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 
 									<TableCell className="text-right text-sm text-muted-foreground">
 										{(() => {
-											const dateValue = tx.date ?? tx.createdAt;
-											const date =
-												typeof dateValue === 'object' &&
-													'toDate' in dateValue
-													? dateValue.toDate()
-													: new Date(dateValue || new Date());
-											return date.toLocaleDateString('en-US', {
+											return getTransactionDateOrEpoch(
+												tx.date,
+												tx.createdAt
+											).toLocaleDateString('en-US', {
 												month: 'short',
 												day: 'numeric',
 												year: 'numeric',
@@ -357,7 +346,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 											size="icon"
 											onClick={(e) => {
 												e.stopPropagation();
-												tx.id && onDelete(tx.id);
+												if (tx.id) onDelete(tx.id);
 											}}
 										>
 											<FiTrash2 className="h-4 w-4" />

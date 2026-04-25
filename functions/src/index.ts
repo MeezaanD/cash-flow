@@ -59,12 +59,12 @@ async function verifyToken(authHeader: string): Promise<admin.auth.DecodedIdToke
 	try {
 		const decodedToken = await admin.auth().verifyIdToken(token);
 		return decodedToken;
-	} catch (error) {
+	} catch {
 		throw new Error('Invalid or expired token');
 	}
 }
 
-function setCorsHeaders(res: functions.Response<any>): void {
+function setCorsHeaders(res: functions.Response<unknown>): void {
 	res.set('Access-Control-Allow-Origin', '*');
 	res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 	res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -243,7 +243,10 @@ function formatTopBreakdown(
 }
 
 // Helper function to create API response
-function createResponse(statusCode: number, body: ApiResponse): any {
+function createResponse(
+	statusCode: number,
+	body: ApiResponse
+): { statusCode: number; headers: Record<string, string>; body: string } {
 	return {
 		statusCode,
 		headers: {
@@ -476,7 +479,7 @@ export const askAI = functions.https.onRequest(async (req, res) => {
 		const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
 		const inThisMonth = (transaction: Transaction): boolean => {
-			const parsedDate = parseDate(transaction.date);
+			const parsedDate = parseDate(transaction.date) ?? parseDate(transaction.createdAt);
 			if (!parsedDate) {
 				return false;
 			}

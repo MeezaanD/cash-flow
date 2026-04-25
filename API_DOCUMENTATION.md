@@ -108,6 +108,51 @@ Authorization: Bearer <firebase_id_token>
 }
 ```
 
+### 3. Ask AI Assistant
+
+**POST** `/askAI`
+
+Generate a finance summary/answer from the authenticated user's transactions and accounts.
+
+**Request:**
+
+```http
+POST /askAI
+Authorization: Bearer <firebase_id_token>
+Content-Type: application/json
+```
+
+```json
+{
+	"question": "How much did I spend this month?",
+	"userId": "user_uid"
+}
+```
+
+**Response:**
+
+```json
+{
+	"success": true,
+	"answer": "You spent R2,350.00 this month across 12 expenses..."
+}
+```
+
+**Status Codes:**
+
+- `200` - Success (including no-transaction guidance responses)
+- `400` - Missing `question` or `userId`
+- `401` - Missing/invalid auth token
+- `403` - Authenticated token user does not match `userId`
+- `405` - Method not allowed
+- `500` - Internal server error
+
+**Notes:**
+
+- `askAI` currently analyzes up to 2000 transactions per request.
+- Monthly calculations use `date` and fall back to `createdAt` when `date` is unavailable.
+- Responses are rule-based summaries from user data (no external model call in this function).
+
 ## Data Models
 
 ### Transaction
@@ -124,6 +169,7 @@ interface Transaction {
 	description?: string;
 	date?: string;
 	createdAt?: string;
+	updatedAt?: string;
 	transferAccountId?: string;
 }
 ```
@@ -147,7 +193,8 @@ The API returns appropriate HTTP status codes and error messages:
 | ----------- | --------------------- | --------------------------------- |
 | `200`       | Success               | -                                 |
 | `401`       | Unauthorized          | "Invalid or expired token"        |
-| `405`       | Method not allowed    | "Only GET requests are supported" |
+| `403`       | Forbidden             | "Authenticated user does not match the provided userId" |
+| `405`       | Method not allowed    | "Only GET/POST requests are supported" |
 | `500`       | Internal server error | "Internal server error"           |
 
 ## CORS

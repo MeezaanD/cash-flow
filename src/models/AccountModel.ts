@@ -1,34 +1,43 @@
 import { Account, AccountType, NetWorthData } from '../types';
+import { parseDbDateOrNull } from '../utils/date';
 
 export type { Account };
 
-export const normalizeAccount = (doc: any): Account => {
+type AccountDoc = {
+	id: string;
+	userId?: string;
+	name?: string;
+	bank?: string;
+	type?: string;
+	currency?: string;
+	balance?: number;
+	color?: string;
+	icon?: string;
+	createdAt?: unknown;
+};
+
+export const normalizeAccount = (doc: AccountDoc): Account => {
 	const account: Account = {
 		id: doc.id,
 		userId: doc.userId,
-		name: doc.name,
+		name: doc.name ?? '',
 		bank: doc.bank,
-		type: doc.type as AccountType,
+		type: (doc.type as AccountType) ?? 'cash',
 		currency: doc.currency ?? 'ZAR',
 		balance: doc.balance ?? 0,
 		color: doc.color,
 		icon: doc.icon,
 	};
 
-	if (doc.createdAt) {
-		if (typeof doc.createdAt === 'object' && 'toDate' in doc.createdAt) {
-			account.createdAt = doc.createdAt.toDate();
-		} else if (doc.createdAt instanceof Date) {
-			account.createdAt = doc.createdAt;
-		} else {
-			account.createdAt = new Date(doc.createdAt);
-		}
+	const createdParsed = doc.createdAt != null ? parseDbDateOrNull(doc.createdAt) : null;
+	if (createdParsed) {
+		account.createdAt = createdParsed;
 	}
 
 	return account;
 };
 
-export const normalizeAccounts = (docs: any[]): Account[] => docs.map(normalizeAccount);
+export const normalizeAccounts = (docs: AccountDoc[]): Account[] => docs.map(normalizeAccount);
 
 export const calculateNetWorth = (accounts: Account[]): NetWorthData => {
 	const assets = accounts

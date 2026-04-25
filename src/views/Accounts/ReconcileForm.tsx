@@ -72,8 +72,10 @@ const ReconcileForm: React.FC<ReconcileFormProps> = ({ onClose }) => {
 				});
 			}
 			setStep('done');
-		} catch (err: any) {
-			setError(err?.message || 'Failed to reconcile account. Please try again.');
+		} catch (err: unknown) {
+			setError(
+				err instanceof Error ? err.message : 'Failed to reconcile account. Please try again.'
+			);
 		} finally {
 			setLoading(false);
 		}

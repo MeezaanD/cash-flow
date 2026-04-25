@@ -3,43 +3,48 @@ import { parseDbDateOrNull } from '../utils/date';
 
 export type { Transaction };
 
-export const normalizeTransaction = (doc: any): Transaction => {
+type TransactionDoc = {
+	id: string;
+	userId?: string;
+	accountId?: string;
+	title?: string;
+	amount?: number;
+	type?: string;
+	category?: string;
+	description?: string;
+	transferAccountId?: string;
+	date?: unknown;
+	createdAt?: unknown;
+	updatedAt?: unknown;
+};
+
+export const normalizeTransaction = (doc: TransactionDoc): Transaction => {
 	const transaction: Transaction = {
 		id: doc.id,
 		userId: doc.userId,
-		accountId: doc.accountId,
-		title: doc.title,
-		amount: doc.amount,
-		type: doc.type as TransactionType,
-		category: doc.category,
+		accountId: doc.accountId ?? '',
+		title: doc.title ?? '',
+		amount: doc.amount ?? 0,
+		type: (doc.type as TransactionType) ?? 'expense',
+		category: doc.category ?? '',
 		description: doc.description,
 		transferAccountId: doc.transferAccountId,
 	};
 
-	if (doc.date) {
-		if (typeof doc.date === 'object' && 'toDate' in doc.date) {
-			transaction.date = doc.date.toDate();
-		} else if (doc.date instanceof Date) {
-			transaction.date = doc.date;
-		} else {
-			transaction.date = new Date(doc.date);
-		}
+	const dateParsed = doc.date != null ? parseDbDateOrNull(doc.date) : null;
+	if (dateParsed) {
+		transaction.date = dateParsed;
 	}
 
-	if (doc.createdAt) {
-		if (typeof doc.createdAt === 'object' && 'toDate' in doc.createdAt) {
-			transaction.createdAt = doc.createdAt.toDate();
-		} else if (doc.createdAt instanceof Date) {
-			transaction.createdAt = doc.createdAt;
-		} else {
-			transaction.createdAt = new Date(doc.createdAt);
-		}
+	const createdParsed = doc.createdAt != null ? parseDbDateOrNull(doc.createdAt) : null;
+	if (createdParsed) {
+		transaction.createdAt = createdParsed;
 	}
 
 	return transaction;
 };
 
-export const normalizeTransactions = (docs: any[]): Transaction[] =>
+export const normalizeTransactions = (docs: TransactionDoc[]): Transaction[] =>
 	docs.map(normalizeTransaction);
 
 export const filterExpenses = (transactions: Transaction[]): Transaction[] =>

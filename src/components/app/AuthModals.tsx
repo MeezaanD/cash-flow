@@ -52,8 +52,8 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, mode, onModeChan
 			handleSuccessfulAuth();
 			setEmail('');
 			setPassword('');
-		} catch (error: any) {
-			setError(error.message);
+		} catch (error: unknown) {
+			setError(error instanceof Error ? error.message : 'Something went wrong');
 		} finally {
 			setLoading(false);
 		}
@@ -73,8 +73,8 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, mode, onModeChan
 			const provider = new GoogleAuthProvider();
 			await signInWithPopup(auth, provider);
 			handleSuccessfulAuth();
-		} catch (error: any) {
-			setError(error.message);
+		} catch (error: unknown) {
+			setError(error instanceof Error ? error.message : 'Something went wrong');
 		} finally {
 			setGoogleLoading(false);
 		}
@@ -160,6 +160,7 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, mode, onModeChan
 						<div className="relative">
 							<Input
 								id="password"
+								name="password"
 								type={showPassword ? 'text' : 'password'}
 								placeholder="Enter your password"
 								value={password}
@@ -173,6 +174,7 @@ const AuthModals: React.FC<AuthModalsProps> = ({ open, onClose, mode, onModeChan
 							/>
 							<button
 								type="button"
+								aria-label="Toggle password visibility"
 								onClick={() => setShowPassword(!showPassword)}
 								disabled={loading || googleLoading}
 								className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground disabled:opacity-50"

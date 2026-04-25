@@ -13,6 +13,7 @@
 - **Reports:** Spending by category (pie chart), spending by account (bar chart), income vs expense trend (area chart), and net worth breakdown.
 - **Account Detail Page:** Per-account transaction history with income/expense totals and category breakdown.
 - **Recurring Transactions:** Create income or expense recurring templates accessible from the dedicated "Recurring" sidebar view, with filtering by frequency, category, and type, and Quick Fill support in the transaction form.
+- **AI Assistant:** Ask natural-language questions about spending, categories, merchants, and account trends from your own transaction data.
 - **Import/Export:** Import transactions from CSV/JSON with validation and deduping; export all data as CSV/JSON.
 - **MVC Architecture:** Clean separation of concerns — models, hooks, controllers, contexts, views.
 - **Theme Support:** Dark and light mode throughout.
@@ -132,6 +133,7 @@ ThemeProvider → TransactionsProvider → AccountsProvider → BudgetsProvider 
 - Use `writeBatch` + `increment()` for any operation that touches both a transaction and an account balance.
 - Reuse utilities from `src/utils/` instead of duplicating logic.
 - Use shared types from `src/types/` across all layers.
+- See `CODING_STANDARDS.md` for the incremental standards uplift backlog and acceptance checks.
 
 ## Goals
 
@@ -166,8 +168,18 @@ ThemeProvider → TransactionsProvider → AccountsProvider → BudgetsProvider 
 ## Import/Export Usage
 
 - Open the Dashboard → Settings (bottom-left in the sidebar) → "Data" tab.
-- **Import:** upload a `.csv` or `.json` file. Required fields: `title`, `amount`, `type`, `category`. Optional: `accountId`, `description`, `date`. Duplicates are skipped via title+amount+type+category+date signature.
+- **Import:** upload a `.csv` or `.json` file. Required fields: `title`, `amount`, `type`, `category`. Optional: `accountId`, `description`, `date`.
+- Import requires at least one account to exist first. If `accountId` is missing on a row, the first available account is used.
+- Only `income` and `expense` rows are accepted during import (`transfer` rows are rejected).
+- Duplicates are skipped via `title+amount+type+category+date` signature.
 - **Export CSV / Export JSON:** downloads all your transactions including `accountId`.
+
+## AI Assistant Notes
+
+- AI responses are scoped to the authenticated user's data only, and the API verifies that request `userId` matches the auth token user.
+- The assistant uses deterministic, rule-based analytics over up to 2000 transactions.
+- Date-based monthly analysis uses transaction `date` and falls back to `createdAt` when needed.
+- Best supported prompts: monthly spend, category totals, merchant frequency/spend, and highest-spend account comparisons.
 
 ## Ideal For
 

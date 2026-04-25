@@ -11,22 +11,15 @@ import {
 	FiBarChart2,
 	FiList,
 	FiRefreshCw,
+	FiChevronLeft,
 } from 'react-icons/fi';
 import { useAuth } from '../../hooks/useAuth';
-import { Transaction } from '../../types';
+import { Transaction, ViewType } from '../../types';
 import logoDark from '@/assets/images/logos/cflow-transparent-dark.png';
 import logoLight from '@/assets/images/logos/cflow-transparent-light.png';
 import { useTheme } from '../../context/ThemeContext';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import { useAccountsContext } from '../../context/AccountsContext';
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from '../app/ui/dialog';
 import { Button } from '../app/ui/button';
 import { Input } from '../app/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '../app/ui/avatar';
@@ -42,12 +35,12 @@ interface SidebarProps {
 	toggleSidebar: () => void;
 	onOpenSettings?: () => void;
 	onOpenLogin?: () => void;
-	onViewChange: (view: string) => void;
-	activeView: string;
+	onViewChange: (view: ViewType) => void;
+	activeView: ViewType;
 }
 
 interface NavItem {
-	id: string;
+	id: ViewType;
 	label: string;
 	icon: React.ElementType;
 }
@@ -77,8 +70,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 	const { transactions } = useTransactionsContext();
 	const { accounts, calculateTotalBalance } = useAccountsContext();
 	const [searchTerm, setSearchTerm] = useState('');
-	const [dialogOpen, setDialogOpen] = useState(false);
-	const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
 	const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
 	useEffect(() => {
@@ -105,24 +96,8 @@ const Sidebar: React.FC<SidebarProps> = ({
 		if (window.innerWidth < 768) toggleSidebar();
 	}, [onCreate, toggleSidebar]);
 
-	const handleDeleteClick = useCallback((id: string) => {
-		setTransactionToDelete(id);
-		setDialogOpen(true);
-	}, []);
-
-	const handleConfirmAction = useCallback(() => {
-		if (transactionToDelete) onDelete(transactionToDelete);
-		setDialogOpen(false);
-		setTransactionToDelete(null);
-	}, [transactionToDelete, onDelete]);
-
-	const handleCancelAction = useCallback(() => {
-		setDialogOpen(false);
-		setTransactionToDelete(null);
-	}, []);
-
 	const handleViewClick = useCallback(
-		(view: string) => {
+		(view: ViewType) => {
 			onViewChange(view);
 			if (window.innerWidth < 768) toggleSidebar();
 		},
@@ -176,25 +151,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
 	return (
 		<>
-			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-				<DialogContent className="w-[90vw] md:w-full rounded-lg">
-					<DialogHeader>
-						<DialogTitle>Confirm Deletion</DialogTitle>
-						<DialogDescription>
-							Are you sure you want to delete this transaction?
-						</DialogDescription>
-					</DialogHeader>
-					<DialogFooter>
-						<Button variant="outline" onClick={handleCancelAction}>
-							Cancel
-						</Button>
-						<Button variant="destructive" onClick={handleConfirmAction}>
-							Delete
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-
 			{/* Mobile backdrop */}
 			{!collapsed && isMobile && (
 				<div
@@ -246,15 +202,26 @@ const Sidebar: React.FC<SidebarProps> = ({
 							</div>
 						</div>
 						{!collapsed && (
-							<Button
-								variant="ghost"
-								size="icon"
-								onClick={toggleSidebar}
-								className="md:hidden flex-shrink-0"
-								aria-label="Close sidebar"
-							>
-								<FiX className="h-5 w-5" />
-							</Button>
+							<>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={toggleSidebar}
+									className="md:hidden flex-shrink-0"
+									aria-label="Close sidebar"
+								>
+									<FiX className="h-5 w-5" />
+								</Button>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={toggleSidebar}
+									className="hidden md:inline-flex flex-shrink-0"
+									aria-label="Collapse sidebar"
+								>
+									<FiChevronLeft className="h-5 w-5" />
+								</Button>
+							</>
 						)}
 					</div>
 
@@ -383,8 +350,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 														<button
 															onClick={(e) => {
 																e.stopPropagation();
-																if (tx.id)
-																	handleDeleteClick(tx.id);
+																if (tx.id) onDelete(tx.id);
 															}}
 															className="ml-2 opacity-0 transition-opacity group-hover:opacity-100"
 															aria-label="Delete transaction"
