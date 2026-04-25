@@ -10,7 +10,7 @@ import {
 	onSnapshot,
 	Timestamp,
 } from 'firebase/firestore';
-import { Budget } from '../types';
+import { Budget, DateRange } from '../types';
 import { normalizeBudget } from '../models/BudgetModel';
 
 export const useBudgets = () => {
@@ -67,6 +67,19 @@ export const useBudgets = () => {
 		await updateDoc(ref, updates as any);
 	};
 
+	const startBudget = async (id: string, actualRange: DateRange) => {
+		if (!user) throw new Error('User not authenticated');
+		if (!actualRange.startDate || !actualRange.endDate) {
+			throw new Error('Please select a start and end date before starting a budget.');
+		}
+
+		const ref = doc(db, 'users', user.uid, 'budgets', id);
+		await updateDoc(ref, {
+			actualStartDate: actualRange.startDate,
+			actualEndDate: actualRange.endDate,
+		});
+	};
+
 	const deleteBudget = async (id: string) => {
 		if (!user) throw new Error('User not authenticated');
 		const ref = doc(db, 'users', user.uid, 'budgets', id);
@@ -77,6 +90,7 @@ export const useBudgets = () => {
 		budgets,
 		addBudget,
 		updateBudget,
+		startBudget,
 		deleteBudget,
 		loading,
 	};

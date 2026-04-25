@@ -1,14 +1,42 @@
-import { Budget, BudgetProgress, Transaction } from '../types';
+import { Budget, BudgetProgress, DateRange, Transaction } from '../types';
+import { filterTransactionsByDateRangeObject } from '../utils/dateRangeFilter';
+import { parseDbDateOrNull } from '../utils/date';
 
 export type { Budget };
 
+const toIsoDate = (value: Date): string => value.toISOString().split('T')[0];
+
+const getMonthBounds = (baseDate: Date): DateRange => {
+	const start = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+	const end = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0);
+
+	return {
+		startDate: toIsoDate(start),
+		endDate: toIsoDate(end),
+	};
+};
+
+const getLegacyBudgetRange = (doc: any): DateRange => {
+	const createdAt =
+		parseDbDateOrNull(doc.createdAt) ??
+		parseDbDateOrNull(doc.updatedAt) ??
+		new Date();
+
+	return getMonthBounds(createdAt);
+};
+
 export const normalizeBudget = (doc: any): Budget => {
+	const legacyRange = getLegacyBudgetRange(doc);
 	const budget: Budget = {
 		id: doc.id,
 		userId: doc.userId,
 		category: doc.category,
 		amount: doc.amount ?? 0,
 		period: doc.period ?? 'monthly',
+		plannedStartDate: doc.plannedStartDate ?? legacyRange.startDate,
+		plannedEndDate: doc.plannedEndDate ?? legacyRange.endDate,
+		actualStartDate: doc.actualStartDate ?? undefined,
+		actualEndDate: doc.actualEndDate ?? undefined,
 	};
 
 	if (doc.createdAt) {
@@ -30,28 +58,40 @@ export const calculateBudgetUsage = (
 	budget: Budget,
 	transactions: Transaction[]
 ): BudgetProgress => {
-	const now = new Date();
-	const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-	const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+	const started = Boolean(budget.actualStartDate && budget.actualEndDate);
+	const actualRange: DateRange = {
+		startDate: budget.actualStartDate ?? '',
+		endDate: budget.actualEndDate ?? '',
+	};
 
-	const spent = transactions
-		.filter((t) => {
-			if (t.type !== 'expense') return false;
-			if (t.category !== budget.category) return false;
-			const txDate = getTransactionDate(t);
-			return txDate >= monthStart && txDate <= monthEnd;
-		})
-		.reduce((sum, t) => sum + t.amount, 0);
+	const actualSpent = started
+		? filterTransactionsByDateRangeObject(
+				transactions.filter(
+					(transaction) =>
+						transaction.type === 'expense' && transaction.category === budget.category
+					),
+				actualRange
+		  ).reduce((sum, transaction) => sum + transaction.amount, 0)
+		: 0;
 
-	const remaining = Math.max(0, budget.amount - spent);
-	const percent = budget.amount > 0 ? Math.min(100, (spent / budget.amount) * 100) : 0;
+	const remaining = started ? Math.max(0, budget.amount - actualSpent) : budget.amount;
+	const overBudget = started ? Math.max(0, actualSpent - budget.amount) : 0;
+	const percent =
+		started && budget.amount > 0
+			? Math.min(100, (actualSpent / budget.amount) * 100)
+			: 0;
 
-	return { budget, spent, remaining, percent };
-};
-
-const getTransactionDate = (t: Transaction): Date => {
-	if (!t.date) return t.createdAt instanceof Date ? t.createdAt : new Date();
-	if (typeof t.date === 'object' && 'toDate' in t.date) return t.date.toDate();
-	if (t.date instanceof Date) return t.date;
-	return new Date();
+	return {
+		budget,
+		plannedAmount: budget.amount,
+		plannedStartDate: budget.plannedStartDate,
+		plannedEndDate: budget.plannedEndDate,
+		actualStartDate: budget.actualStartDate,
+		actualEndDate: budget.actualEndDate,
+		started,
+		actualSpent,
+		remaining,
+		overBudget,
+		percent,
+	};
 };

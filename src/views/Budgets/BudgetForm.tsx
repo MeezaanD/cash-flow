@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useBudgetsContext } from '../../context/BudgetsContext';
+import { useCategoriesContext } from '../../context/CategoriesContext';
 import { Budget } from '../../types';
 import { Button } from '../../components/app/ui/button';
 import { Input } from '../../components/app/ui/input';
@@ -10,37 +11,51 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '../../components/app/ui/select';
+import { mergeCategoryOptions } from '../../utils/categories';
+
+const getCurrentMonthRange = () => {
+	const now = new Date();
+	const start = new Date(now.getFullYear(), now.getMonth(), 1);
+	const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+	return {
+		startDate: start.toISOString().split('T')[0],
+		endDate: end.toISOString().split('T')[0],
+	};
+};
 
 interface BudgetFormProps {
 	onClose: () => void;
 	budget?: Budget;
 }
 
-const CATEGORIES = [
-	{ value: 'personal', label: 'Personal' },
-	{ value: 'food', label: 'Food' },
-	{ value: 'travel', label: 'Travel' },
-	{ value: 'entertainment', label: 'Entertainment' },
-	{ value: 'debit_order', label: 'Debit Order' },
-	{ value: 'housing', label: 'Housing' },
-	{ value: 'transport', label: 'Transport' },
-	{ value: 'health', label: 'Health' },
-	{ value: 'education', label: 'Education' },
-	{ value: 'other', label: 'Other' },
-];
-
 const BudgetForm: React.FC<BudgetFormProps> = ({ onClose, budget }) => {
 	const { addBudget, updateBudget } = useBudgetsContext();
+	const { categoryOptions } = useCategoriesContext();
 
 	const [category, setCategory] = useState('');
 	const [amount, setAmount] = useState(0);
+	const [plannedStartDate, setPlannedStartDate] = useState(getCurrentMonthRange().startDate);
+	const [plannedEndDate, setPlannedEndDate] = useState(getCurrentMonthRange().endDate);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
+	const availableCategories = React.useMemo(
+		() => mergeCategoryOptions(categoryOptions, category ? [category] : []),
+		[categoryOptions, category]
+	);
 
 	useEffect(() => {
 		if (budget) {
 			setCategory(budget.category);
 			setAmount(budget.amount);
+			setPlannedStartDate(budget.plannedStartDate);
+			setPlannedEndDate(budget.plannedEndDate);
+		} else {
+			const defaultRange = getCurrentMonthRange();
+			setCategory('');
+			setAmount(0);
+			setPlannedStartDate(defaultRange.startDate);
+			setPlannedEndDate(defaultRange.endDate);
 		}
 	}, [budget]);
 
@@ -54,6 +69,14 @@ const BudgetForm: React.FC<BudgetFormProps> = ({ onClose, budget }) => {
 			setError('Budget amount must be greater than zero.');
 			return;
 		}
+		if (!plannedStartDate || !plannedEndDate) {
+			setError('Please choose both a planned start and end date.');
+			return;
+		}
+		if (plannedStartDate > plannedEndDate) {
+			setError('Planned end date must be on or after the planned start date.');
+			return;
+		}
 		setError('');
 		setLoading(true);
 		try {
@@ -61,6 +84,8 @@ const BudgetForm: React.FC<BudgetFormProps> = ({ onClose, budget }) => {
 				category,
 				amount: Number(amount),
 				period: 'monthly' as const,
+				plannedStartDate,
+				plannedEndDate,
 			};
 			if (budget?.id) {
 				await updateBudget(budget.id, data);
@@ -84,8 +109,8 @@ const BudgetForm: React.FC<BudgetFormProps> = ({ onClose, budget }) => {
 					</h2>
 					<p className="mt-1.5 text-sm text-muted-foreground">
 						{budget
-							? 'Update your monthly spending limit'
-							: 'Set a monthly spending limit for a category'}
+							? 'Update your planned budget amount and date range'
+							: 'Set a planned budget amount and date range for a category'}
 					</p>
 				</div>
 
@@ -103,7 +128,7 @@ const BudgetForm: React.FC<BudgetFormProps> = ({ onClose, budget }) => {
 								<SelectValue placeholder="Select a category" />
 							</SelectTrigger>
 							<SelectContent>
-								{CATEGORIES.map((c) => (
+								{availableCategories.map((c) => (
 									<SelectItem key={c.value} value={c.value}>
 										{c.label}
 									</SelectItem>
@@ -113,7 +138,7 @@ const BudgetForm: React.FC<BudgetFormProps> = ({ onClose, budget }) => {
 					</div>
 
 					<div className="space-y-1.5">
-						<label className="text-sm font-medium">Monthly Limit (ZAR)</label>
+						<label className="text-sm font-medium">Planned Amount (ZAR)</label>
 						<Input
 							type="number"
 							step="0.01"
@@ -125,8 +150,30 @@ const BudgetForm: React.FC<BudgetFormProps> = ({ onClose, budget }) => {
 						/>
 					</div>
 
+					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+						<div className="space-y-1.5">
+							<label className="text-sm font-medium">Planned Start Date</label>
+							<Input
+								type="date"
+								value={plannedStartDate}
+								onChange={(e) => setPlannedStartDate(e.target.value)}
+								required
+							/>
+						</div>
+						<div className="space-y-1.5">
+							<label className="text-sm font-medium">Planned End Date</label>
+							<Input
+								type="date"
+								value={plannedEndDate}
+								onChange={(e) => setPlannedEndDate(e.target.value)}
+								required
+							/>
+						</div>
+					</div>
+
 					<div className="rounded-xl border bg-muted/30 p-3 text-sm text-muted-foreground">
-						Budgets reset at the start of each calendar month.
+						Use the budget screen filter to choose an actual date range, then click
+						Start on a budget to compare that period against this plan.
 					</div>
 
 					<div className="flex gap-3 pt-2">

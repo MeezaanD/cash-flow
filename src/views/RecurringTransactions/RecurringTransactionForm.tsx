@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { FiDollarSign, FiTag, FiInfo, FiSave, FiX, FiRefreshCw, FiArrowUpCircle, FiArrowDownCircle } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
+import { useCategoriesContext } from '../../context/CategoriesContext';
 import { RecurringTransaction } from '../../models/RecurringTransactionModel';
-import { Category } from '../../types';
 import { Button } from '../../components/app/ui/button';
 import { Input } from '../../components/app/ui/input';
 import { Label } from '../../components/app/ui/label';
@@ -15,20 +15,12 @@ import {
 	SelectValue,
 } from '../../components/app/ui/select';
 import { Loader2 } from 'lucide-react';
+import { mergeCategoryOptions } from '../../utils/categories';
 
 interface RecurringTransactionFormProps {
 	onClose: () => void;
 	transaction?: RecurringTransaction;
 }
-
-const CATEGORIES: Category[] = [
-	{ value: 'personal', label: 'Personal' },
-	{ value: 'food', label: 'Food' },
-	{ value: 'travel', label: 'Travel' },
-	{ value: 'entertainment', label: 'Entertainment' },
-	{ value: 'debit_order', label: 'Debit Order' },
-	{ value: 'other', label: 'Other' },
-];
 
 const FREQUENCIES = [
 	{ value: 'daily', label: 'Daily' },
@@ -39,6 +31,7 @@ const FREQUENCIES = [
 
 const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onClose, transaction: expense }) => {
 	const { addRecurringTransaction, updateRecurringTransaction } = useTransactionsContext();
+	const { categoryOptions } = useCategoriesContext();
 	const [title, setTitle] = useState('');
 	const [amount, setAmount] = useState(0);
 	const [transactionType, setTransactionType] = useState<'expense' | 'income'>('expense');
@@ -48,6 +41,10 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 		'monthly'
 	);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const availableCategories = React.useMemo(
+		() => mergeCategoryOptions(categoryOptions, category ? [category] : []),
+		[categoryOptions, category]
+	);
 
 	useEffect(() => {
 		if (expense) {
@@ -212,7 +209,7 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 								<SelectValue placeholder="Select a category" />
 							</SelectTrigger>
 							<SelectContent>
-								{CATEGORIES.map((cat) => (
+								{availableCategories.map((cat) => (
 									<SelectItem key={cat.value} value={cat.value}>
 										{cat.label}
 									</SelectItem>

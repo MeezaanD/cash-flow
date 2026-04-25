@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { FiArrowUp, FiArrowDown, FiSearch, FiCalendar, FiSettings } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
+import { useCategoriesContext } from '../../context/CategoriesContext';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { Input } from '../../components/app/ui/input';
 import { Badge } from '../../components/app/ui/badge';
@@ -25,6 +26,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedId, onOpenSettings }) => {
 	const { transactions } = useTransactionsContext();
+	const { getCategoryLabel } = useCategoriesContext();
 	const { prefs } = useFilterPreferences();
 	const listPrefs = prefs.transactionsList;
 	const [search, setSearch] = useState('');
@@ -164,7 +166,7 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 																		backgroundColor: `${CATEGORY_COLORS[tx.category] || '#9CA3AF'}15`,
 																	}}
 																>
-																	{tx.category}
+																	{getCategoryLabel(tx.category)}
 																</Badge>
 																<span className="text-xs text-muted-foreground font-medium">
 																	{tx.type}

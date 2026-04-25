@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FiEdit, FiTrash2, FiPlus, FiDollarSign } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
+import { useCategoriesContext } from '../../context/CategoriesContext';
 import { RecurringTransaction } from '../../models/RecurringTransactionModel';
 import { Button } from '../../components/app/ui/button';
 import RecurringTransactionForm from './RecurringTransactionForm';
@@ -17,6 +18,7 @@ import { formatCurrency } from '../../utils/formatCurrency';
 const RecurringTransactionsList: React.FC = () => {
 	const { recurringTransactions, deleteRecurringTransaction, recurringTransactionsLoading } =
 		useTransactionsContext();
+	const { getCategoryLabel } = useCategoriesContext();
 	const [editingTransaction, setEditingTransaction] = useState<RecurringTransaction | undefined>(undefined);
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -120,7 +122,7 @@ const RecurringTransactionsList: React.FC = () => {
 								<div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
 									<span>{formatCurrency(transaction.amount)}</span>
 									<span className="hidden sm:inline">•</span>
-									<span>{transaction.category}</span>
+									<span>{getCategoryLabel(transaction.category)}</span>
 									{transaction.description && (
 										<>
 											<span className="hidden sm:inline">•</span>
