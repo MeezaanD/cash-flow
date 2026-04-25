@@ -39,18 +39,21 @@ const chunkArray = <T,>(items: T[], size: number): T[][] => {
 export const useCategories = () => {
 	const [categories, setCategories] = useState<CategoryDefinition[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [user, setUser] = useState(() => auth.currentUser);
+	const [user, setUser] = useState<typeof auth.currentUser | null>(null);
+	const [authReady, setAuthReady] = useState(false);
 	const seededUsersRef = useRef<Set<string>>(new Set());
 
 	useEffect(() => {
 		const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
 			setUser(firebaseUser);
+			setAuthReady(true);
 		});
 
 		return () => unsubscribe();
 	}, []);
 
 	useEffect(() => {
+		if (!authReady) return;
 		if (!user) {
 			setCategories([]);
 			setLoading(false);
@@ -96,7 +99,7 @@ export const useCategories = () => {
 		);
 
 		return () => unsubscribe();
-	}, [user]);
+	}, [user, authReady]);
 
 	const ensureAuthenticated = () => {
 		if (!user) throw new Error('User not authenticated');
