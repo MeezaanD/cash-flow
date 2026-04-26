@@ -347,6 +347,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 													['frequency', 'Frequency filter'],
 													['category', 'Category filter'],
 													['type', 'Type filter (Income / Expense)'],
+													['date', 'Expected date filter'],
 													['sortBy', 'Sort by'],
 												] as [keyof FilterPreferences['recurring'], string][]
 											).map(([key, label]) => (

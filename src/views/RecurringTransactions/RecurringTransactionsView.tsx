@@ -39,6 +39,14 @@ const TYPE_OPTIONS = [
 	{ value: 'income', label: 'Income' },
 ];
 
+const EXPECTED_DATE_OPTIONS = [
+	{ value: 'all', label: 'All Dates' },
+	...Array.from({ length: 31 }, (_, index) => {
+		const day = index + 1;
+		return { value: String(day), label: `Day ${day}` };
+	}),
+];
+
 type SortBy = 'default' | 'alpha-asc' | 'alpha-desc' | 'price-asc' | 'price-desc';
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
@@ -64,10 +72,16 @@ const getFrequencyLabel = (frequency?: string) => {
 	}
 };
 
+const getExpectedDateLabel = (expectedDate?: number): string => {
+	if (!expectedDate) return 'Unscheduled';
+	return `Day ${expectedDate}`;
+};
+
 const buildFilterLabel = (
 	frequencyFilter: string,
 	categoryFilter: string,
 	typeFilter: string,
+	expectedDateFilter: string,
 	sortBy: SortBy,
 	categoryOptions: Array<{ value: string; label: string }>
 ): string => {
@@ -79,6 +93,9 @@ const buildFilterLabel = (
 	}
 	if (typeFilter !== 'all') {
 		parts.push(typeFilter === 'expense' ? 'Expenses' : 'Income');
+	}
+	if (expectedDateFilter !== 'all') {
+		parts.push(`Day ${expectedDateFilter}`);
 	}
 	if (sortBy !== 'default') {
 		const sortOpt = SORT_OPTIONS.find((o) => o.value === sortBy);
@@ -98,6 +115,7 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 	const [frequencyFilter, setFrequencyFilter] = useState('all');
 	const [categoryFilter, setCategoryFilter] = useState('all');
 	const [typeFilter, setTypeFilter] = useState('all');
+	const [expectedDateFilter, setExpectedDateFilter] = useState('all');
 	const [sortBy, setSortBy] = useState<SortBy>('default');
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [editingTransaction, setEditingTransaction] = useState<RecurringTransaction | undefined>(undefined);
@@ -115,12 +133,17 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 	);
 
 	const hasActiveFilters =
-		frequencyFilter !== 'all' || categoryFilter !== 'all' || typeFilter !== 'all' || sortBy !== 'default';
+		frequencyFilter !== 'all' ||
+		categoryFilter !== 'all' ||
+		typeFilter !== 'all' ||
+		expectedDateFilter !== 'all' ||
+		sortBy !== 'default';
 
 	const allFiltersHidden =
 		!recurringPrefs.frequency &&
 		!recurringPrefs.category &&
 		!recurringPrefs.type &&
+		!recurringPrefs.date &&
 		!recurringPrefs.sortBy;
 
 	const filteredTransactions = useMemo(() => {
@@ -130,6 +153,12 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 			if (typeFilter !== 'all') {
 				const transactionType = transaction.type ?? 'expense';
 				if (transactionType !== typeFilter) return false;
+			}
+			if (
+				expectedDateFilter !== 'all' &&
+				transaction.expectedDate !== Number(expectedDateFilter)
+			) {
+				return false;
 			}
 			return true;
 		});
@@ -145,7 +174,7 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 		}
 
 		return filtered;
-	}, [recurringTransactions, frequencyFilter, categoryFilter, typeFilter, sortBy]);
+	}, [recurringTransactions, frequencyFilter, categoryFilter, typeFilter, expectedDateFilter, sortBy]);
 
 	const filteredTotal = useMemo(
 		() => filteredTransactions.reduce((sum, e) => sum + e.amount, 0),
@@ -158,10 +187,11 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 				frequencyFilter,
 				categoryFilter,
 				typeFilter,
+				expectedDateFilter,
 				sortBy,
 				filterCategoryOptions
 			),
-		[frequencyFilter, categoryFilter, typeFilter, sortBy, filterCategoryOptions]
+		[frequencyFilter, categoryFilter, typeFilter, expectedDateFilter, sortBy, filterCategoryOptions]
 	);
 
 	const handleEdit = (transaction: RecurringTransaction) => {
@@ -200,6 +230,7 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 		setFrequencyFilter('all');
 		setCategoryFilter('all');
 		setTypeFilter('all');
+		setExpectedDateFilter('all');
 		setSortBy('default');
 	};
 
@@ -281,6 +312,21 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 							</SelectTrigger>
 							<SelectContent>
 								{TYPE_OPTIONS.map((opt) => (
+									<SelectItem key={opt.value} value={opt.value}>
+										{opt.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
+
+					{recurringPrefs.date && (
+						<Select value={expectedDateFilter} onValueChange={setExpectedDateFilter}>
+							<SelectTrigger className="h-9 w-36 text-sm">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{EXPECTED_DATE_OPTIONS.map((opt) => (
 									<SelectItem key={opt.value} value={opt.value}>
 										{opt.label}
 									</SelectItem>
@@ -378,6 +424,11 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 									<Badge variant="outline" className="text-xs">
 										{getFrequencyLabel(expense.frequency)}
 									</Badge>
+									{expense.expectedDate !== undefined && (
+										<Badge variant="outline" className="text-xs">
+											{getExpectedDateLabel(expense.expectedDate)}
+										</Badge>
+									)}
 									{(expense.type === 'income') ? (
 										<Badge variant="secondary" className="text-xs text-green-600 dark:text-green-400">
 											Income

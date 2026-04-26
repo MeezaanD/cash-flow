@@ -8,6 +8,7 @@ export interface RecurringTransaction {
 	category: string;
 	description?: string;
 	frequency?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+	expectedDate?: number;
 	createdAt?: Date | { toDate: () => Date };
 }
 
@@ -21,7 +22,23 @@ type RecurringDoc = {
 	category?: string;
 	description?: string;
 	frequency?: string;
+	expectedDate?: unknown;
 	createdAt?: unknown;
+};
+
+const normalizeExpectedDate = (value: unknown): number | undefined => {
+	if (typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 31) {
+		return value;
+	}
+
+	if (typeof value === 'string') {
+		const parsed = Number.parseInt(value, 10);
+		if (Number.isInteger(parsed) && parsed >= 1 && parsed <= 31) {
+			return parsed;
+		}
+	}
+
+	return undefined;
 };
 
 export const normalizeRecurringTransaction = (doc: RecurringDoc): RecurringTransaction => {
@@ -35,6 +52,7 @@ export const normalizeRecurringTransaction = (doc: RecurringDoc): RecurringTrans
 		category: doc.category ?? '',
 		description: doc.description,
 		frequency: doc.frequency as RecurringTransaction['frequency'],
+		expectedDate: normalizeExpectedDate(doc.expectedDate),
 	};
 
 	if (doc.createdAt) {
@@ -73,6 +91,15 @@ export const validateRecurringTransaction = (transaction: Partial<RecurringTrans
 		!['daily', 'weekly', 'monthly', 'yearly'].includes(transaction.frequency)
 	) {
 		errors.push('Frequency must be daily, weekly, monthly, or yearly');
+	}
+
+	if (
+		transaction.expectedDate !== undefined &&
+		(!Number.isInteger(transaction.expectedDate) ||
+			transaction.expectedDate < 1 ||
+			transaction.expectedDate > 31)
+	) {
+		errors.push('Expected date must be a day between 1 and 31');
 	}
 
 	return errors;

@@ -5,6 +5,7 @@ export interface FilterPreferences {
 		frequency: boolean;
 		category: boolean;
 		type: boolean;
+		date: boolean;
 		sortBy: boolean;
 	};
 	transactionsTable: {
@@ -24,6 +25,7 @@ const DEFAULT_PREFS: FilterPreferences = {
 		frequency: true,
 		category: true,
 		type: true,
+		date: true,
 		sortBy: true,
 	},
 	transactionsTable: {
