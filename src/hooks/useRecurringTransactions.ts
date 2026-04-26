@@ -9,12 +9,44 @@ import {
 	query,
 	onSnapshot,
 	Timestamp,
+	deleteField,
 	type UpdateData,
 } from 'firebase/firestore';
 import {
 	normalizeRecurringTransactions,
 	RecurringTransaction,
 } from '../models/RecurringTransactionModel';
+
+const sanitizeRecurringPayload = (
+	payload: Partial<RecurringTransaction>,
+	allowExpectedDateDelete: boolean,
+) => {
+	const sanitized: Record<string, unknown> = Object.fromEntries(
+		Object.entries(payload).filter(([, value]) => value !== undefined)
+	);
+
+	if (payload.expectedDate !== undefined) {
+		if (
+			Number.isInteger(payload.expectedDate) &&
+			payload.expectedDate >= 1 &&
+			payload.expectedDate <= 31
+		) {
+			sanitized.expectedDate = payload.expectedDate;
+		} else {
+			delete sanitized.expectedDate;
+		}
+	}
+
+	if (
+		allowExpectedDateDelete &&
+		Object.prototype.hasOwnProperty.call(payload, 'expectedDate') &&
+		payload.expectedDate === undefined
+	) {
+		sanitized.expectedDate = deleteField();
+	}
+
+	return sanitized;
+};
 
 export const useRecurringTransactions = () => {
 	const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
@@ -66,8 +98,9 @@ export const useRecurringTransactions = () => {
 		if (!user) throw new Error('User not authenticated');
 
 		const col = collection(db, 'users', user.uid, 'recurringTransactions');
+		const sanitizedTransaction = sanitizeRecurringPayload(transaction, false);
 		await addDoc(col, {
-			...transaction,
+			...sanitizedTransaction,
 			createdAt: Timestamp.now(),
 			userId: user.uid,
 		});
@@ -90,7 +123,8 @@ export const useRecurringTransactions = () => {
 		if (!user) throw new Error('User not authenticated');
 		try {
 			const ref = doc(db, 'users', user.uid, 'recurringTransactions', id);
-			await updateDoc(ref, updates as UpdateData<RecurringTransaction>);
+			const sanitizedUpdates = sanitizeRecurringPayload(updates, true);
+			await updateDoc(ref, sanitizedUpdates as UpdateData<RecurringTransaction>);
 		} catch (error) {
 			console.error('Error updating recurring transaction:', error);
 			throw error;

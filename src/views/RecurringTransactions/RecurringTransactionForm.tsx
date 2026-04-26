@@ -40,6 +40,7 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 	const [frequency, setFrequency] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>(
 		'monthly'
 	);
+	const [expectedDate, setExpectedDate] = useState<number | ''>('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const availableCategories = React.useMemo(
 		() => mergeCategoryOptions(categoryOptions, category ? [category] : []),
@@ -54,6 +55,7 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 			setCategory(expense.category ?? '');
 			setDescription(expense.description ?? '');
 			setFrequency(expense.frequency ?? 'monthly');
+			setExpectedDate(expense.expectedDate ?? '');
 		} else {
 			setTitle('');
 			setAmount(0);
@@ -61,6 +63,7 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 			setCategory('');
 			setDescription('');
 			setFrequency('monthly');
+			setExpectedDate('');
 		}
 	}, [expense]);
 
@@ -68,9 +71,10 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 		e.preventDefault();
 		setIsSubmitting(true);
 		try {
+			const normalizedExpectedDate = expectedDate === '' ? undefined : expectedDate;
 			const data: Pick<
 				RecurringTransaction,
-				'title' | 'amount' | 'type' | 'category' | 'description' | 'frequency'
+				'title' | 'amount' | 'type' | 'category' | 'description' | 'frequency' | 'expectedDate'
 			> = {
 				title,
 				amount: Number(amount),
@@ -78,6 +82,7 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 				category,
 				description,
 				frequency,
+				expectedDate: normalizedExpectedDate,
 			};
 
 			if (expense && expense.id) {
@@ -249,6 +254,28 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 								))}
 							</SelectContent>
 						</Select>
+					</div>
+
+					<div className="space-y-2">
+						<Label htmlFor="re-expected-date" className="text-sm font-medium">
+							Expected Day (Optional)
+						</Label>
+						<Input
+							id="re-expected-date"
+							type="number"
+							value={expectedDate}
+							onChange={(e) => {
+								const value = e.target.value;
+								setExpectedDate(value === '' ? '' : Number(value));
+							}}
+							placeholder="e.g. 1"
+							min="1"
+							max="31"
+							className="h-10 rounded-lg border-2 transition-all focus:border-primary"
+						/>
+						<p className="text-xs text-muted-foreground">
+							Use this for monthly schedules, like salary on day 1.
+						</p>
 					</div>
 				</div>
 
