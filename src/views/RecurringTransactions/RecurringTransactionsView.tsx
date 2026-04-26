@@ -47,7 +47,14 @@ const EXPECTED_DATE_OPTIONS = [
 	}),
 ];
 
-type SortBy = 'default' | 'alpha-asc' | 'alpha-desc' | 'price-asc' | 'price-desc';
+type SortBy =
+	| 'default'
+	| 'alpha-asc'
+	| 'alpha-desc'
+	| 'price-asc'
+	| 'price-desc'
+	| 'expected-date-asc'
+	| 'expected-date-desc';
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
 	{ value: 'default', label: 'Default order' },
@@ -55,6 +62,8 @@ const SORT_OPTIONS: { value: SortBy; label: string }[] = [
 	{ value: 'alpha-desc', label: 'Name Z → A' },
 	{ value: 'price-asc', label: 'Price: Low → High' },
 	{ value: 'price-desc', label: 'Price: High → Low' },
+	{ value: 'expected-date-asc', label: 'Expected Day: Low → High' },
+	{ value: 'expected-date-desc', label: 'Expected Day: High → Low' },
 ];
 
 const getFrequencyLabel = (frequency?: string) => {
@@ -171,6 +180,18 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 			filtered.sort((a, b) => a.amount - b.amount);
 		} else if (sortBy === 'price-desc') {
 			filtered.sort((a, b) => b.amount - a.amount);
+		} else if (sortBy === 'expected-date-asc') {
+			filtered.sort((a, b) => {
+				const dayA = a.expectedDate ?? Number.MAX_SAFE_INTEGER;
+				const dayB = b.expectedDate ?? Number.MAX_SAFE_INTEGER;
+				return dayA - dayB;
+			});
+		} else if (sortBy === 'expected-date-desc') {
+			filtered.sort((a, b) => {
+				const dayA = a.expectedDate ?? Number.MIN_SAFE_INTEGER;
+				const dayB = b.expectedDate ?? Number.MIN_SAFE_INTEGER;
+				return dayB - dayA;
+			});
 		}
 
 		return filtered;

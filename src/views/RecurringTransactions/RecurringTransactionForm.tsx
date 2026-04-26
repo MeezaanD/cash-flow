@@ -72,6 +72,10 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 		setIsSubmitting(true);
 		try {
 			const normalizedExpectedDate = expectedDate === '' ? undefined : expectedDate;
+			const normalizedCategory = category.trim();
+			const categoryForSubmit = expense
+				? (normalizedCategory || expense.category || '')
+				: normalizedCategory;
 			const data: Pick<
 				RecurringTransaction,
 				'title' | 'amount' | 'type' | 'category' | 'description' | 'frequency' | 'expectedDate'
@@ -79,7 +83,7 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 				title,
 				amount: Number(amount),
 				type: transactionType,
-				category,
+				category: categoryForSubmit,
 				description,
 				frequency,
 				expectedDate: normalizedExpectedDate,
@@ -133,11 +137,10 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 						<button
 							type="button"
 							onClick={() => setTransactionType('expense')}
-							className={`flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-all ${
-								transactionType === 'expense'
+							className={`flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-all ${transactionType === 'expense'
 									? 'border-red-500 bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400'
 									: 'border-border bg-background text-muted-foreground hover:border-muted-foreground'
-							}`}
+								}`}
 						>
 							<FiArrowDownCircle className="h-4 w-4" />
 							Expense
@@ -145,11 +148,10 @@ const RecurringTransactionForm: React.FC<RecurringTransactionFormProps> = ({ onC
 						<button
 							type="button"
 							onClick={() => setTransactionType('income')}
-							className={`flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-all ${
-								transactionType === 'income'
+							className={`flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-all ${transactionType === 'income'
 									? 'border-green-500 bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400'
 									: 'border-border bg-background text-muted-foreground hover:border-muted-foreground'
-							}`}
+								}`}
 						>
 							<FiArrowUpCircle className="h-4 w-4" />
 							Income
