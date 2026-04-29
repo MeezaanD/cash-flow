@@ -27,6 +27,7 @@ import { Button } from '../../components/app/ui/button';
 import { Badge } from '../../components/app/ui/badge';
 import { useFilterPreferences } from '../../context/FilterPreferencesContext';
 import { mergeCategoryOptions } from '../../utils/categories';
+import { getCategoryColor } from '../../utils/categoryColors';
 
 interface TransactionsTableProps {
 	onDelete: (id: string) => void;
@@ -34,16 +35,6 @@ interface TransactionsTableProps {
 	selectedId: string | null;
 	onOpenSettings?: () => void;
 }
-
-const CATEGORY_COLORS: Record<string, string> = {
-	debit_order: '#FFBB28',
-	entertainment: '#FF6B6B',
-	food: '#A28DFF',
-	other: '#FF8042',
-	personal: '#00C49F',
-	travel: '#0088FE',
-	uncategorized: '#9CA3AF',
-};
 
 const MONTHS = [
 	{ value: 'all', label: 'All Months' },
@@ -219,20 +210,22 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">All categories</SelectItem>
-								{allCategories.map((category) => (
+								{allCategories.map((category) => {
+									const categoryColor = getCategoryColor(category.value);
+									return (
 									<SelectItem key={category.value} value={category.value}>
 										<div className="flex items-center gap-2">
 											<span
 												className="h-2.5 w-2.5 rounded-full"
 												style={{
-													backgroundColor:
-														CATEGORY_COLORS[category.value] || '#9CA3AF',
+													backgroundColor: categoryColor,
 												}}
 											/>
 											{category.label}
 										</div>
 									</SelectItem>
-								))}
+									);
+								})}
 							</SelectContent>
 						</Select>
 					)}
@@ -292,7 +285,9 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 						</TableHeader>
 
 						<TableBody>
-							{visibleTransactions.map((tx) => (
+							{visibleTransactions.map((tx) => {
+								const categoryColor = getCategoryColor(tx.category);
+								return (
 								<TableRow
 									key={tx.id}
 									onClick={() => onSelect(tx)}
@@ -332,8 +327,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 										<Badge
 											className="text-white"
 											style={{
-												backgroundColor:
-													CATEGORY_COLORS[tx.category] || '#9CA3AF',
+												backgroundColor: categoryColor,
 											}}
 										>
 											{getCategoryLabel(tx.category)}
@@ -353,7 +347,8 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
 										</Button>
 									</TableCell>
 								</TableRow>
-							))}
+								);
+							})}
 
 							{filtered.length === 0 && (
 								<TableRow>

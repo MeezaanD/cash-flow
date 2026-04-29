@@ -10,21 +10,13 @@ import { Card } from '../../components/app/ui/card';
 import { useFilterPreferences } from '../../context/FilterPreferencesContext';
 import { Transaction } from '../../types';
 import { compareTransactionsByDateDesc, getTransactionDateOrEpoch } from '../../utils/date';
+import { getCategoryColor } from '../../utils/categoryColors';
 
 interface TransactionsListProps {
 	onSelect?: (tx: Transaction) => void;
 	selectedId?: string | null;
 	onOpenSettings?: () => void;
 }
-
-const CATEGORY_COLORS: Record<string, string> = {
-	debit_order: '#FFBB28',
-	entertainment: '#FF6B6B',
-	food: '#A28DFF',
-	other: '#FF8042',
-	personal: '#00C49F',
-	travel: '#0088FE',
-};
 
 const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedId, onOpenSettings }) => {
 	const { transactions } = useTransactionsContext();
@@ -107,7 +99,9 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 
 							{/* Transaction Cards */}
 							<div className="space-y-2">
-								{txs.map((tx, i) => (
+								{txs.map((tx, i) => {
+									const categoryColor = getCategoryColor(tx.category);
+									return (
 									<Card
 										key={tx.id || i}
 										className={`group cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/20 ${tx.id === selectedId
@@ -142,15 +136,9 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 																	variant="outline"
 																	className="text-xs font-medium border-2"
 																	style={{
-																		borderColor:
-																			CATEGORY_COLORS[
-																			tx.category
-																			] || '#9CA3AF',
-																		color:
-																			CATEGORY_COLORS[
-																			tx.category
-																			] || '#9CA3AF',
-																		backgroundColor: `${CATEGORY_COLORS[tx.category] || '#9CA3AF'}15`,
+																		borderColor: categoryColor,
+																		color: categoryColor,
+																		backgroundColor: `${categoryColor}15`,
 																	}}
 																>
 																	{getCategoryLabel(tx.category)}
@@ -187,7 +175,8 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ onSelect, selectedI
 											</div>
 										</div>
 									</Card>
-								))}
+									);
+								})}
 							</div>
 						</div>
 					))}

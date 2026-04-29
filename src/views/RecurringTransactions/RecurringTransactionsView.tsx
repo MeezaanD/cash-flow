@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FiEdit, FiTrash2, FiPlus, FiDollarSign, FiRefreshCw, FiX, FiSettings } from 'react-icons/fi';
 import { useTransactionsContext } from '../../context/TransactionsContext';
 import { useCategoriesContext } from '../../context/CategoriesContext';
@@ -24,6 +24,11 @@ import {
 import { formatCurrency } from '../../utils/formatCurrency';
 import { useFilterPreferences } from '../../context/FilterPreferencesContext';
 import { mergeCategoryOptions } from '../../utils/categories';
+import RecurringTransactionsCalendar from './RecurringTransactionsCalendar';
+import {
+	getRecurringExpectedDateLabel,
+	getRecurringFrequencyLabel,
+} from './recurringDisplay';
 
 const FREQUENCY_OPTIONS = [
 	{ value: 'all', label: 'All Frequencies' },
@@ -56,6 +61,11 @@ type SortBy =
 	| 'expected-date-asc'
 	| 'expected-date-desc';
 
+type ViewMode = 'list' | 'calendar';
+
+const RECURRING_VIEW_MODE_STORAGE_KEY = 'recurringTransactions.viewMode';
+const DESKTOP_MEDIA_QUERY = '(min-width: 1024px)';
+
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
 	{ value: 'default', label: 'Default order' },
 	{ value: 'alpha-asc', label: 'Name A → Z' },
@@ -66,26 +76,6 @@ const SORT_OPTIONS: { value: SortBy; label: string }[] = [
 	{ value: 'expected-date-desc', label: 'Expected Day: High → Low' },
 ];
 
-const getFrequencyLabel = (frequency?: string) => {
-	switch (frequency) {
-		case 'daily':
-			return 'Daily';
-		case 'weekly':
-			return 'Weekly';
-		case 'monthly':
-			return 'Monthly';
-		case 'yearly':
-			return 'Yearly';
-		default:
-			return 'Monthly';
-	}
-};
-
-const getExpectedDateLabel = (expectedDate?: number): string => {
-	if (!expectedDate) return 'Unscheduled';
-	return `Day ${expectedDate}`;
-};
-
 const buildFilterLabel = (
 	frequencyFilter: string,
 	categoryFilter: string,
@@ -95,7 +85,7 @@ const buildFilterLabel = (
 	categoryOptions: Array<{ value: string; label: string }>
 ): string => {
 	const parts: string[] = [];
-	if (frequencyFilter !== 'all') parts.push(getFrequencyLabel(frequencyFilter));
+	if (frequencyFilter !== 'all') parts.push(getRecurringFrequencyLabel(frequencyFilter));
 	if (categoryFilter !== 'all') {
 		const opt = categoryOptions.find((o) => o.value === categoryFilter);
 		if (opt) parts.push(opt.label);
@@ -126,6 +116,8 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 	const [typeFilter, setTypeFilter] = useState('all');
 	const [expectedDateFilter, setExpectedDateFilter] = useState('all');
 	const [sortBy, setSortBy] = useState<SortBy>('default');
+	const [viewMode, setViewMode] = useState<ViewMode>('list');
+	const [isDesktopCalendarAllowed, setIsDesktopCalendarAllowed] = useState(false);
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const [editingTransaction, setEditingTransaction] = useState<RecurringTransaction | undefined>(undefined);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -140,6 +132,41 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 		],
 		[categoryOptions, recurringTransactions]
 	);
+
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+		const mediaQuery = window.matchMedia(DESKTOP_MEDIA_QUERY);
+		const handleViewportChange = (event: MediaQueryListEvent) => {
+			setIsDesktopCalendarAllowed(event.matches);
+		};
+
+		setIsDesktopCalendarAllowed(mediaQuery.matches);
+		mediaQuery.addEventListener('change', handleViewportChange);
+
+		return () => {
+			mediaQuery.removeEventListener('change', handleViewportChange);
+		};
+	}, []);
+
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+		const storedMode = window.localStorage.getItem(RECURRING_VIEW_MODE_STORAGE_KEY);
+		if (storedMode === 'list' || (storedMode === 'calendar' && isDesktopCalendarAllowed)) {
+			setViewMode(storedMode);
+		} else if (!isDesktopCalendarAllowed) {
+			setViewMode('list');
+		}
+	}, [isDesktopCalendarAllowed]);
+
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+		if (!isDesktopCalendarAllowed && viewMode === 'calendar') {
+			setViewMode('list');
+			window.localStorage.setItem(RECURRING_VIEW_MODE_STORAGE_KEY, 'list');
+			return;
+		}
+		window.localStorage.setItem(RECURRING_VIEW_MODE_STORAGE_KEY, viewMode);
+	}, [viewMode, isDesktopCalendarAllowed]);
 
 	const hasActiveFilters =
 		frequencyFilter !== 'all' ||
@@ -276,10 +303,46 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 						Manage your subscriptions, debit orders, salary, and other recurring transactions.
 					</p>
 				</div>
-				<Button onClick={handleAddNew} className="flex-shrink-0">
-					<FiPlus className="mr-2 h-4 w-4" />
-					Add New
-				</Button>
+				<div className="flex flex-col items-end gap-2">
+					<div
+						className="inline-flex items-center rounded-lg border bg-muted/20 p-1"
+						role="tablist"
+						aria-label="Recurring transactions view mode"
+					>
+						<button
+							type="button"
+							role="tab"
+							aria-selected={viewMode === 'list'}
+							className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+								viewMode === 'list'
+									? 'bg-background text-foreground shadow-sm'
+									: 'text-muted-foreground hover:text-foreground'
+							}`}
+							onClick={() => setViewMode('list')}
+						>
+							List
+						</button>
+						{isDesktopCalendarAllowed && (
+							<button
+								type="button"
+								role="tab"
+								aria-selected={viewMode === 'calendar'}
+								className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+									viewMode === 'calendar'
+										? 'bg-background text-foreground shadow-sm'
+										: 'text-muted-foreground hover:text-foreground'
+								}`}
+								onClick={() => setViewMode('calendar')}
+							>
+								Calendar
+							</button>
+						)}
+					</div>
+					<Button onClick={handleAddNew} className="flex-shrink-0">
+						<FiPlus className="mr-2 h-4 w-4" />
+						Add New
+					</Button>
+				</div>
 			</div>
 
 			{/* Filter Bar */}
@@ -406,7 +469,7 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 				</div>
 			</div>
 
-			{/* Transaction List */}
+			{/* Transaction Content */}
 			{filteredTransactions.length === 0 ? (
 				<div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed p-12 text-center">
 					<FiDollarSign className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
@@ -431,7 +494,7 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 						</Button>
 					)}
 				</div>
-			) : (
+			) : viewMode === 'list' ? (
 				<div role="list" className="space-y-3">
 					{filteredTransactions.map((expense) => (
 						<div
@@ -443,11 +506,11 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 								<div className="flex flex-wrap items-center gap-2">
 									<h4 className="font-medium">{expense.title}</h4>
 									<Badge variant="outline" className="text-xs">
-										{getFrequencyLabel(expense.frequency)}
+										{getRecurringFrequencyLabel(expense.frequency)}
 									</Badge>
 									{expense.expectedDate !== undefined && (
 										<Badge variant="outline" className="text-xs">
-											{getExpectedDateLabel(expense.expectedDate)}
+											{getRecurringExpectedDateLabel(expense.expectedDate)}
 										</Badge>
 									)}
 									{(expense.type === 'income') ? (
@@ -497,6 +560,13 @@ const RecurringTransactionsView: React.FC<{ onOpenSettings?: () => void }> = ({ 
 						</div>
 					))}
 				</div>
+			) : (
+				<RecurringTransactionsCalendar
+					transactions={filteredTransactions}
+					onEdit={handleEdit}
+					onDelete={handleDeleteClick}
+					getCategoryLabel={getCategoryLabel}
+				/>
 			)}
 
 			{/* Add / Edit Form Dialog */}
